@@ -112,6 +112,8 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AdminMapsActivity.class));
             } else if (id == R.id.nav_admin_ranking) {
                 startActivity(new Intent(this, AdminRankingActivity.class));
+            } else if (id == R.id.nav_admin_profil) {
+                startActivity(new Intent(this, ProfilAdminActivity.class));
             } else if (id == R.id.nav_admin_logout) {
                 logout();
             }
@@ -231,6 +233,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
     private void buatGrafik(List<ScanHistory> data) {
         Map<String, Integer> countMap = new HashMap<>();
+        //ini label kayanya disesuain sama label di Model ML yg kita punya
         String[] labels = {"Organik", "Kardus", "Kaca", "Logam", "Kertas", "Plastik"};
 
         for (String label : labels) countMap.put(label.toLowerCase(), 0);

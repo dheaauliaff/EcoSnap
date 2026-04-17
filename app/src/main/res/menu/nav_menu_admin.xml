@@ -23,15 +23,17 @@
             android:icon="@android:drawable/ic_menu_sort_by_size"
             android:title="Ranking RT"/>
 
+        <item
+            android:id="@+id/nav_admin_profil"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="Profil"/>
+
+        <item
+            android:id="@+id/nav_admin_logout"
+            android:icon="@android:drawable/ic_lock_power_off"
+            android:title="Logout"/>
+
     </group>
 
-    <item android:title="Akun">
-        <menu>
-            <item
-                android:id="@+id/nav_admin_logout"
-                android:icon="@android:drawable/ic_lock_power_off"
-                android:title="Logout"/>
-        </menu>
-    </item>
 
 </menu>

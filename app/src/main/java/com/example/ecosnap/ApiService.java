@@ -33,4 +33,10 @@ public interface ApiService {
     Call<List<ScanHistory>> getScanByRw(
             @Query("rw_id") String rwId
     );
+
+    @GET("user?select=*")
+    Call<List<User>> getUserByRwId(
+            @Query("rw_id") String rwId,
+            @Query("role") String role
+    );
 }
