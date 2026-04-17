@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
@@ -48,7 +49,6 @@ public class DashboardUserActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        // Init views
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
         toolbar = findViewById(R.id.toolbar);
@@ -62,10 +62,8 @@ public class DashboardUserActivity extends AppCompatActivity {
         tvQuote = findViewById(R.id.tvQuote);
         btnScanCepat = findViewById(R.id.btnScanCepat);
 
-        // Setup toolbar
         setSupportActionBar(toolbar);
 
-        // Setup drawer
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar,
                 R.string.navigation_drawer_open,
@@ -73,18 +71,14 @@ public class DashboardUserActivity extends AppCompatActivity {
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        // Tampilkan quote random
         int randomIndex = (int) (Math.random() * quotes.length);
         tvQuote.setText(quotes[randomIndex]);
 
-        // Load data user
         loadDataUser();
 
-        // Tombol scan cepat
         btnScanCepat.setOnClickListener(v ->
                 startActivity(new Intent(this, ScanActivity.class)));
 
-        // Setup sidebar
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_scan) {
@@ -103,6 +97,18 @@ public class DashboardUserActivity extends AppCompatActivity {
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
+
+        // Handle tombol back
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    finish();
+                }
+            }
+        });
     }
 
     private void loadDataUser() {
@@ -117,11 +123,9 @@ public class DashboardUserActivity extends AppCompatActivity {
                         && !response.body().isEmpty()) {
                     User user = response.body().get(0);
 
-                    // Update welcome banner
                     tvNamaUser.setText(user.getNama());
                     tvWilayahUser.setText(user.getWilayah() + " - " + user.getRwId());
 
-                    // Update header sidebar
                     TextView navNama = navigationView.getHeaderView(0)
                             .findViewById(R.id.tvNamaUser);
                     TextView navWilayah = navigationView.getHeaderView(0)
@@ -130,7 +134,6 @@ public class DashboardUserActivity extends AppCompatActivity {
                     if (navWilayah != null) navWilayah.setText(
                             user.getWilayah() + " - " + user.getRwId());
 
-                    // Load statistik scan
                     loadStatistikScan(uid);
                 }
             }
@@ -146,7 +149,6 @@ public class DashboardUserActivity extends AppCompatActivity {
     private void loadStatistikScan(String uid) {
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
 
-        // Load scan terakhir
         Call<List<ScanHistory>> callTerakhir = apiService.getScanTerakhir("eq." + uid);
         callTerakhir.enqueue(new Callback<List<ScanHistory>>() {
             @Override
@@ -170,14 +172,5 @@ public class DashboardUserActivity extends AppCompatActivity {
         mAuth.signOut();
         startActivity(new Intent(this, LoginActivity.class));
         finish();
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
     }
 }

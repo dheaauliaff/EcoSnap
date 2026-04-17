@@ -21,7 +21,7 @@ public class User {
     @SerializedName("wilayah")
     private String wilayah;
 
-    @SerializedName("rwId")
+    @SerializedName("rw_id")
     private String rwId;
 
     // Getters

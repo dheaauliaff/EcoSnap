@@ -30,6 +30,7 @@ public class RegisterActivity extends AppCompatActivity {
     // Kode RW yang valid — nanti bisa diganti sesuai kebutuhan
     // ini buat kode tiap rt yg masuk gitu, jadi nanti kode ini buat si rt
     private static final Map<String, String> KODE_RW = new HashMap<String, String>() {{
+        //kodenya         ini RW nya
         put("RW01-2024", "RW 01");
         put("RW02-2024", "RW 02");
         put("RW03-2024", "RW 03");

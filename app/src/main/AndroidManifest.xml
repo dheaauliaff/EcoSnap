@@ -43,6 +43,12 @@
         <activity android:name=".ProfilActivity"
             android:exported="false"/>
 
+        <activity android:name=".RekapanActivity"
+            android:exported="false"/>
+        <activity android:name=".AdminMapsActivity"
+            android:exported="false"/>
+        <activity android:name=".AdminRankingActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>

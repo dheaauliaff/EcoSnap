@@ -60,4 +60,7 @@ dependencies {
     // Navigation Drawer
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
     implementation("com.google.android.material:material:1.11.0")
+
+    //github
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

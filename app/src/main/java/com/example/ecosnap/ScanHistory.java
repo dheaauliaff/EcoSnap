@@ -26,7 +26,7 @@ public class ScanHistory {
     private String fotoUrl;
 
     @SerializedName("akurasi")
-    private float akurasi;
+    private Float akurasi;
 
     @SerializedName("created_at")
     private String createdAt;
@@ -38,6 +38,6 @@ public class ScanHistory {
     public String getJenisSampah() { return jenisSampah; }
     public String getKategori() { return kategori; }
     public String getFotoUrl() { return fotoUrl; }
-    public float getAkurasi() { return akurasi; }
+    public Float getAkurasi() { return akurasi; }
     public String getCreatedAt() { return createdAt; }
 }

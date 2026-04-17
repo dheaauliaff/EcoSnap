@@ -74,9 +74,13 @@ public class LoginActivity extends AppCompatActivity {
                     String role = user.getRole();
 
                     if (role.equals("admin")) {
-                        startActivity(new Intent(LoginActivity.this, DashboardAdminActivity.class));
+                        Intent intent = new Intent(LoginActivity.this, DashboardAdminActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
                     } else {
-                        startActivity(new Intent(LoginActivity.this, DashboardUserActivity.class));
+                        Intent intent = new Intent(LoginActivity.this, DashboardUserActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
                     }
                     finish();
                 } else {
