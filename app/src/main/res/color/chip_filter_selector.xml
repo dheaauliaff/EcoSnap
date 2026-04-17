@@ -3,5 +3,4 @@
     <item android:state_checked="true"
         android:color="#2E7D32"/>
     <item android:color="#22FFFFFF"/>
-    //ini coba
 </selector>

@@ -349,16 +349,16 @@ public class DashboardAdminActivity extends AppCompatActivity {
     }
 
     private void updateFilterUI() {
-        btnMinggu.setTextColor(Color.parseColor("#81C784"));
-        btnBulan.setTextColor(Color.parseColor("#81C784"));
-        btnTahun.setTextColor(Color.parseColor("#81C784"));
+        btnMinggu.setTextColor(Color.parseColor("#1B1B1B"));
+        btnBulan.setTextColor(Color.parseColor("#1B1B1B"));
+        btnTahun.setTextColor(Color.parseColor("#1B1B1B"));
         btnMinggu.setBackground(null);
         btnBulan.setBackground(null);
         btnTahun.setBackground(null);
 
         TextView aktif = periodAktif.equals("minggu") ? btnMinggu :
                 periodAktif.equals("bulan") ? btnBulan : btnTahun;
-        aktif.setTextColor(Color.parseColor("#2E7D32"));
+        aktif.setTextColor(Color.parseColor("#1B1B1B"));
 
     }
 
