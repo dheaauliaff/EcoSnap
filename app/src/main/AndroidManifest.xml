@@ -51,7 +51,7 @@
         <activity android:name=".AdminRankingActivity"
             android:exported="false"/>
 
-        //tampilan profil admin
+
         <activity android:name=".ProfilAdminActivity"
             android:exported="false"/>
 

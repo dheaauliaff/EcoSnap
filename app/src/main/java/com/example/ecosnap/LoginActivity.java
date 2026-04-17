@@ -35,7 +35,7 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
 
         btnLogin.setOnClickListener(v -> {
-            String email = etEmail.getText().toString().trim();
+            String email = etEmail.getText().toString().trim().toLowerCase();
             String password = etPassword.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
@@ -46,11 +46,16 @@ public class LoginActivity extends AppCompatActivity {
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
+                            if (mAuth.getCurrentUser() == null) {
+                                Toast.makeText(this, "User login tidak terbaca", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+
                             String uid = mAuth.getCurrentUser().getUid();
                             cekRoleUser(uid);
                         } else {
-                            Toast.makeText(this, "Login gagal: " +
-                                    task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            String msg = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                            Toast.makeText(this, "Login gagal: " + msg, Toast.LENGTH_SHORT).show();
                         }
                     });
         });
@@ -59,7 +64,6 @@ public class LoginActivity extends AppCompatActivity {
         tvRegister.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
         });
-
     }
 
     private void cekRoleUser(String uid) {
@@ -71,7 +75,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     User user = response.body().get(0);
-                    String role = user.getRole();
+                    String role = user.getRole() != null ? user.getRole() : "user";
 
                     if (role.equals("admin")) {
                         Intent intent = new Intent(LoginActivity.this, DashboardAdminActivity.class);

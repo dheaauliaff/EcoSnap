@@ -10,7 +10,6 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -45,7 +44,6 @@
 
         </LinearLayout>
 
-        <!-- Form Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -123,7 +121,26 @@
                 android:id="@+id/etWilayah"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Contoh: RT 01"
+                android:hint="Contoh: RT 02"
+                android:inputType="text"
+                android:background="@drawable/bg_input"
+                android:padding="12dp"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RT ID"
+                android:textColor="#2E7D32"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <EditText
+                android:id="@+id/etRT"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Contoh: RT 02"
                 android:inputType="text"
                 android:background="@drawable/bg_input"
                 android:padding="12dp"

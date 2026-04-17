@@ -359,8 +359,8 @@ public class DashboardAdminActivity extends AppCompatActivity {
         btnBulan.setBackground(null);
         btnTahun.setBackground(null);
 
-        TextView aktif = periodAktif.equals("minggu") ? btnMinggu :
-                periodAktif.equals("bulan") ? btnBulan : btnTahun;
+        TextView aktif = periodAktif.equals("bulan") ? btnBulan :
+                periodAktif.equals("tahun") ? btnTahun : btnMinggu;
         aktif.setTextColor(Color.parseColor("#1B1B1B"));
 
     }

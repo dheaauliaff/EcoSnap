@@ -24,7 +24,7 @@ import retrofit2.Response;
 public class ProfilAdminActivity extends AppCompatActivity {
 
     TextView tvAvatarInisial, tvNamaProfil, tvRoleProfil;
-    TextView tvInfoNama, tvInfoEmail, tvInfoWilayah, tvInfoRole;
+    TextView tvInfoNama, tvInfoEmail, tvInfoWilayah, tvInfoRole, tvInfoWilayahHeader;
     LinearLayout layoutDaftarRT;
     AppCompatButton btnEditProfil, btnLogout;
     FirebaseAuth mAuth;
@@ -43,6 +43,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
         tvInfoEmail = findViewById(R.id.tvInfoEmail);
         tvInfoWilayah = findViewById(R.id.tvInfoWilayah);
         tvInfoRole = findViewById(R.id.tvInfoRole);
+        tvInfoWilayahHeader = findViewById(R.id.tvInfoWilayahHeader);
         layoutDaftarRT = findViewById(R.id.layoutDaftarRT);
         btnEditProfil = findViewById(R.id.btnEditProfil);
         btnLogout = findViewById(R.id.btnLogout);
@@ -82,6 +83,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
                     String email = admin.getEmail() != null ? admin.getEmail() : "-";
                     String wilayah = admin.getWilayah() != null ? admin.getWilayah() : "-";
                     String role = admin.getRole() != null ? admin.getRole() : "admin";
+                    String rwId = admin.getRwId() != null ? admin.getRwId() : "-";
 
                     String inisial = nama.equals("-") || nama.isEmpty()
                             ? "A"
@@ -95,6 +97,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
                     tvInfoEmail.setText(email);
                     tvInfoWilayah.setText(wilayah);
                     tvInfoRole.setText(capitalize(role));
+                    tvInfoWilayahHeader.setText(rwId);
 
                     loadDaftarRT(admin.getRwId());
                 } else {
@@ -160,7 +163,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
                                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
                         TextView tvNamaRT = new TextView(ProfilAdminActivity.this);
-                        tvNamaRT.setText(rt.getNama() != null ? rt.getNama() : "-");
+                        tvNamaRT.setText(rt.getRtId() != null ? rt.getRtId() : rt.getNama());
                         tvNamaRT.setTextColor(Color.parseColor("#1B5E20"));
                         tvNamaRT.setTextSize(14);
                         tvNamaRT.setTypeface(null, android.graphics.Typeface.BOLD);
