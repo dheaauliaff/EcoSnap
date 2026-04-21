@@ -21,6 +21,7 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -41,15 +42,13 @@ public class DashboardAdminActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
 
     TextView tvNamaAdmin, tvWilayahAdmin, tvTotalSampah, tvTotalOrganik,
-            tvTotalAnorganik, tvTotalBukanSampah;
-    TextView btnMinggu, btnBulan, btnTahun;
+            tvTotalAnorganik, tvTotalBukanSampah, tvTotalRecycle;
+    Chip btnMinggu, btnBulan, btnTahun;
     LinearLayout layoutRanking;
     BarChart barChart;
 
     String rwId = "";
     String periodAktif = "minggu";
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +66,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
         tvTotalOrganik = findViewById(R.id.tvTotalOrganik);
         tvTotalAnorganik = findViewById(R.id.tvTotalAnorganik);
         tvTotalBukanSampah = findViewById(R.id.tvTotalBukanSampah);
+        tvTotalRecycle = findViewById(R.id.tvTotalRecycle);
         btnMinggu = findViewById(R.id.btnMinggu);
         btnBulan = findViewById(R.id.btnBulan);
         btnTahun = findViewById(R.id.btnTahun);
@@ -86,19 +86,16 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
         btnMinggu.setOnClickListener(v -> {
             periodAktif = "minggu";
-            updateFilterUI();
             loadStatistik();
         });
 
         btnBulan.setOnClickListener(v -> {
             periodAktif = "bulan";
-            updateFilterUI();
             loadStatistik();
         });
 
         btnTahun.setOnClickListener(v -> {
             periodAktif = "tahun";
-            updateFilterUI();
             loadStatistik();
         });
 
@@ -121,7 +118,6 @@ public class DashboardAdminActivity extends AppCompatActivity {
             return true;
         });
 
-        // Handle tombol back
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -135,13 +131,6 @@ public class DashboardAdminActivity extends AppCompatActivity {
     }
 
     private void loadDataAdmin() {
-        if (mAuth.getCurrentUser() == null) {
-            Toast.makeText(this, "Session login habis", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
-            return;
-        }
-
         String uid = mAuth.getCurrentUser().getUid();
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
         Call<List<User>> call = apiService.getUserByFirebaseUid("eq." + uid);
@@ -149,33 +138,28 @@ public class DashboardAdminActivity extends AppCompatActivity {
         call.enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                if (response.isSuccessful() && response.body() != null
+                        && !response.body().isEmpty()) {
                     User admin = response.body().get(0);
+                    tvNamaAdmin.setText(admin.getNama());
+                    tvWilayahAdmin.setText(admin.getWilayah());
+                    rwId = admin.getRwId();
 
-                    tvNamaAdmin.setText(admin.getNama() != null ? admin.getNama() : "-");
-                    tvWilayahAdmin.setText(admin.getWilayah() != null ? admin.getWilayah() : "-");
-                    rwId = admin.getRwId() != null ? admin.getRwId() : "";
-
-                    if (navigationView.getHeaderCount() > 0) {
-                        View headerView = navigationView.getHeaderView(0);
-                        TextView navNama = headerView.findViewById(R.id.tvNamaAdmin);
-                        TextView navWilayah = headerView.findViewById(R.id.tvWilayahAdmin);
-
-                        if (navNama != null) navNama.setText(tvNamaAdmin.getText());
-                        if (navWilayah != null) navWilayah.setText(tvWilayahAdmin.getText());
-                    }
+                    TextView navNama = navigationView.getHeaderView(0)
+                            .findViewById(R.id.tvNamaAdmin);
+                    TextView navWilayah = navigationView.getHeaderView(0)
+                            .findViewById(R.id.tvWilayahAdmin);
+                    if (navNama != null) navNama.setText(admin.getNama());
+                    if (navWilayah != null) navWilayah.setText(admin.getWilayah());
 
                     loadStatistik();
-                } else {
-                    Toast.makeText(DashboardAdminActivity.this,
-                            "User admin tidak ditemukan", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
                 Toast.makeText(DashboardAdminActivity.this,
-                        "Gagal load data: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Gagal load data", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -213,7 +197,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
     private void hitungStatistik(List<ScanHistory> data) {
         int total = data.size();
-        int organik = 0, anorganik = 0, bukanSampah = 0;
+        int organik = 0, anorganik = 0, bukanSampah = 0, recycle = 0;
 
         for (ScanHistory s : data) {
             if (s.getKategori() != null) {
@@ -221,6 +205,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
                     case "organik": organik++; break;
                     case "anorganik": anorganik++; break;
                     case "bukan_sampah": bukanSampah++; break;
+                    case "recycle": recycle++; break;
                 }
             }
         }
@@ -229,11 +214,11 @@ public class DashboardAdminActivity extends AppCompatActivity {
         tvTotalOrganik.setText(String.valueOf(organik));
         tvTotalAnorganik.setText(String.valueOf(anorganik));
         tvTotalBukanSampah.setText(String.valueOf(bukanSampah));
+        tvTotalRecycle.setText(String.valueOf(recycle));
     }
 
     private void buatGrafik(List<ScanHistory> data) {
         Map<String, Integer> countMap = new HashMap<>();
-        //ini label kayanya disesuain sama label di Model ML yg kita punya
         String[] labels = {"Organik", "Kardus", "Kaca", "Logam", "Kertas", "Plastik"};
 
         for (String label : labels) countMap.put(label.toLowerCase(), 0);
@@ -349,20 +334,6 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 layoutRanking.addView(divider);
             }
         }
-    }
-
-    private void updateFilterUI() {
-        btnMinggu.setTextColor(Color.parseColor("#1B1B1B"));
-        btnBulan.setTextColor(Color.parseColor("#1B1B1B"));
-        btnTahun.setTextColor(Color.parseColor("#1B1B1B"));
-        btnMinggu.setBackground(null);
-        btnBulan.setBackground(null);
-        btnTahun.setBackground(null);
-
-        TextView aktif = periodAktif.equals("bulan") ? btnBulan :
-                periodAktif.equals("tahun") ? btnTahun : btnMinggu;
-        aktif.setTextColor(Color.parseColor("#1B1B1B"));
-
     }
 
     private void logout() {

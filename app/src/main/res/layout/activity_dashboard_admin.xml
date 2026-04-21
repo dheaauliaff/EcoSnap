@@ -6,14 +6,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Konten Utama -->
+    <!-- ===== KONTEN UTAMA ===== -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="#F1F8F4">
 
-        <!-- Toolbar -->
+        <!-- Toolbar di atas -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Welcome Banner -->
+                <!-- ===== WELCOME BANNER ===== -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -39,6 +39,7 @@
                     android:orientation="vertical"
                     android:padding="24dp">
 
+                    <!-- Label kecil di atas -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -46,6 +47,7 @@
                         android:textColor="#C8E6C9"
                         android:textSize="13sp"/>
 
+                    <!-- Nama admin -->
                     <TextView
                         android:id="@+id/tvNamaAdmin"
                         android:layout_width="wrap_content"
@@ -56,6 +58,7 @@
                         android:textStyle="bold"
                         android:layout_marginTop="4dp"/>
 
+                    <!-- Wilayah admin -->
                     <TextView
                         android:id="@+id/tvWilayahAdmin"
                         android:layout_width="wrap_content"
@@ -65,7 +68,7 @@
                         android:textSize="12sp"
                         android:layout_marginTop="2dp"/>
 
-                    <!-- Filter Periode -->
+                    <!-- ===== FILTER PERIODE ===== -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -81,6 +84,7 @@
                             android:textStyle="bold"
                             android:layout_marginBottom="10dp"/>
 
+                        <!-- Chip group untuk filter minggu/bulan/tahun -->
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -109,10 +113,7 @@
                                     android:checked="true"
                                     android:textColor="#1B1B1B"
                                     android:textSize="12sp"
-                                    app:chipBackgroundColor="@color/chip_filter_selector"
-                                    app:chipStrokeColor="#66FFFFFF"
-                                    app:chipStrokeWidth="1dp"
-                                    app:checkedIconVisible="false" />
+                                    app:checkedIconVisible="false"/>
 
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/btnBulan"
@@ -121,13 +122,9 @@
                                     android:layout_height="wrap_content"
                                     android:text="Bulan"
                                     android:checkable="true"
-                                    android:checked="true"
                                     android:textColor="#1B1B1B"
                                     android:textSize="12sp"
-                                    app:chipBackgroundColor="@color/chip_filter_selector"
-                                    app:chipStrokeColor="#66FFFFFF"
-                                    app:chipStrokeWidth="1dp"
-                                    app:checkedIconVisible="false" />
+                                    app:checkedIconVisible="false"/>
 
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/btnTahun"
@@ -136,71 +133,104 @@
                                     android:layout_height="wrap_content"
                                     android:text="Tahun"
                                     android:checkable="true"
-                                    android:checked="true"
                                     android:textColor="#1B1B1B"
                                     android:textSize="12sp"
-                                    app:chipBackgroundColor="@color/chip_filter_selector"
-                                    app:chipStrokeColor="#66FFFFFF"
-                                    app:chipStrokeWidth="1dp"
-                                    app:checkedIconVisible="false" />
+                                    app:checkedIconVisible="false"/>
+
                             </com.google.android.material.chip.ChipGroup>
                         </com.google.android.material.card.MaterialCardView>
                     </LinearLayout>
 
                 </LinearLayout>
 
+                <!-- ===== SECTION STATISTIK ===== -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Statistik Total -->
+                    <!-- Label section statistik -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Sampah Seluruh RT"
+                        android:text="Ringkasan Sampah"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="#1B5E20"
-                        android:layout_marginBottom="10dp"/>
+                        android:layout_marginBottom="12dp"/>
 
+                    <!-- ===== CARD TOTAL TEMUAN (FULL WIDTH) ===== -->
+                    <!-- Card besar di atas, menampilkan total keseluruhan -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:background="@drawable/bg_card_green_dark"
                         android:orientation="horizontal"
+                        android:padding="20dp"
+                        android:gravity="center_vertical"
                         android:layout_marginBottom="10dp">
 
+                        <!-- Kiri: angka dan label total -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:background="@drawable/bg_card_green_dark"
-                            android:orientation="vertical"
-                            android:padding="16dp"
-                            android:layout_marginEnd="6dp">
+                            android:orientation="vertical">
+
+                            <!-- Label kecil di atas angka -->
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Total Temuan"
-                                android:textColor="#C8E6C9"
-                                android:textSize="11sp"/>
+                                android:text="TOTAL TEMUAN"
+                                android:textColor="#A5D6A7"
+                                android:textSize="11sp"
+                                android:letterSpacing="0.1"
+                                android:textStyle="bold"/>
+
+                            <!-- Angka total besar -->
                             <TextView
                                 android:id="@+id/tvTotalSampah"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0"
                                 android:textColor="#FFFFFF"
-                                android:textSize="32sp"
-                                android:textStyle="bold"/>
+                                android:textSize="52sp"
+                                android:textStyle="bold"
+                                android:lineSpacingMultiplier="0.9"/>
+
+                            <!-- Satuan dan keterangan -->
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="item"
-                                android:textColor="#C8E6C9"
-                                android:textSize="11sp"/>
+                                android:text="item sampah ditemukan"
+                                android:textColor="#A5D6A7"
+                                android:textSize="12sp"/>
+
                         </LinearLayout>
 
+                        <!-- Kanan: icon dekoratif -->
+                        <LinearLayout
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:gravity="center">
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:src="@drawable/ic_total"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- ===== BARIS 1: ORGANIK + ANORGANIK ===== -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+
+                        <!-- Card Organik -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -208,37 +238,65 @@
                             android:background="@drawable/bg_card_green_medium"
                             android:orientation="vertical"
                             android:padding="16dp"
-                            android:layout_marginStart="6dp">
-                            <TextView
+                            android:layout_marginEnd="6dp">
+
+                            <!-- Icon + label dalam satu baris -->
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Organik"
-                                android:textColor="#C8E6C9"
-                                android:textSize="11sp"/>
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <LinearLayout
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:background="@drawable/bg_icon_circle"
+                                    android:gravity="center"
+                                    android:layout_marginEnd="8dp">
+                                    <ImageView
+                                        android:layout_width="18dp"
+                                        android:layout_height="18dp"
+                                        android:src="@drawable/ic_organik"/>
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Organik"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <!-- Garis pemisah tipis -->
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="#44FFFFFF"
+                                android:layout_marginBottom="8dp"/>
+
+                            <!-- Angka jumlah -->
                             <TextView
                                 android:id="@+id/tvTotalOrganik"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0"
                                 android:textColor="#FFFFFF"
-                                android:textSize="32sp"
+                                android:textSize="36sp"
                                 android:textStyle="bold"/>
+
+                            <!-- Satuan -->
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="item"
-                                android:textColor="#C8E6C9"
+                                android:textColor="#A5D6A7"
                                 android:textSize="11sp"/>
+
                         </LinearLayout>
 
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="20dp">
-
+                        <!-- Card Anorganik -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -246,29 +304,74 @@
                             android:background="@drawable/bg_card_green_light"
                             android:orientation="vertical"
                             android:padding="16dp"
-                            android:layout_marginEnd="6dp">
-                            <TextView
+                            android:layout_marginStart="6dp">
+
+                            <!-- Icon + label dalam satu baris -->
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Anorganik"
-                                android:textColor="#C8E6C9"
-                                android:textSize="11sp"/>
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <LinearLayout
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:background="@drawable/bg_icon_circle"
+                                    android:gravity="center"
+                                    android:layout_marginEnd="8dp">
+                                    <ImageView
+                                        android:layout_width="18dp"
+                                        android:layout_height="18dp"
+                                        android:src="@drawable/ic_anorganik"/>
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Anorganik"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <!-- Garis pemisah tipis -->
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="#44FFFFFF"
+                                android:layout_marginBottom="8dp"/>
+
+                            <!-- Angka jumlah -->
                             <TextView
                                 android:id="@+id/tvTotalAnorganik"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0"
                                 android:textColor="#FFFFFF"
-                                android:textSize="32sp"
+                                android:textSize="36sp"
                                 android:textStyle="bold"/>
+
+                            <!-- Satuan -->
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="item"
-                                android:textColor="#C8E6C9"
+                                android:textColor="#A5D6A7"
                                 android:textSize="11sp"/>
+
                         </LinearLayout>
 
+                    </LinearLayout>
+
+                    <!-- ===== BARIS 2: RECYCLE + BUKAN SAMPAH ===== -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="20dp">
+
+                        <!-- Card Recycle -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -276,32 +379,133 @@
                             android:background="@drawable/bg_card_green_pale"
                             android:orientation="vertical"
                             android:padding="16dp"
-                            android:layout_marginStart="6dp">
+                            android:layout_marginEnd="6dp">
+
+                            <!-- Icon + label dalam satu baris -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <LinearLayout
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:background="@drawable/bg_icon_circle"
+                                    android:gravity="center"
+                                    android:layout_marginEnd="8dp">
+                                    <ImageView
+                                        android:layout_width="18dp"
+                                        android:layout_height="18dp"
+                                        android:src="@drawable/ic_recycle"/>
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Recycle"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <!-- Garis pemisah tipis -->
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="#44FFFFFF"
+                                android:layout_marginBottom="8dp"/>
+
+                            <!-- Angka jumlah -->
+                            <TextView
+                                android:id="@+id/tvTotalRecycle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textColor="#FFFFFF"
+                                android:textSize="36sp"
+                                android:textStyle="bold"/>
+
+                            <!-- Satuan -->
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Bukan Sampah"
-                                android:textColor="#C8E6C9"
+                                android:text="item"
+                                android:textColor="#A5D6A7"
                                 android:textSize="11sp"/>
+
+                        </LinearLayout>
+
+                        <!-- Card Bukan Sampah -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card_green_dark"
+                            android:orientation="vertical"
+                            android:padding="16dp"
+                            android:layout_marginStart="6dp">
+
+                            <!-- Icon + label dalam satu baris -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <LinearLayout
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:background="@drawable/bg_icon_circle"
+                                    android:gravity="center"
+                                    android:layout_marginEnd="8dp">
+                                    <ImageView
+                                        android:layout_width="18dp"
+                                        android:layout_height="18dp"
+                                        android:src="@drawable/ic_bukan_sampah"/>
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Bukan Sampah"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <!-- Garis pemisah tipis -->
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="#44FFFFFF"
+                                android:layout_marginBottom="8dp"/>
+
+                            <!-- Angka jumlah -->
                             <TextView
                                 android:id="@+id/tvTotalBukanSampah"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0"
                                 android:textColor="#FFFFFF"
-                                android:textSize="32sp"
+                                android:textSize="36sp"
                                 android:textStyle="bold"/>
+
+                            <!-- Satuan -->
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="item"
-                                android:textColor="#C8E6C9"
+                                android:textColor="#A5D6A7"
                                 android:textSize="11sp"/>
+
                         </LinearLayout>
 
                     </LinearLayout>
 
-                    <!-- Grafik -->
+                    <!-- ===== GRAFIK JENIS SAMPAH ===== -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -311,6 +515,7 @@
                         android:textColor="#1B5E20"
                         android:layout_marginBottom="10dp"/>
 
+                    <!-- Card putih pembungkus grafik -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -319,6 +524,7 @@
                         android:padding="16dp"
                         android:layout_marginBottom="20dp">
 
+                        <!-- Bar chart dari MPAndroidChart -->
                         <com.github.mikephil.charting.charts.BarChart
                             android:id="@+id/barChart"
                             android:layout_width="match_parent"
@@ -326,7 +532,7 @@
 
                     </LinearLayout>
 
-                    <!-- Ranking RT -->
+                    <!-- ===== RANKING RT TERBANYAK ===== -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -336,6 +542,7 @@
                         android:textColor="#1B5E20"
                         android:layout_marginBottom="10dp"/>
 
+                    <!-- Card putih pembungkus ranking, diisi dinamis dari Java -->
                     <LinearLayout
                         android:id="@+id/layoutRanking"
                         android:layout_width="match_parent"
@@ -352,7 +559,7 @@
 
     </LinearLayout>
 
-    <!-- Sidebar -->
+    <!-- ===== SIDEBAR NAVIGATION DRAWER ===== -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
         android:layout_width="280dp"
