@@ -15,45 +15,38 @@ public class OverlayView extends View {
 
     private final Paint boxPaint = new Paint();
     private final Paint textPaint = new Paint();
-    private final List<DetectionBox> boxes = new ArrayList<>();
+
+    private final List<TFLiteHelper.Result> results = new ArrayList<>();
 
     public OverlayView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
-    }
 
-    private void init() {
-        boxPaint.setColor(Color.parseColor("#FFEB3B"));
+        boxPaint.setColor(Color.YELLOW);
         boxPaint.setStyle(Paint.Style.STROKE);
         boxPaint.setStrokeWidth(6f);
 
         textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(36f);
-        textPaint.setStyle(Paint.Style.FILL);
+        textPaint.setTextSize(40f);
     }
 
-    public void setResults(List<DetectionBox> results) {
-        boxes.clear();
-        if (results != null) boxes.addAll(results);
+    public void setResults(List<TFLiteHelper.Result> list) {
+        results.clear();
+        if (list != null) results.addAll(list);
         invalidate();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        for (DetectionBox box : boxes) {
-            canvas.drawRect(box.rect, boxPaint);
-            canvas.drawText(box.label, box.rect.left, Math.max(40, box.rect.top - 10), textPaint);
-        }
-    }
 
-    public static class DetectionBox {
-        public RectF rect;
-        public String label;
+        for (TFLiteHelper.Result r : results) {
 
-        public DetectionBox(RectF rect, String label) {
-            this.rect = rect;
-            this.label = label;
+            // gambar kotak
+            canvas.drawRect(r.rect, boxPaint);
+
+            // tampil label + confidence
+            String text = r.label + " (" + String.format("%.1f", r.confidence) + "%)";
+            canvas.drawText(text, r.rect.left, r.rect.top - 10, textPaint);
         }
     }
 }

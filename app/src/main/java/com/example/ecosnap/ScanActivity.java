@@ -3,18 +3,20 @@ package com.example.ecosnap;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.widget.ImageView;
 import android.widget.Toast;
-import java.io.File;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
+
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ScanActivity extends AppCompatActivity {
 
@@ -22,7 +24,7 @@ public class ScanActivity extends AppCompatActivity {
     private static final int PERMISSION_CODE = 200;
 
     ImageView imgHasil;
-    Uri photoUri;
+    TFLiteHelper tflite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +32,7 @@ public class ScanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scan);
 
         imgHasil = findViewById(R.id.imgHasil);
+        tflite = new TFLiteHelper(this);
 
         checkPermissionAndOpenCamera();
     }
@@ -47,58 +50,48 @@ public class ScanActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults); // WAJIB
-
-        if (requestCode == PERMISSION_CODE) {
-            if (grantResults.length > 0 &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                openCamera();
-
-            } else {
-                Toast.makeText(this, "Permission kamera ditolak", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
     private void openCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-        File photoFile = new File(getExternalFilesDir(null),
-                "IMG_" + System.currentTimeMillis() + ".jpg");
-
-        photoUri = FileProvider.getUriForFile(
-                this,
-                "com.example.ecosnap.provider",
-                photoFile
-        );
-
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         startActivityForResult(intent, CAMERA_REQUEST);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data); // WAJIB
+
+        super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {
 
-            // ✅ INI YANG PENTING
-            imgHasil.setImageURI(photoUri);
+            Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+            imgHasil.setImageBitmap(bitmap);
 
-            Toast.makeText(this,
-                    "Foto berhasil ditampilkan",
-                    Toast.LENGTH_SHORT).show();
+            List<TFLiteHelper.Result> detections = tflite.detect(bitmap);
 
-        } else {
-            Toast.makeText(this,
-                    "Gagal mengambil foto",
-                    Toast.LENGTH_SHORT).show();
+            if (detections.isEmpty()) {
+                Toast.makeText(this, "Model belum yakin", Toast.LENGTH_SHORT).show();
+            }
+
+            String nama = detections.isEmpty() ? "Tidak terdeteksi" : detections.get(0).label;
+
+            String kategori = nama.equals("Organik") ? "Organik" : "Anorganik";
+
+            String saran = "Buang sesuai jenisnya";
+            String funfact = "Dideteksi oleh AI";
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+            String imageBase64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+
+            Intent intent = new Intent(this, ResultActivity.class);
+            intent.putExtra("imageBase64", imageBase64);
+            intent.putExtra("nama", nama);
+            intent.putExtra("kategori", kategori);
+            intent.putExtra("saran", saran);
+            intent.putExtra("funfact", funfact);
+
+            intent.putExtra("detections", new ArrayList<>(detections));
+
+            startActivity(intent);
         }
     }
 }

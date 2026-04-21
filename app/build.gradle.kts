@@ -63,4 +63,7 @@ dependencies {
 
     //github
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    //tensorflow
+    implementation("org.tensorflow:tensorflow-lite:2.14.0")
 }
