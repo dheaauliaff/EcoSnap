@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -73,38 +74,57 @@ public class ScanActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {
 
-            Bitmap bitmap = BitmapFactory.decodeFile(photoUri.getPath());
-            imgHasil.setImageBitmap(bitmap);
+            Bitmap bitmap = null;
 
-            List<TFLiteHelper.Result> detections = tflite.detect(bitmap);
-
-            String nama = "Tidak terdeteksi";
-
-            if (!detections.isEmpty()) {
-                nama = detections.get(0).label;
+            // 🔥 AMANIN DATA
+            if (data != null && data.getExtras() != null) {
+                bitmap = (Bitmap) data.getExtras().get("data");
             }
 
-            String kategori = nama.equals("Organik") ? "Organik" : "Anorganik";
+            // 🔥 CEK NULL (WAJIB)
+            if (bitmap == null) {
+                Toast.makeText(this, "Gagal mengambil gambar", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            String saran = "Buang sesuai jenisnya";
-            String funfact = "Dideteksi oleh AI";
+            imgHasil.setImageBitmap(bitmap);
 
+            // 🔥 convert ke base64 (AMAN)
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
             String imageBase64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
 
+            // 🔥 DETEKSI MODEL
+            List<TFLiteHelper.Result> detections = tflite.detect(bitmap);
+
+            String nama = "Tidak terdeteksi";
+            float maxConf = 0;
+
+            for (TFLiteHelper.Result r : detections) {
+                if (r.confidence > maxConf) {
+                    maxConf = r.confidence;
+                    nama = r.label;
+                }
+            }
+
+            // 🔥 kategori
+            String kategori = nama.equals("Organik") ? "Organik" :
+                    (nama.equals("Bukan Sampah") ? "Bukan Sampah" : "Anorganik");
+
+            String saran = "Buang sesuai jenisnya";
+            String funfact = "Jaga lingkungan tetap bersih";
+
+            // 🔥 pindah ke result
             Intent intent = new Intent(this, ResultActivity.class);
             intent.putExtra("imageBase64", imageBase64);
             intent.putExtra("nama", nama);
             intent.putExtra("kategori", kategori);
             intent.putExtra("saran", saran);
             intent.putExtra("funfact", funfact);
-            intent.putExtra("detections", new ArrayList<>(detections));
 
             startActivity(intent);
         }

@@ -52,7 +52,6 @@
         <activity android:name=".ProfilAdminActivity" android:exported="false" />
         <activity android:name=".ResultActivity" android:exported="false" />
 
-
     </application>
 
 </manifest>

@@ -7,8 +7,6 @@
     android:background="@drawable/bg_gradient_green"
     android:overScrollMode="never">
 
-
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -19,8 +17,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="EcoSnap 🌱"
-                    android:textSize="30sp"
+                    android:text="EcoSnap"
+                    android:textSize="40sp"
                     android:textStyle="bold"
                     android:textColor="#1B5E20"
                     android:layout_gravity="center"
@@ -29,7 +27,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Masuk untuk lanjut ke aplikasi"
+                    android:text="Pilah Sampah Lebih Pintar"
                     android:textSize="14sp"
                     android:textColor="#607D63"
                     android:layout_gravity="center"
@@ -107,7 +105,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Belum punya akun? Daftar"
-                    android:textColor="#2E7D32"
+                    android:textColor="#FFFF"
                     android:layout_gravity="center"
                     android:layout_marginTop="18dp"
                     android:textSize="14sp"
