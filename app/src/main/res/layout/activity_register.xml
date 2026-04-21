@@ -1,191 +1,232 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F1F8F4">
+    android:background="#F1F8F4"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:orientation="vertical">
 
+        <!-- Header banner hijau -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="200dp"
             android:background="@drawable/bg_header"
             android:orientation="vertical"
-            android:padding="24dp"
-            android:layout_marginBottom="24dp">
+            android:gravity="center"
+            android:padding="20dp"
+            android:layout_marginBottom="20dp">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="🌿 EcoSnap"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"/>
+                android:textColor="#DDEFE0"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Daftar Akun"
                 android:textColor="#FFFFFF"
-                android:textSize="26sp"
+                android:textSize="28sp"
                 android:textStyle="bold"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginTop="6dp"
+                android:gravity="center"/>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Buat akun untuk mulai memilah sampah"
-                android:textColor="#C8E6C9"
-                android:textSize="12sp"
-                android:layout_marginTop="2dp"/>
+                android:textColor="#E8F5E9"
+                android:textSize="13sp"
+                android:layout_marginTop="6dp"
+                android:gravity="center"/>
 
         </LinearLayout>
 
-        <LinearLayout
+        <!-- Card form register -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_card_white"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="18dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="4dp"
+            app:strokeColor="#DCEFE0"
+            app:strokeWidth="1dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Nama Lengkap"
-                android:textColor="#2E7D32"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
-
-            <EditText
-                android:id="@+id/etNama"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Masukkan nama lengkap"
-                android:inputType="textPersonName"
-                android:background="@drawable/bg_input"
-                android:padding="12dp"
-                android:layout_marginBottom="16dp"/>
+                android:orientation="vertical"
+                android:padding="20dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Email"
-                android:textColor="#2E7D32"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Data Akun"
+                    android:textColor="#1B5E20"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="14dp"/>
 
-            <EditText
-                android:id="@+id/etEmail"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Masukkan email"
-                android:inputType="textEmailAddress"
-                android:background="@drawable/bg_input"
-                android:padding="12dp"
-                android:layout_marginBottom="16dp"/>
+                <!-- Field Nama Lengkap -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nama Lengkap"
+                    android:textColor="#2E7D32"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Password"
-                android:textColor="#2E7D32"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
+                <EditText
+                    android:id="@+id/etNama"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Masukkan nama lengkap"
+                    android:inputType="textPersonName"
+                    android:background="@drawable/bg_input"
+                    android:padding="14dp"
+                    android:textColor="#1B5E20"
+                    android:textColorHint="#9E9E9E"
+                    android:layout_marginBottom="14dp"/>
 
-            <EditText
-                android:id="@+id/etPassword"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Minimal 6 karakter"
-                android:inputType="textPassword"
-                android:background="@drawable/bg_input"
-                android:padding="12dp"
-                android:layout_marginBottom="16dp"/>
+                <!-- Field Email -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Email"
+                    android:textColor="#2E7D32"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Wilayah RT"
-                android:textColor="#2E7D32"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
+                <EditText
+                    android:id="@+id/etEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Masukkan email"
+                    android:inputType="textEmailAddress"
+                    android:background="@drawable/bg_input"
+                    android:padding="14dp"
+                    android:textColor="#1B5E20"
+                    android:textColorHint="#9E9E9E"
+                    android:layout_marginBottom="14dp"/>
 
-            <EditText
-                android:id="@+id/etWilayah"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Contoh: RT 02"
-                android:inputType="text"
-                android:background="@drawable/bg_input"
-                android:padding="12dp"
-                android:layout_marginBottom="16dp"/>
+                <!-- Field Password -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Password"
+                    android:textColor="#2E7D32"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="RT ID"
-                android:textColor="#2E7D32"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
+                <EditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Minimal 6 karakter"
+                    android:inputType="textPassword"
+                    android:background="@drawable/bg_input"
+                    android:padding="14dp"
+                    android:textColor="#1B5E20"
+                    android:textColorHint="#9E9E9E"
+                    android:layout_marginBottom="14dp"/>
 
-            <EditText
-                android:id="@+id/etRT"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Contoh: RT 02"
-                android:inputType="text"
-                android:background="@drawable/bg_input"
-                android:padding="12dp"
-                android:layout_marginBottom="16dp"/>
+                <!-- Field RT — user input manual RT berapa -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:text="RT"
+                    android:textColor="#2E7D32"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Kode RW"
-                android:textColor="#2E7D32"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
 
-            <EditText
-                android:id="@+id/etKodeRW"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Masukkan kode RW dari admin"
-                android:inputType="text"
-                android:background="@drawable/bg_input"
-                android:padding="12dp"
-                android:layout_marginBottom="24dp"/>
 
-            <Button
-                android:id="@+id/btnRegister"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Daftar"
-                android:backgroundTint="#2E7D32"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp"/>
+                <EditText
+                    android:id="@+id/etRT"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Contoh: RT 02"
+                    android:inputType="text"
+                    android:background="@drawable/bg_input"
+                    android:padding="14dp"
+                    android:textColor="#1B5E20"
+                    android:textColorHint="#9E9E9E"
+                    android:layout_marginBottom="14dp"/>
 
-            <TextView
-                android:id="@+id/tvLogin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sudah punya akun? Login di sini"
-                android:textColor="#2E7D32"
-                android:layout_gravity="center"
-                android:textSize="13sp"/>
+                <!-- Field Kode RW — kode rahasia dari admin RW -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Kode RW"
+                    android:textColor="#2E7D32"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp"/>
 
-        </LinearLayout>
+                <!-- Penjelasan fungsi kode RW -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Minta kode ini ke admin RW kamu"
+                    android:textColor="#81C784"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="6dp"/>
+
+                <EditText
+                    android:id="@+id/etKodeRW"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Masukkan kode RW dari admin"
+                    android:inputType="text"
+                    android:background="@drawable/bg_input"
+                    android:padding="14dp"
+                    android:textColor="#1B5E20"
+                    android:textColorHint="#9E9E9E"
+                    android:layout_marginBottom="18dp"/>
+
+                <!-- Tombol daftar -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRegister"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Daftar"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="#2E7D32"
+                    app:cornerRadius="14dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Link ke halaman login -->
+                <TextView
+                    android:id="@+id/tvLogin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sudah punya akun? Login di sini"
+                    android:textColor="#2E7D32"
+                    android:textSize="13sp"
+                    android:layout_gravity="center_horizontal"
+                    android:padding="6dp"/>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 </ScrollView>

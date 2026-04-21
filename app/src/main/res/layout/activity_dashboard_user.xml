@@ -6,32 +6,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Konten Utama -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="#F1F8F4">
 
-        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@drawable/bg_header"
             app:title="EcoSnap"
-            app:titleTextColor="#FFFFFF"/>
+            app:titleTextColor="#FFFFFF"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:fillViewport="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Welcome Banner -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -44,7 +43,8 @@
                         android:layout_height="wrap_content"
                         android:text="Selamat Datang 👋"
                         android:textColor="#C8E6C9"
-                        android:textSize="13sp"/>
+                        android:textSize="13sp"
+                        android:textStyle="bold"/>
 
                     <TextView
                         android:id="@+id/tvNamaUser"
@@ -65,18 +65,16 @@
                         android:textSize="12sp"
                         android:layout_marginTop="2dp"/>
 
-                    <!-- Tombol Scan di Banner -->
-                    <androidx.appcompat.widget.AppCompatButton
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnScanCepat"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="📷  Scan Sampah Sekarang"
-                        android:backgroundTint="#FFFFFF"
                         android:textColor="#2E7D32"
                         android:textStyle="bold"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:layout_marginTop="16dp"/>
+                        android:layout_marginTop="18dp"
+                        app:backgroundTint="#FFFFFF"
+                        app:cornerRadius="14dp"/>
 
                 </LinearLayout>
 
@@ -86,7 +84,6 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Statistik Hari Ini -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -94,7 +91,7 @@
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="#1B5E20"
-                        android:layout_marginBottom="10dp"/>
+                        android:layout_marginBottom="12dp"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -102,71 +99,94 @@
                         android:orientation="horizontal"
                         android:layout_marginBottom="16dp">
 
-                        <!-- Scan Hari Ini -->
-                        <LinearLayout
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:background="@drawable/bg_card_white"
-                            android:orientation="vertical"
-                            android:padding="16dp"
-                            android:layout_marginEnd="6dp">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="📊 Scan Hari Ini"
-                                android:textColor="#2E7D32"
-                                android:textSize="12sp"/>
-                            <TextView
-                                android:id="@+id/tvScanHariIni"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textColor="#1B5E20"
-                                android:textSize="32sp"
-                                android:textStyle="bold"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="item"
-                                android:textColor="#81C784"
-                                android:textSize="11sp"/>
-                        </LinearLayout>
+                            android:layout_marginEnd="8dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="2dp"
+                            app:strokeColor="#E0F2E4"
+                            app:strokeWidth="1dp">
 
-                        <!-- Scan Minggu Ini -->
-                        <LinearLayout
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="16dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="📊 Scan Hari Ini"
+                                    android:textColor="#2E7D32"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/tvScanHariIni"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="#1B5E20"
+                                    android:textSize="32sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginTop="4dp"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="item"
+                                    android:textColor="#81C784"
+                                    android:textSize="11sp"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:background="@drawable/bg_card_white"
-                            android:orientation="vertical"
-                            android:padding="16dp"
-                            android:layout_marginStart="6dp">
-                            <TextView
-                                android:layout_width="wrap_content"
+                            android:layout_marginStart="8dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="2dp"
+                            app:strokeColor="#E0F2E4"
+                            app:strokeWidth="1dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="📅 Minggu Ini"
-                                android:textColor="#2E7D32"
-                                android:textSize="12sp"/>
-                            <TextView
-                                android:id="@+id/tvScanMingguIni"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textColor="#1B5E20"
-                                android:textSize="32sp"
-                                android:textStyle="bold"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="item"
-                                android:textColor="#81C784"
-                                android:textSize="11sp"/>
-                        </LinearLayout>
+                                android:orientation="vertical"
+                                android:padding="16dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="📅 Minggu Ini"
+                                    android:textColor="#2E7D32"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/tvScanMingguIni"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="#1B5E20"
+                                    android:textSize="32sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginTop="4dp"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="item"
+                                    android:textColor="#81C784"
+                                    android:textSize="11sp"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
 
                     </LinearLayout>
 
-                    <!-- Scan Terakhir -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -176,60 +196,70 @@
                         android:textColor="#1B5E20"
                         android:layout_marginBottom="10dp"/>
 
-                    <LinearLayout
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_card_white"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginBottom="16dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="2dp"
+                        app:strokeColor="#E0F2E4"
+                        app:strokeWidth="1dp">
 
                         <LinearLayout
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:background="@drawable/bg_card_green_dark"
-                            android:gravity="center">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="♻️"
-                                android:textSize="20sp"/>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="12dp">
-                            <TextView
-                                android:id="@+id/tvJenisTerakhir"
-                                android:layout_width="wrap_content"
+                            android:orientation="horizontal"
+                            android:padding="16dp"
+                            android:gravity="center_vertical">
+
+                            <LinearLayout
+                                android:layout_width="52dp"
+                                android:layout_height="52dp"
+                                android:background="@drawable/bg_card_green_dark"
+                                android:gravity="center">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="♻️"
+                                    android:textSize="20sp"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="Belum ada scan"
-                                android:textColor="#1B5E20"
-                                android:textSize="15sp"
-                                android:textStyle="bold"/>
-                            <TextView
-                                android:id="@+id/tvKategoriTerakhir"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="-"
-                                android:textColor="#81C784"
-                                android:textSize="12sp"/>
-                            <TextView
-                                android:id="@+id/tvWaktuTerakhir"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="-"
-                                android:textColor="#BDBDBD"
-                                android:textSize="11sp"/>
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="12dp">
+
+                                <TextView
+                                    android:id="@+id/tvJenisTerakhir"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Belum ada scan"
+                                    android:textColor="#1B5E20"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/tvKategoriTerakhir"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="-"
+                                    android:textColor="#81C784"
+                                    android:textSize="12sp"/>
+
+                                <TextView
+                                    android:id="@+id/tvWaktuTerakhir"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="-"
+                                    android:textColor="#BDBDBD"
+                                    android:textSize="11sp"/>
+                            </LinearLayout>
                         </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
-                    </LinearLayout>
-
-                    <!-- Quote Harian -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -239,33 +269,30 @@
                         android:textColor="#1B5E20"
                         android:layout_marginBottom="10dp"/>
 
-                    <LinearLayout
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_card_green_dark"
-                        android:orientation="vertical"
-                        android:padding="20dp"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginBottom="16dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="2dp"
+                        app:cardBackgroundColor="#2E7D32">
 
                         <TextView
                             android:id="@+id/tvQuote"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Memilah sampah hari ini, menyelamatkan bumi untuk generasi berikutnya 🌍"
                             android:textColor="#FFFFFF"
                             android:textSize="13sp"
+                            android:padding="20dp"
                             android:lineSpacingExtra="4dp"/>
-
-                    </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
-
             </LinearLayout>
         </ScrollView>
-
     </LinearLayout>
 
-    <!-- Sidebar -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
         android:layout_width="280dp"
