@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.ecosnap">
 
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -11,8 +18,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EcoSnap">
 
-        <!-- Login jadi halaman pertama -->
-        <activity android:name=".LoginActivity"
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <activity
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,41 +37,22 @@
             </intent-filter>
         </activity>
 
-        <!-- MainActivity tetap didaftarkan -->
-        <activity android:name=".MainActivity"
-            android:exported="false"/>
-
-        <activity android:name=".DashboardUserActivity"
-            android:exported="false"/>
-        <activity android:name=".DashboardAdminActivity"
-            android:exported="false"/>
-
-        <activity android:name=".RegisterActivity"
-            android:exported="false"/>
-
-        <activity android:name=".ScanActivity"
-            android:exported="false"/>
-        <activity android:name=".HistoryActivity"
-            android:exported="false"/>
-        <activity android:name=".MapsActivity"
-            android:exported="false"/>
-        <activity android:name=".RankingActivity"
-            android:exported="false"/>
-        <activity android:name=".ProfilActivity"
-            android:exported="false"/>
-
-
-        <activity android:name=".RekapanActivity"
-            android:exported="false"/>
-        <activity android:name=".AdminMapsActivity"
-            android:exported="false"/>
-        <activity android:name=".AdminRankingActivity"
-            android:exported="false"/>
-
-
-        <activity android:name=".ProfilAdminActivity"
-            android:exported="false"/>
+        <activity android:name=".MainActivity" android:exported="false" />
+        <activity android:name=".DashboardUserActivity" android:exported="false" />
+        <activity android:name=".DashboardAdminActivity" android:exported="false" />
+        <activity android:name=".RegisterActivity" android:exported="false" />
+        <activity android:name=".ScanActivity" android:exported="false" />
+        <activity android:name=".HistoryActivity" android:exported="false" />
+        <activity android:name=".MapsActivity" android:exported="false" />
+        <activity android:name=".RankingActivity" android:exported="false" />
+        <activity android:name=".ProfilActivity" android:exported="false" />
+        <activity android:name=".RekapanActivity" android:exported="false" />
+        <activity android:name=".AdminMapsActivity" android:exported="false" />
+        <activity android:name=".AdminRankingActivity" android:exported="false" />
+        <activity android:name=".ProfilAdminActivity" android:exported="false" />
+        <activity android:name=".ResultActivity" android:exported="false" />
 
 
     </application>
+
 </manifest>

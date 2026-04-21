@@ -39,4 +39,10 @@ public interface ApiService {
             @Query("rw_id") String rwId,
             @Query("role") String role
     );
+
+    @GET("users")
+    Call<Void> updateUser(
+            @Query("firebase_uid") String firebaseUid,
+            @Body User user
+    );
 }
