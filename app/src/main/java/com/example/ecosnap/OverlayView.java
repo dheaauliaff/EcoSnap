@@ -41,12 +41,12 @@ public class OverlayView extends View {
 
         for (TFLiteHelper.Result r : results) {
 
-            // gambar kotak
+            if (r.rect == null) continue;
+
             canvas.drawRect(r.rect, boxPaint);
 
-            // tampil label + confidence
             String text = r.label + " (" + String.format("%.1f", r.confidence) + "%)";
-            canvas.drawText(text, r.rect.left, r.rect.top - 10, textPaint);
+            canvas.drawText(text, r.rect.left, Math.max(40, r.rect.top - 10), textPaint);
         }
     }
 }

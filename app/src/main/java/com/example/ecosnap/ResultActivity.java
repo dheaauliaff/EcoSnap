@@ -6,10 +6,11 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ResultActivity extends AppCompatActivity {
 
@@ -29,29 +30,43 @@ public class ResultActivity extends AppCompatActivity {
         tvFunfact = findViewById(R.id.tvFunfact);
         overlayView = findViewById(R.id.overlayView);
 
-        String imageBase64 = getIntent().getStringExtra("imageBase64");
-        String nama = getIntent().getStringExtra("nama");
-        String kategori = getIntent().getStringExtra("kategori");
-        String saran = getIntent().getStringExtra("saran");
-        String funfact = getIntent().getStringExtra("funfact");
+        try {
 
-        if (imageBase64 != null) {
-            byte[] decoded = Base64.decode(imageBase64, Base64.DEFAULT);
-            Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-            imgHasil.setImageBitmap(bitmap);
-        }
+            String imageBase64 = getIntent().getStringExtra("imageBase64");
+            String nama = getIntent().getStringExtra("nama");
+            String kategori = getIntent().getStringExtra("kategori");
+            String saran = getIntent().getStringExtra("saran");
+            String funfact = getIntent().getStringExtra("funfact");
 
-        tvNama.setText("Nama: " + safe(nama));
-        tvKategori.setText("Kategori: " + safe(kategori));
-        tvSaran.setText("Saran: " + safe(saran));
-        tvFunfact.setText("Fun Fact: " + safe(funfact));
+            Bitmap bitmap = null;
 
-        // 🔥 AMBIL BOX
-        ArrayList<TFLiteHelper.Result> results =
-                (ArrayList<TFLiteHelper.Result>) getIntent().getSerializableExtra("detections");
+            if (imageBase64 != null) {
+                byte[] decoded = Base64.decode(imageBase64, Base64.DEFAULT);
 
-        if (results != null) {
-            overlayView.setResults(results);
+                // 🔥 decode aman (anti crash)
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inSampleSize = 2; // kecilin gambar biar ringan
+                bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length, options);
+
+                imgHasil.setImageBitmap(bitmap);
+            }
+
+            tvNama.setText("Nama: " + safe(nama));
+            tvKategori.setText("Kategori: " + safe(kategori));
+            tvSaran.setText("Saran: " + safe(saran));
+            tvFunfact.setText("Fun Fact: " + safe(funfact));
+
+            // 🔥 DETEKSI DI SINI (AMAN)
+            if (bitmap != null) {
+                TFLiteHelper helper = new TFLiteHelper(this);
+                List<TFLiteHelper.Result> results = helper.detect(bitmap);
+
+                overlayView.setResults(results);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Terjadi error", Toast.LENGTH_LONG).show();
         }
     }
 

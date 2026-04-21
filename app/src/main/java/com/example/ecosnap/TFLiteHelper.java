@@ -115,23 +115,25 @@ public class TFLiteHelper {
 
                 float finalConf = objConf * maxClass;
 
-                Log.d("YOLO_DEBUG", "conf=" + finalConf);
-
                 if (finalConf > CONF_THRESHOLD && classId >= 0) {
 
-                    float left = (x - w / 2) * imgWidth;
-                    float top = (y - h / 2) * imgHeight;
-                    float right = (x + w / 2) * imgWidth;
-                    float bottom = (y + h / 2) * imgHeight;
+                    // 🔥 FIX KOORDINAT (TANPA SCALE)
+                    float left = x - w / 2;
+                    float top = y - h / 2;
+                    float right = x + w / 2;
+                    float bottom = y + h / 2;
+
+                    // 🔥 CLAMP BIAR TIDAK KELUAR LAYAR
+                    left = Math.max(0, left);
+                    top = Math.max(0, top);
+                    right = Math.min(imgWidth, right);
+                    bottom = Math.min(imgHeight, bottom);
 
                     results.add(new Result(
                             new RectF(left, top, right, bottom),
                             labels[classId],
                             finalConf * 100
                     ));
-
-                    count++;
-                    if (count >= 5) break; // 🔥 maksimal 5 box
                 }
             }
 
