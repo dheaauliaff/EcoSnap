@@ -10,6 +10,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- Header banner dengan avatar dan nama -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="260dp"
@@ -18,6 +19,7 @@
             android:gravity="center_horizontal"
             android:padding="24dp">
 
+            <!-- Avatar lingkaran dengan inisial nama -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="92dp"
                 android:layout_height="92dp"
@@ -40,10 +42,11 @@
                         android:text="A"
                         android:textColor="#2E7D32"
                         android:textSize="34sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"/>
                 </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Nama admin -->
             <TextView
                 android:id="@+id/tvNamaProfil"
                 android:layout_width="wrap_content"
@@ -52,8 +55,9 @@
                 android:text="Nama Admin"
                 android:textColor="#FFFFFF"
                 android:textSize="22sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
 
+            <!-- Badge role -->
             <TextView
                 android:id="@+id/tvRoleProfil"
                 android:layout_width="wrap_content"
@@ -67,8 +71,9 @@
                 android:text="Admin"
                 android:textColor="#FFFFFF"
                 android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
 
+            <!-- Wilayah RW -->
             <TextView
                 android:id="@+id/tvInfoWilayahHeader"
                 android:layout_width="wrap_content"
@@ -76,7 +81,7 @@
                 android:layout_marginTop="10dp"
                 android:text="-"
                 android:textColor="#DDEFE0"
-                android:textSize="13sp" />
+                android:textSize="13sp"/>
 
         </LinearLayout>
 
@@ -86,6 +91,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Label section informasi akun -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -93,8 +99,9 @@
                 android:text="Informasi Akun"
                 android:textColor="#1B5E20"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
 
+            <!-- Card informasi akun -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -110,6 +117,7 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Row Nama Lengkap -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -123,7 +131,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:text="👤"
-                            android:textSize="18sp" />
+                            android:textSize="18sp"/>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -136,7 +144,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Nama Lengkap"
                                 android:textColor="#81C784"
-                                android:textSize="11sp" />
+                                android:textSize="11sp"/>
 
                             <TextView
                                 android:id="@+id/tvInfoNama"
@@ -145,15 +153,16 @@
                                 android:text="-"
                                 android:textColor="#1B5E20"
                                 android:textSize="15sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"/>
                         </LinearLayout>
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#E8F5E9" />
+                        android:background="#E8F5E9"/>
 
+                    <!-- Row Nomor HP — ganti dari Email -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -166,8 +175,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
-                            android:text="✉️"
-                            android:textSize="18sp" />
+                            android:text="📱"
+                            android:textSize="18sp"/>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -175,29 +184,32 @@
                             android:layout_weight="1"
                             android:orientation="vertical">
 
+                            <!-- Label berubah dari Email ke Nomor HP -->
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Email"
+                                android:text="Nomor HP"
                                 android:textColor="#81C784"
-                                android:textSize="11sp" />
+                                android:textSize="11sp"/>
 
+                            <!-- ID tetap tvInfoEmail tapi isinya nomor HP -->
                             <TextView
-                                android:id="@+id/tvInfoEmail"
+                                android:id="@+id/tvInfoNomorHp"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="-"
                                 android:textColor="#1B5E20"
                                 android:textSize="15sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"/>
                         </LinearLayout>
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#E8F5E9" />
+                        android:background="#E8F5E9"/>
 
+                    <!-- Row Wilayah -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -211,7 +223,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:text="🏘️"
-                            android:textSize="18sp" />
+                            android:textSize="18sp"/>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -224,7 +236,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Wilayah"
                                 android:textColor="#81C784"
-                                android:textSize="11sp" />
+                                android:textSize="11sp"/>
 
                             <TextView
                                 android:id="@+id/tvInfoWilayah"
@@ -233,15 +245,16 @@
                                 android:text="-"
                                 android:textColor="#1B5E20"
                                 android:textSize="15sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"/>
                         </LinearLayout>
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#E8F5E9" />
+                        android:background="#E8F5E9"/>
 
+                    <!-- Row Role -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -255,7 +268,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:text="🔑"
-                            android:textSize="18sp" />
+                            android:textSize="18sp"/>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -268,7 +281,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Role"
                                 android:textColor="#81C784"
-                                android:textSize="11sp" />
+                                android:textSize="11sp"/>
 
                             <TextView
                                 android:id="@+id/tvInfoRole"
@@ -277,13 +290,14 @@
                                 android:text="-"
                                 android:textColor="#1B5E20"
                                 android:textSize="15sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"/>
                         </LinearLayout>
                     </LinearLayout>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Label daftar RT -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -291,8 +305,9 @@
                 android:text="🏠 Daftar RT di Wilayah Ini"
                 android:textColor="#1B5E20"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
 
+            <!-- Card daftar RT — diisi dinamis dari Java -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -307,9 +322,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp" />
+                    android:padding="16dp"/>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Tombol Edit Profil -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEditProfil"
                 android:layout_width="match_parent"
@@ -318,8 +334,9 @@
                 android:text="✏️  Edit Profil"
                 android:textColor="#FFFFFF"
                 app:backgroundTint="#2E7D32"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="14dp"/>
 
+            <!-- Tombol Logout -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
@@ -328,7 +345,7 @@
                 android:text="🚪  Logout"
                 android:textColor="#2E7D32"
                 app:backgroundTint="#E8F5E9"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="14dp"/>
 
         </LinearLayout>
     </LinearLayout>

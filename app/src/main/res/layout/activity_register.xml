@@ -100,22 +100,22 @@
                     android:textColorHint="#9E9E9E"
                     android:layout_marginBottom="14dp"/>
 
-                <!-- Field Email -->
+                <!-- Field Nomor HP — ganti dari email -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Email"
+                    android:text="Nomor HP"
                     android:textColor="#2E7D32"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="6dp"/>
 
                 <EditText
-                    android:id="@+id/etEmail"
+                    android:id="@+id/etNomorHp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Masukkan email"
-                    android:inputType="textEmailAddress"
+                    android:hint="Contoh: 081234567890"
+                    android:inputType="phone"
                     android:background="@drawable/bg_input"
                     android:padding="14dp"
                     android:textColor="#1B5E20"
@@ -144,17 +144,15 @@
                     android:textColorHint="#9E9E9E"
                     android:layout_marginBottom="14dp"/>
 
-                <!-- Field RT — user input manual RT berapa -->
+                <!-- Field RT -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="6dp"
-                    android:text="RT"
+                    android:text="Nomor RT"
                     android:textColor="#2E7D32"
                     android:textSize="12sp"
-                    android:textStyle="bold" />
-
-
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp"/>
 
                 <EditText
                     android:id="@+id/etRT"
@@ -168,7 +166,29 @@
                     android:textColorHint="#9E9E9E"
                     android:layout_marginBottom="14dp"/>
 
-                <!-- Field Kode RW — kode rahasia dari admin RW -->
+                <!-- Field Wilayah RW -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wilayah RW"
+                    android:textColor="#2E7D32"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp"/>
+
+                <EditText
+                    android:id="@+id/etWilayahRW"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Contoh: RW 01"
+                    android:inputType="text"
+                    android:background="@drawable/bg_input"
+                    android:padding="14dp"
+                    android:textColor="#1B5E20"
+                    android:textColorHint="#9E9E9E"
+                    android:layout_marginBottom="14dp"/>
+
+                <!-- Field Kode RW -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -176,13 +196,12 @@
                     android:textColor="#2E7D32"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="6dp"/>
+                    android:layout_marginBottom="4dp"/>
 
-                <!-- Penjelasan fungsi kode RW -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Minta kode ini ke admin RW kamu"
+                    android:text="Minta kode ini ke admin RW anda"
                     android:textColor="#81C784"
                     android:textSize="11sp"
                     android:layout_marginBottom="6dp"/>
@@ -199,7 +218,7 @@
                     android:textColorHint="#9E9E9E"
                     android:layout_marginBottom="18dp"/>
 
-                <!-- Tombol daftar -->
+                <!-- Tombol Daftar -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRegister"
                     android:layout_width="match_parent"
@@ -214,7 +233,7 @@
                     android:paddingBottom="14dp"
                     android:layout_marginBottom="12dp"/>
 
-                <!-- Link ke halaman login -->
+                <!-- Link ke login -->
                 <TextView
                     android:id="@+id/tvLogin"
                     android:layout_width="wrap_content"

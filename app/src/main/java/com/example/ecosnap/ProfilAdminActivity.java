@@ -24,7 +24,8 @@ import retrofit2.Response;
 public class ProfilAdminActivity extends AppCompatActivity {
 
     TextView tvAvatarInisial, tvNamaProfil, tvRoleProfil;
-    TextView tvInfoNama, tvInfoEmail, tvInfoWilayah, tvInfoRole, tvInfoWilayahHeader;
+    // Ganti tvInfoEmail jadi tvInfoNomorHp
+    TextView tvInfoNama, tvInfoNomorHp, tvInfoWilayah, tvInfoRole, tvInfoWilayahHeader;
     LinearLayout layoutDaftarRT;
     AppCompatButton btnEditProfil, btnLogout;
     FirebaseAuth mAuth;
@@ -36,11 +37,12 @@ public class ProfilAdminActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
+        // Init semua views
         tvAvatarInisial = findViewById(R.id.tvAvatarInisial);
         tvNamaProfil = findViewById(R.id.tvNamaProfil);
         tvRoleProfil = findViewById(R.id.tvRoleProfil);
         tvInfoNama = findViewById(R.id.tvInfoNama);
-        tvInfoEmail = findViewById(R.id.tvInfoEmail);
+        tvInfoNomorHp = findViewById(R.id.tvInfoNomorHp); // ganti dari tvInfoEmail
         tvInfoWilayah = findViewById(R.id.tvInfoWilayah);
         tvInfoRole = findViewById(R.id.tvInfoRole);
         tvInfoWilayahHeader = findViewById(R.id.tvInfoWilayahHeader);
@@ -51,8 +53,8 @@ public class ProfilAdminActivity extends AppCompatActivity {
         loadDataProfil();
 
         btnEditProfil.setOnClickListener(v ->
-                Toast.makeText(this, "Fitur edit profil coming soon!", Toast.LENGTH_SHORT).show()
-        );
+                Toast.makeText(this, "Fitur edit profil coming soon!",
+                        Toast.LENGTH_SHORT).show());
 
         btnLogout.setOnClickListener(v -> {
             mAuth.signOut();
@@ -76,30 +78,37 @@ public class ProfilAdminActivity extends AppCompatActivity {
         call.enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                if (response.isSuccessful() && response.body() != null
+                        && !response.body().isEmpty()) {
                     User admin = response.body().get(0);
 
                     String nama = admin.getNama() != null ? admin.getNama() : "-";
-                    String email = admin.getEmail() != null ? admin.getEmail() : "-";
+                    // Ambil nomor HP bukan email
+                    String nomorHp = admin.getNomorHp() != null ? admin.getNomorHp() : "-";
                     String wilayah = admin.getWilayah() != null ? admin.getWilayah() : "-";
                     String role = admin.getRole() != null ? admin.getRole() : "admin";
                     String rwId = admin.getRwId() != null ? admin.getRwId() : "-";
 
+                    // Inisial dari huruf pertama nama
                     String inisial = nama.equals("-") || nama.isEmpty()
                             ? "A"
                             : String.valueOf(nama.charAt(0)).toUpperCase();
 
+                    // Set header profil
                     tvAvatarInisial.setText(inisial);
                     tvNamaProfil.setText(nama);
                     tvRoleProfil.setText(capitalize(role));
-
-                    tvInfoNama.setText(nama);
-                    tvInfoEmail.setText(email);
-                    tvInfoWilayah.setText(wilayah);
-                    tvInfoRole.setText(capitalize(role));
                     tvInfoWilayahHeader.setText(rwId);
 
+                    // Set info akun
+                    tvInfoNama.setText(nama);
+                    tvInfoNomorHp.setText(nomorHp); // tampilkan nomor HP
+                    tvInfoWilayah.setText(wilayah);
+                    tvInfoRole.setText(capitalize(role));
+
+                    // Load daftar RT di bawah RW ini
                     loadDaftarRT(admin.getRwId());
+
                 } else {
                     Toast.makeText(ProfilAdminActivity.this,
                             "Data admin tidak ditemukan", Toast.LENGTH_SHORT).show();
@@ -109,7 +118,8 @@ public class ProfilAdminActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
                 Toast.makeText(ProfilAdminActivity.this,
-                        "Gagal load data: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Gagal load data: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -135,6 +145,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     List<User> listRT = response.body();
 
+                    // Kalau belum ada RT terdaftar
                     if (listRT.isEmpty()) {
                         TextView empty = new TextView(ProfilAdminActivity.this);
                         empty.setText("Belum ada RT terdaftar");
@@ -144,6 +155,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
                         return;
                     }
 
+                    // Loop semua RT dan tampilkan
                     for (int i = 0; i < listRT.size(); i++) {
                         User rt = listRT.get(i);
 
@@ -152,33 +164,38 @@ public class ProfilAdminActivity extends AppCompatActivity {
                         row.setGravity(Gravity.CENTER_VERTICAL);
                         row.setPadding(0, 10, 0, 10);
 
+                        // Icon rumah
                         TextView tvIcon = new TextView(ProfilAdminActivity.this);
                         tvIcon.setText("🏠");
                         tvIcon.setTextSize(16);
                         tvIcon.setPadding(0, 0, 12, 0);
 
+                        // Info RT (nama + wilayah)
                         LinearLayout info = new LinearLayout(ProfilAdminActivity.this);
                         info.setOrientation(LinearLayout.VERTICAL);
                         info.setLayoutParams(new LinearLayout.LayoutParams(
                                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
+                        // Tampilkan RT ID atau nama
                         TextView tvNamaRT = new TextView(ProfilAdminActivity.this);
                         tvNamaRT.setText(rt.getRtId() != null ? rt.getRtId() : rt.getNama());
                         tvNamaRT.setTextColor(Color.parseColor("#1B5E20"));
                         tvNamaRT.setTextSize(14);
                         tvNamaRT.setTypeface(null, android.graphics.Typeface.BOLD);
 
-                        TextView tvWilayahRT = new TextView(ProfilAdminActivity.this);
-                        tvWilayahRT.setText(rt.getWilayah() != null ? rt.getWilayah() : "-");
-                        tvWilayahRT.setTextColor(Color.parseColor("#81C784"));
-                        tvWilayahRT.setTextSize(12);
+                        // Tampilkan nama lengkap ketua RT
+                        TextView tvNomorHpRT = new TextView(ProfilAdminActivity.this);
+                        tvNomorHpRT.setText(rt.getNama() != null ? rt.getNama() : "-");
+                        tvNomorHpRT.setTextColor(Color.parseColor("#81C784"));
+                        tvNomorHpRT.setTextSize(12);
 
                         info.addView(tvNamaRT);
-                        info.addView(tvWilayahRT);
+                        info.addView(tvNomorHpRT);
                         row.addView(tvIcon);
                         row.addView(info);
                         layoutDaftarRT.addView(row);
 
+                        // Divider antar RT kecuali yang terakhir
                         if (i < listRT.size() - 1) {
                             View divider = new View(ProfilAdminActivity.this);
                             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -201,6 +218,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
         });
     }
 
+    // Helper capitalize huruf pertama
     private String capitalize(String text) {
         if (text == null || text.isEmpty()) return "-";
         return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();

@@ -138,7 +138,7 @@ public class DashboardUserActivity extends AppCompatActivity {
                     User user = response.body().get(0);
 
                     tvNamaUser.setText(user.getNama());
-                    tvWilayahUser.setText(user.getWilayah() + " - " + user.getRwId());
+                    tvWilayahUser.setText(user.getRtId() + " - " + user.getWilayah());
 
                     // update nav header
                     TextView navNama = navigationView.getHeaderView(0)
