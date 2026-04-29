@@ -210,7 +210,6 @@
                     android:id="@+id/etKodeRW"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Masukkan kode RW dari admin"
                     android:inputType="text"
                     android:background="@drawable/bg_input"
                     android:padding="14dp"

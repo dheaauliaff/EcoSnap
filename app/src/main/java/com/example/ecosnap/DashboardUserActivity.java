@@ -6,14 +6,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.SimpleDateFormat;
@@ -27,9 +23,8 @@ import retrofit2.Response;
 
 public class DashboardUserActivity extends AppCompatActivity {
 
-    DrawerLayout drawerLayout;
-    NavigationView navigationView;
-    Toolbar toolbar;
+    // Hapus semua drawer — ganti bottomNav
+    BottomNavigationView bottomNav;
     FirebaseAuth mAuth;
 
     TextView tvNamaUser, tvWilayahUser, tvScanHariIni,
@@ -52,10 +47,7 @@ public class DashboardUserActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        drawerLayout = findViewById(R.id.drawerLayout);
-        navigationView = findViewById(R.id.navigationView);
-        toolbar = findViewById(R.id.toolbar);
-
+        // Init semua views
         tvNamaUser = findViewById(R.id.tvNamaUser);
         tvWilayahUser = findViewById(R.id.tvWilayahUser);
         tvScanHariIni = findViewById(R.id.tvScanHariIni);
@@ -65,92 +57,70 @@ public class DashboardUserActivity extends AppCompatActivity {
         tvWaktuTerakhir = findViewById(R.id.tvWaktuTerakhir);
         tvQuote = findViewById(R.id.tvQuote);
         btnScanCepat = findViewById(R.id.btnScanCepat);
+        bottomNav = findViewById(R.id.bottomNav);
 
-        setSupportActionBar(toolbar);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        // random quote
+        // Quote random
         int randomIndex = (int) (Math.random() * quotes.length);
         tvQuote.setText(quotes[randomIndex]);
 
+        // Load data user dari Supabase
         loadDataUser();
 
+        // Tombol scan cepat di banner
         btnScanCepat.setOnClickListener(v ->
                 startActivity(new Intent(this, ScanActivity.class)));
 
-        navigationView.setNavigationItemSelectedListener(item -> {
+        // Setup bottom navigation
+        bottomNav.setSelectedItemId(R.id.nav_home);
+        bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
-            if (id == R.id.nav_scan) {
-                startActivity(new Intent(this, ScanActivity.class));
-            } else if (id == R.id.nav_history) {
+            if (id == R.id.nav_home) {
+                // Sudah di home
+                return true;
+            } else if (id == R.id.nav_statistik) {
                 startActivity(new Intent(this, HistoryActivity.class));
+                return true;
+            } else if (id == R.id.nav_scan) {
+                startActivity(new Intent(this, ScanActivity.class));
+                return true;
             } else if (id == R.id.nav_maps) {
                 startActivity(new Intent(this, MapsActivity.class));
-            } else if (id == R.id.nav_ranking) {
-                startActivity(new Intent(this, RankingActivity.class));
+                return true;
             } else if (id == R.id.nav_profil) {
-                startActivity(new Intent(this, ProfilActivity.class));
-            } else if (id == R.id.nav_logout) {
-                logout();
+                startActivity(new Intent(this, ProfilUserActivity.class));
+                return true;
             }
-
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
+            return false;
         });
 
-        // tombol back
-        getOnBackPressedDispatcher().addCallback(this,
-                new OnBackPressedCallback(true) {
-                    @Override
-                    public void handleOnBackPressed() {
-                        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                            drawerLayout.closeDrawer(GravityCompat.START);
-                        } else {
-                            finish();
-                        }
-                    }
-                });
+        // Handle tombol back
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        });
     }
 
     private void loadDataUser() {
         if (mAuth.getCurrentUser() == null) return;
 
         String uid = mAuth.getCurrentUser().getUid();
-
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
         Call<List<User>> call = apiService.getUserByFirebaseUid("eq." + uid);
 
         call.enqueue(new Callback<List<User>>() {
             @Override
-            public void onResponse(Call<List<User>> call,
-                                   Response<List<User>> response) {
-
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 if (response.isSuccessful() && response.body() != null
                         && !response.body().isEmpty()) {
-
                     User user = response.body().get(0);
 
+                    // Tampilkan nama dan wilayah RT - RW
                     tvNamaUser.setText(user.getNama());
-                    tvWilayahUser.setText(user.getRtId() + " - " + user.getWilayah());
+                    tvWilayahUser.setText(user.getRtId() + " - " + user.getRwId());
 
-                    // update nav header
-                    TextView navNama = navigationView.getHeaderView(0)
-                            .findViewById(R.id.tvNamaUser);
-                    TextView navWilayah = navigationView.getHeaderView(0)
-                            .findViewById(R.id.tvWilayahUser);
-
-                    if (navNama != null) navNama.setText(user.getNama());
-                    if (navWilayah != null)
-                        navWilayah.setText(user.getWilayah() + " - " + user.getRwId());
-
-                    // 🔥 load statistik
+                    // Load statistik scan
                     loadStatistikScan(uid);
                 }
             }
@@ -164,19 +134,15 @@ public class DashboardUserActivity extends AppCompatActivity {
     }
 
     private void loadStatistikScan(String uid) {
-
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
 
-        // 🔥 ambil semua scan user
+        // Ambil semua scan user untuk hitung hari ini & minggu ini
         Call<List<ScanHistory>> call = apiService.getScanByUser("eq." + uid);
-
         call.enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call,
                                    Response<List<ScanHistory>> response) {
-
                 if (response.isSuccessful() && response.body() != null) {
-
                     List<ScanHistory> data = response.body();
 
                     int hariIni = 0;
@@ -184,18 +150,16 @@ public class DashboardUserActivity extends AppCompatActivity {
 
                     SimpleDateFormat sdf =
                             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-
                     Calendar sekarang = Calendar.getInstance();
 
                     for (ScanHistory s : data) {
                         try {
                             if (s.getCreatedAt() == null) continue;
-
                             Date tanggal = sdf.parse(s.getCreatedAt());
                             Calendar cal = Calendar.getInstance();
                             cal.setTime(tanggal);
 
-                            // hari ini
+                            // Cek hari ini
                             if (cal.get(Calendar.DAY_OF_YEAR) ==
                                     sekarang.get(Calendar.DAY_OF_YEAR)
                                     && cal.get(Calendar.YEAR) ==
@@ -203,7 +167,7 @@ public class DashboardUserActivity extends AppCompatActivity {
                                 hariIni++;
                             }
 
-                            // minggu ini
+                            // Cek minggu ini
                             if (cal.get(Calendar.WEEK_OF_YEAR) ==
                                     sekarang.get(Calendar.WEEK_OF_YEAR)
                                     && cal.get(Calendar.YEAR) ==
@@ -228,19 +192,15 @@ public class DashboardUserActivity extends AppCompatActivity {
             }
         });
 
-        // 🔥 scan terakhir
+        // Ambil scan terakhir
         Call<List<ScanHistory>> callLast = apiService.getScanTerakhir("eq." + uid);
-
         callLast.enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call,
                                    Response<List<ScanHistory>> response) {
-
                 if (response.isSuccessful() && response.body() != null
                         && !response.body().isEmpty()) {
-
                     ScanHistory last = response.body().get(0);
-
                     tvJenisTerakhir.setText(last.getJenisSampah());
                     tvKategoriTerakhir.setText(last.getKategori());
                     tvWaktuTerakhir.setText(last.getCreatedAt());

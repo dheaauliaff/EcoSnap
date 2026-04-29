@@ -9,11 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -21,8 +17,8 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
-import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
@@ -36,9 +32,8 @@ import retrofit2.Response;
 
 public class DashboardAdminActivity extends AppCompatActivity {
 
-    DrawerLayout drawerLayout;
-    NavigationView navigationView;
-    Toolbar toolbar;
+    // Hapus semua drawer — ganti bottomNav
+    BottomNavigationView bottomNav;
     FirebaseAuth mAuth;
 
     TextView tvNamaAdmin, tvWilayahAdmin, tvTotalSampah, tvTotalOrganik,
@@ -57,9 +52,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        drawerLayout = findViewById(R.id.drawerLayout);
-        navigationView = findViewById(R.id.navigationView);
-        toolbar = findViewById(R.id.toolbar);
+        // Init semua views
         tvNamaAdmin = findViewById(R.id.tvNamaAdmin);
         tvWilayahAdmin = findViewById(R.id.tvWilayahAdmin);
         tvTotalSampah = findViewById(R.id.tvTotalSampah);
@@ -72,18 +65,12 @@ public class DashboardAdminActivity extends AppCompatActivity {
         btnTahun = findViewById(R.id.btnTahun);
         layoutRanking = findViewById(R.id.layoutRanking);
         barChart = findViewById(R.id.barChart);
+        bottomNav = findViewById(R.id.bottomNav);
 
-        setSupportActionBar(toolbar);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
+        // Load data admin dari Supabase
         loadDataAdmin();
 
+        // Filter periode statistik
         btnMinggu.setOnClickListener(v -> {
             periodAktif = "minggu";
             loadStatistik();
@@ -99,33 +86,34 @@ public class DashboardAdminActivity extends AppCompatActivity {
             loadStatistik();
         });
 
-        navigationView.setNavigationItemSelectedListener(item -> {
+        // Setup bottom navigation admin
+        bottomNav.setSelectedItemId(R.id.nav_admin_dashboard);
+        bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_admin_dashboard) {
-                drawerLayout.closeDrawer(GravityCompat.START);
+                // Sudah di dashboard
+                return true;
             } else if (id == R.id.nav_admin_rekap) {
                 startActivity(new Intent(this, RekapanActivity.class));
-            } else if (id == R.id.nav_admin_maps) {
-                startActivity(new Intent(this, AdminMapsActivity.class));
+                return true;
             } else if (id == R.id.nav_admin_ranking) {
                 startActivity(new Intent(this, AdminRankingActivity.class));
+                return true;
+            } else if (id == R.id.nav_admin_maps) {
+                startActivity(new Intent(this, AdminMapsActivity.class));
+                return true;
             } else if (id == R.id.nav_admin_profil) {
                 startActivity(new Intent(this, ProfilAdminActivity.class));
-            } else if (id == R.id.nav_admin_logout) {
-                logout();
+                return true;
             }
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
+            return false;
         });
 
+        // Handle tombol back
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START);
-                } else {
-                    finish();
-                }
+                finish();
             }
         });
     }
@@ -141,17 +129,13 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null
                         && !response.body().isEmpty()) {
                     User admin = response.body().get(0);
+
+                    // Tampilkan nama dan wilayah admin
                     tvNamaAdmin.setText(admin.getNama());
                     tvWilayahAdmin.setText(admin.getWilayah());
                     rwId = admin.getRwId();
 
-                    TextView navNama = navigationView.getHeaderView(0)
-                            .findViewById(R.id.tvNamaAdmin);
-                    TextView navWilayah = navigationView.getHeaderView(0)
-                            .findViewById(R.id.tvWilayahAdmin);
-                    if (navNama != null) navNama.setText(admin.getNama());
-                    if (navWilayah != null) navWilayah.setText(admin.getWilayah());
-
+                    // Load statistik setelah dapat rwId
                     loadStatistik();
                 }
             }
@@ -191,7 +175,10 @@ public class DashboardAdminActivity extends AppCompatActivity {
         });
     }
 
+    // Filter data berdasarkan periode yang dipilih
     private List<ScanHistory> filterByPeriod(List<ScanHistory> data) {
+        // TODO: implementasi filter berdasarkan tanggal
+        // Untuk sekarang return semua data
         return data;
     }
 
