@@ -1,108 +1,400 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
 
-    <!-- MAIN CONTENT -->
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#F4F8F5">
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="18dp">
+            android:paddingHorizontal="20dp"
+            android:paddingBottom="24dp">
 
-            <!-- TITLE (FIXED) -->
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Rekap Sampah"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#1B5E20"/>
-
-            <!-- FILTER -->
-            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="16dp">
+                android:layout_marginTop="24dp"
+                android:text="Statistik"
+                android:textColor="#1B5E20"
+                android:textSize="26sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/btnMingguan"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="#F1F5F2"
+                app:cardCornerRadius="25dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="Mingguan"
-                    android:background="@drawable/bg_filter_off"/>
+                    android:orientation="horizontal"
+                    android:padding="5dp">
 
-                <TextView
-                    android:id="@+id/btnBulanan"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="Bulanan"
-                    android:background="@drawable/bg_filter_on"/>
+                    <TextView
+                        android:id="@+id/btnMingguan"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:gravity="center"
+                        android:text="Mingguan"
+                        android:textColor="#2E7D32"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/btnTahunan"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="Tahunan"
-                    android:background="@drawable/bg_filter_off"/>
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/btnBulanan"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_pill_active"
+                        android:gravity="center"
+                        android:text="Bulanan"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
-            <!-- STAT -->
-            <LinearLayout
+                    <TextView
+                        android:id="@+id/btnTahunan"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:gravity="center"
+                        android:text="Tahunan"
+                        android:textColor="#2E7D32"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- CARD TOTAL / ORGANIK / ANORGANIK -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="18dp">
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:strokeColor="#F0F0F0"
+                app:strokeWidth="1dp">
 
-                <TextView
-                    android:id="@+id/tvTotal"
-                    android:layout_width="0dp"
-                    android:layout_height="90dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="120\nTotal"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="3"
+                    android:paddingVertical="16dp">
 
-                <TextView
-                    android:id="@+id/tvOrganik"
-                    android:layout_width="0dp"
-                    android:layout_height="90dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="70\nOrganik"/>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="4dp">
 
-                <TextView
-                    android:id="@+id/tvAnorganik"
-                    android:layout_width="0dp"
-                    android:layout_height="90dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="50\nAnorganik"/>
-            </LinearLayout>
+                        <TextView
+                            android:id="@+id/tvTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="120"
+                            android:textColor="#000000"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
 
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Total"
+                            android:textColor="#6B7280"
+                            android:textSize="13sp"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginVertical="4dp"
+                        android:background="#EEEEEE" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="4dp">
+
+                        <TextView
+                            android:id="@+id/tvOrganik"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="70"
+                            android:textColor="#2E7D32"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Organik"
+                            android:textColor="#6B7280"
+                            android:textSize="13sp"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginVertical="4dp"
+                        android:background="#EEEEEE" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="4dp">
+
+                        <TextView
+                            android:id="@+id/tvAnorganik"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="50"
+                            android:textColor="#FB8C00"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Anorganik"
+                            android:textColor="#6B7280"
+                            android:textSize="13sp"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- DISTRIBUSI KATEGORI -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:strokeColor="#F0F0F0"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Distribusi 4 Kategori"
+                        android:textColor="#1B5E20"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <FrameLayout
+                            android:layout_width="130dp"
+                            android:layout_height="130dp"
+                            android:background="@drawable/bg_donut_chart_mock">
+
+                            <TextView
+                                android:layout_width="96dp"
+                                android:layout_height="96dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_white_circle"
+                                android:gravity="center"
+                                android:text="20\nTotal"
+                                android:textColor="#000000"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp">
+                                <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#4CAF50" android:layout_marginEnd="8dp"/>
+                                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Organik" android:textColor="#666666" android:textSize="13sp" android:maxLines="1" android:ellipsize="end"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5 (25%)" android:textColor="#4CAF50" android:textSize="13sp" android:maxLines="1"/>
+                            </LinearLayout>
+
+                            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp">
+                                <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#1E88E5" android:layout_marginEnd="8dp"/>
+                                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Recycle" android:textColor="#666666" android:textSize="13sp" android:maxLines="1" android:ellipsize="end"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="10 (50%)" android:textColor="#1E88E5" android:textSize="13sp" android:maxLines="1"/>
+                            </LinearLayout>
+
+                            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp">
+                                <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#FB8C00" android:layout_marginEnd="8dp"/>
+                                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Anorganik" android:textColor="#666666" android:textSize="13sp" android:maxLines="1" android:ellipsize="end"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="3 (15%)" android:textColor="#FB8C00" android:textSize="13sp" android:maxLines="1"/>
+                            </LinearLayout>
+
+                            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                                <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#E53935" android:layout_marginEnd="8dp"/>
+                                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Bukan" android:textColor="#666666" android:textSize="13sp" android:maxLines="1" android:ellipsize="end"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2 (10%)" android:textColor="#E53935" android:textSize="13sp" android:maxLines="1"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- TREN SCAN -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:strokeColor="#F0F0F0"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Tren Scan"
+                        android:textColor="#1B5E20"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="220dp"
+                        android:layout_marginTop="20dp"
+                        android:gravity="bottom"
+                        android:orientation="horizontal"
+                        android:weightSum="7"
+                        android:paddingBottom="16dp">
+
+                        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="bottom|center_horizontal">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="30" android:textSize="12sp" android:textColor="#1B5E20" android:layout_marginBottom="4dp"/>
+                            <View android:layout_width="20dp" android:layout_height="40dp" android:background="@drawable/bg_bar_mock"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sen" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="bottom|center_horizontal">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="55" android:textSize="12sp" android:textColor="#1B5E20" android:layout_marginBottom="4dp"/>
+                            <View android:layout_width="20dp" android:layout_height="70dp" android:background="@drawable/bg_bar_mock"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sel" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="bottom|center_horizontal">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="40" android:textSize="12sp" android:textColor="#1B5E20" android:layout_marginBottom="4dp"/>
+                            <View android:layout_width="20dp" android:layout_height="50dp" android:background="@drawable/bg_bar_mock"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rab" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="bottom|center_horizontal">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="90" android:textSize="12sp" android:textColor="#1B5E20" android:textStyle="bold" android:layout_marginBottom="4dp"/>
+                            <View android:layout_width="20dp" android:layout_height="110dp" android:background="@drawable/bg_bar_mock_active"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Kam" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="bottom|center_horizontal">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="70" android:textSize="12sp" android:textColor="#1B5E20" android:layout_marginBottom="4dp"/>
+                            <View android:layout_width="20dp" android:layout_height="90dp" android:background="@drawable/bg_bar_mock"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Jum" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" orientation="vertical" android:gravity="bottom|center_horizontal">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="45" android:textSize="12sp" android:textColor="#1B5E20" android:layout_marginBottom="4dp"/>
+                            <View android:layout_width="20dp" android:layout_height="60dp" android:background="@drawable/bg_bar_mock"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sab" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="bottom|center_horizontal">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="60" android:textSize="12sp" android:textColor="#1B5E20" android:layout_marginBottom="4dp"/>
+                            <View android:layout_width="20dp" android:layout_height="80dp" android:background="@drawable/bg_bar_mock"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Min" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </ScrollView>
 
-    <!-- SIDEBAR -->
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/nav_view"
-        android:layout_width="280dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:menu="@menu/nav_menu_admin"/>
+    <View
+        android:id="@+id/navDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"/>
 
-</androidx.drawerlayout.widget.DrawerLayout>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        app:elevation="10dp"
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemTextColor="@color/bottom_nav_color"
+        app:labelVisibilityMode="labeled"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/nav_menu" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -78,7 +78,7 @@ public class DashboardUserActivity extends AppCompatActivity {
                 // Sudah di home
                 return true;
             } else if (id == R.id.nav_statistik) {
-                startActivity(new Intent(this, HistoryActivity.class));
+                startActivity(new Intent(this, RekapanActivity.class));
                 return true;
             } else if (id == R.id.nav_scan) {
                 startActivity(new Intent(this, ScanActivity.class));

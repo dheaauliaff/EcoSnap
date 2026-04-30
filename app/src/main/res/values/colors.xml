@@ -2,4 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- EcoSnap Design System Colors -->
+    <color name="eco_green_dark">#1B5E20</color>
+    <color name="eco_green_main">#4CAF50</color>
+    <color name="eco_green_light">#A5D6A7</color>
+    <color name="eco_bg_soft">#F5F5F5</color>
+    
+    <color name="colorPrimary">#4CAF50</color>
+    <color name="colorPrimaryDark">#1B5E20</color>
+    <color name="colorAccent">#A5D6A7</color>
 </resources>

@@ -2,7 +2,13 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.EcoSnap" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="colorSecondaryContainer">#C8E6C9</item>
+        <item name="colorOnSecondaryContainer">#1B5E20</item>
+        <item name="android:windowBackground">@color/eco_bg_soft</item>
     </style>
 
     <style name="Theme.EcoSnap" parent="Base.Theme.EcoSnap" />
