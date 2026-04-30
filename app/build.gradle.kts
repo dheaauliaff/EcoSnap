@@ -79,4 +79,10 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:${camerax_version}")
     implementation("androidx.camera:camera-view:${camerax_version}")
     implementation("com.google.guava:guava:31.1-android")
+
+    //cloudinary
+    implementation("com.cloudinary:cloudinary-android:2.3.1")
+
+    //maps
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 }

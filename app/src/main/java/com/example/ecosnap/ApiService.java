@@ -19,6 +19,10 @@ public interface ApiService {
     @POST("user")
     Call<Void> insertUser(@Body Map<String, String> data);
 
+    // TAMBAHAN INI
+    @POST("scan_history")
+    Call<Void> insertScan(@Body Map<String, Object> data);
+
     @GET("scan_history?select=*&order=created_at.desc&limit=1")
     Call<List<ScanHistory>> getScanTerakhir(
             @Query("user_id") String userId
