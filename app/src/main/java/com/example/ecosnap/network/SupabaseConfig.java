@@ -1,4 +1,4 @@
-package com.example.ecosnap;
+package com.example.ecosnap.network;
 
 public class SupabaseConfig {
     public static final String SUPABASE_URL = "https://xluhvldbiavkxklxyxkv.supabase.co";

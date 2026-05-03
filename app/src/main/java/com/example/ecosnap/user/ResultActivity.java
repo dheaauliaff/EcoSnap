@@ -1,10 +1,9 @@
-package com.example.ecosnap;
+package com.example.ecosnap.user;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.RectF;
 import android.os.Bundle;
 import android.util.Base64;
 import android.widget.ImageView;
@@ -15,6 +14,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.cloudinary.android.MediaManager;
+import com.example.ecosnap.network.ApiService;
+import com.example.ecosnap.helper.OverlayView;
+import com.example.ecosnap.R;
+import com.example.ecosnap.network.RetrofitClient;
+import com.example.ecosnap.helper.TFLiteHelper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;

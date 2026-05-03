@@ -1,4 +1,4 @@
-package com.example.ecosnap;
+package com.example.ecosnap.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +8,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.ecosnap.network.ApiService;
+import com.example.ecosnap.R;
+import com.example.ecosnap.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 

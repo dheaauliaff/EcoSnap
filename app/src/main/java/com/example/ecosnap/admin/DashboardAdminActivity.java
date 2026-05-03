@@ -1,4 +1,4 @@
-package com.example.ecosnap;
+package com.example.ecosnap.admin;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -11,6 +11,12 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.ecosnap.network.ApiService;
+import com.example.ecosnap.auth.LoginActivity;
+import com.example.ecosnap.R;
+import com.example.ecosnap.network.RetrofitClient;
+import com.example.ecosnap.ScanHistory;
+import com.example.ecosnap.model.User;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -94,7 +100,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 // Sudah di dashboard
                 return true;
             } else if (id == R.id.nav_admin_rekap) {
-                startActivity(new Intent(this, RekapanActivity.class));
+                startActivity(new Intent(this, RekapAdminActivity.class));
                 return true;
             } else if (id == R.id.nav_admin_ranking) {
                 startActivity(new Intent(this, AdminRankingActivity.class));

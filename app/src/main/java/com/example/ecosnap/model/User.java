@@ -1,4 +1,4 @@
-package com.example.ecosnap;
+package com.example.ecosnap.model;
 
 import com.google.gson.annotations.SerializedName;
 

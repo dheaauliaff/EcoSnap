@@ -1,4 +1,7 @@
-package com.example.ecosnap;
+package com.example.ecosnap.network;
+
+import com.example.ecosnap.ScanHistory;
+import com.example.ecosnap.model.User;
 
 import java.util.List;
 import java.util.Map;

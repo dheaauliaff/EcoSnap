@@ -6,6 +6,7 @@
     android:background="#FFFFFF"
     android:orientation="vertical">
 
+    <!-- HEADER -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
@@ -25,12 +26,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginEnd="24dp"
             android:gravity="center"
             android:text="Buat Akun"
             android:textColor="#2E7D32"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginEnd="24dp"/>
+            android:textStyle="bold" />
     </LinearLayout>
 
     <ScrollView
@@ -50,10 +51,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Lengkapi data diri Anda untuk\nmembuat akun EcoSnap."
+                android:text="Lengkapi data diri Anda untuk&#10;membuat akun EcoSnap."
                 android:textColor="#757575"
                 android:textSize="14sp" />
 
+            <!-- NAMA -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
@@ -66,8 +68,6 @@
                 app:boxCornerRadiusTopEnd="20dp"
                 app:boxCornerRadiusTopStart="20dp"
                 app:boxStrokeColor="#E0E0E0"
-                app:boxStrokeWidth="1dp"
-                app:boxStrokeWidthFocused="1.5dp"
                 app:startIconDrawable="@android:drawable/ic_menu_myplaces"
                 app:startIconTint="#2E7D32">
 
@@ -75,12 +75,10 @@
                     android:id="@+id/etNama"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:inputType="textPersonName"
-                    android:maxLines="1"
-                    android:textColor="#212121"
-                    android:textSize="14sp" />
+                    android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- NOMOR HP -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
@@ -93,8 +91,6 @@
                 app:boxCornerRadiusTopEnd="20dp"
                 app:boxCornerRadiusTopStart="20dp"
                 app:boxStrokeColor="#E0E0E0"
-                app:boxStrokeWidth="1dp"
-                app:boxStrokeWidthFocused="1.5dp"
                 app:startIconDrawable="@android:drawable/ic_menu_call"
                 app:startIconTint="#2E7D32">
 
@@ -102,12 +98,10 @@
                     android:id="@+id/etNomorHp"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:inputType="phone"
-                    android:maxLines="1"
-                    android:textColor="#212121"
-                    android:textSize="14sp" />
+                    android:inputType="phone" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- PASSWORD -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
@@ -120,10 +114,7 @@
                 app:boxCornerRadiusTopEnd="20dp"
                 app:boxCornerRadiusTopStart="20dp"
                 app:boxStrokeColor="#E0E0E0"
-                app:boxStrokeWidth="1dp"
-                app:boxStrokeWidthFocused="1.5dp"
                 app:endIconMode="password_toggle"
-                app:endIconTint="#2E7D32"
                 app:startIconDrawable="@android:drawable/ic_lock_lock"
                 app:startIconTint="#2E7D32">
 
@@ -131,12 +122,10 @@
                     android:id="@+id/etPassword"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:inputType="textPassword"
-                    android:maxLines="1"
-                    android:textColor="#212121"
-                    android:textSize="14sp" />
+                    android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
-            
+
+            <!-- KONFIRMASI PASSWORD -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
@@ -149,10 +138,7 @@
                 app:boxCornerRadiusTopEnd="20dp"
                 app:boxCornerRadiusTopStart="20dp"
                 app:boxStrokeColor="#E0E0E0"
-                app:boxStrokeWidth="1dp"
-                app:boxStrokeWidthFocused="1.5dp"
                 app:endIconMode="password_toggle"
-                app:endIconTint="#2E7D32"
                 app:startIconDrawable="@android:drawable/ic_lock_lock"
                 app:startIconTint="#2E7D32">
 
@@ -160,94 +146,90 @@
                     android:id="@+id/etPasswordConfirm"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:inputType="textPassword"
-                    android:maxLines="1"
-                    android:textColor="#212121"
-                    android:textSize="14sp" />
+                    android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <!-- RT & RW SEJAJAR -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="RT (Contoh: 01)"
-                app:boxBackgroundColor="#FFFFFF"
-                app:boxCornerRadiusBottomEnd="20dp"
-                app:boxCornerRadiusBottomStart="20dp"
-                app:boxCornerRadiusTopEnd="20dp"
-                app:boxCornerRadiusTopStart="20dp"
-                app:boxStrokeColor="#E0E0E0"
-                app:boxStrokeWidth="1dp"
-                app:boxStrokeWidthFocused="1.5dp"
-                app:startIconDrawable="@android:drawable/ic_menu_mapmode"
-                app:startIconTint="#2E7D32">
+                android:orientation="horizontal">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etRT"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:textColor="#212121"
-                    android:textSize="14sp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                <!-- RT -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:hint="RT"
+                    app:boxBackgroundColor="#FFFFFF"
+                    app:boxCornerRadiusBottomEnd="20dp"
+                    app:boxCornerRadiusBottomStart="20dp"
+                    app:boxCornerRadiusTopEnd="20dp"
+                    app:boxCornerRadiusTopStart="20dp"
+                    app:boxStrokeColor="#E0E0E0"
+                    app:startIconDrawable="@android:drawable/ic_menu_mapmode"
+                    app:startIconTint="#2E7D32">
 
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="RW (Contoh: 01)"
-                app:boxBackgroundColor="#FFFFFF"
-                app:boxCornerRadiusBottomEnd="20dp"
-                app:boxCornerRadiusBottomStart="20dp"
-                app:boxCornerRadiusTopEnd="20dp"
-                app:boxCornerRadiusTopStart="20dp"
-                app:boxStrokeColor="#E0E0E0"
-                app:boxStrokeWidth="1dp"
-                app:boxStrokeWidthFocused="1.5dp"
-                app:startIconDrawable="@android:drawable/ic_menu_mapmode"
-                app:startIconTint="#2E7D32">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etRT"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etWilayahRW"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:textColor="#212121"
-                    android:textSize="14sp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                <!-- RW -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:hint="RW"
+                    app:boxBackgroundColor="#FFFFFF"
+                    app:boxCornerRadiusBottomEnd="20dp"
+                    app:boxCornerRadiusBottomStart="20dp"
+                    app:boxCornerRadiusTopEnd="20dp"
+                    app:boxCornerRadiusTopStart="20dp"
+                    app:boxStrokeColor="#E0E0E0"
+                    app:startIconDrawable="@android:drawable/ic_menu_mapmode"
+                    app:startIconTint="#2E7D32">
 
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etWilayahRW"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
+            <!-- KODE RW -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:hint="Kode RW"
+                app:helperText="Gunakan kode dari admin RW"
                 app:boxBackgroundColor="#FFFFFF"
                 app:boxCornerRadiusBottomEnd="20dp"
                 app:boxCornerRadiusBottomStart="20dp"
                 app:boxCornerRadiusTopEnd="20dp"
                 app:boxCornerRadiusTopStart="20dp"
                 app:boxStrokeColor="#E0E0E0"
-                app:boxStrokeWidth="1dp"
-                app:boxStrokeWidthFocused="1.5dp"
-                app:helperText="Gunakan kode yang diberikan oleh admin RW Anda"
                 app:startIconDrawable="@android:drawable/ic_dialog_info"
                 app:startIconTint="#2E7D32">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etKodeRW"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:textColor="#212121"
-                    android:textSize="14sp" />
+                    android:layout_height="56dp" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- CHECKBOX -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -269,19 +251,20 @@
                     android:textSize="12sp" />
             </LinearLayout>
 
+            <!-- BUTTON -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRegister"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="24dp"
-                app:backgroundTint="#2E7D32"
-                app:cornerRadius="20dp"
                 android:text="Daftar Akun"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:backgroundTint="#2E7D32"
+                app:cornerRadius="20dp" />
 
+            <!-- LOGIN -->
             <TextView
                 android:id="@+id/tvLogin"
                 android:layout_width="wrap_content"
@@ -289,12 +272,11 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="24dp"
-                android:padding="8dp"
                 android:text="Sudah punya akun? Login"
                 android:textColor="#2E7D32"
-                android:textSize="14sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
     </ScrollView>
+
 </LinearLayout>

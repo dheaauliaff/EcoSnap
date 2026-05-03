@@ -1,4 +1,4 @@
-package com.example.ecosnap;
+package com.example.ecosnap.user;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,12 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 
+import com.example.ecosnap.network.ApiService;
+import com.example.ecosnap.auth.LoginActivity;
+import com.example.ecosnap.R;
+import com.example.ecosnap.network.RetrofitClient;
+import com.example.ecosnap.ScanHistory;
+import com.example.ecosnap.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -78,7 +84,7 @@ public class DashboardUserActivity extends AppCompatActivity {
                 // Sudah di home
                 return true;
             } else if (id == R.id.nav_statistik) {
-                startActivity(new Intent(this, RekapanActivity.class));
+                startActivity(new Intent(this, RekapActivity.class));
                 return true;
             } else if (id == R.id.nav_scan) {
                 startActivity(new Intent(this, ScanActivity.class));

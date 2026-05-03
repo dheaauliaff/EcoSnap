@@ -85,4 +85,7 @@ dependencies {
 
     //maps
     implementation("com.google.android.gms:play-services-location:21.2.0")
+
+    // OSMDroid
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
 }

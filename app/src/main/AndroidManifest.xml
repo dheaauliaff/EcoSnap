@@ -7,9 +7,12 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET"/>
+
     <!--ini buat yg maps-->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <!-- Kalau nanti maps / lokasi -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -50,7 +53,7 @@
 
         <!-- Launcher -->
         <activity
-            android:name=".SplashActivity"
+            android:name=".auth.SplashActivity"
             android:exported="true">
 
             <intent-filter>
@@ -60,27 +63,27 @@
 
         </activity>
 
-        <activity android:name=".LoginActivity" android:exported="false" />
+        <activity android:name=".auth.LoginActivity" android:exported="false" />
 
         <!-- User -->
-        <activity android:name=".DashboardUserActivity" android:exported="false" />
-        <activity android:name=".HistoryActivity" android:exported="false" />
-        <activity android:name=".MapsActivity" android:exported="false" />
+        <activity android:name=".user.DashboardUserActivity" android:exported="false" />
+        <activity android:name=".user.HistoryActivity" android:exported="false" />
+        <activity android:name=".user.MapsActivity" android:exported="false" />
         <activity android:name=".RankingActivity" android:exported="false" />
-        <activity android:name=".ProfilUserActivity" android:exported="false" />
+        <activity android:name=".user.ProfilUserActivity" android:exported="false" />
 
         <!-- Admin -->
-        <activity android:name=".DashboardAdminActivity" android:exported="false" />
-        <activity android:name=".RekapanActivity" android:exported="false" />
-        <activity android:name=".AdminMapsActivity" android:exported="false" />
-        <activity android:name=".AdminRankingActivity" android:exported="false" />
-        <activity android:name=".ProfilAdminActivity" android:exported="false" />
+        <activity android:name=".admin.DashboardAdminActivity" android:exported="false" />
+        <activity android:name=".admin.RekapAdminActivity" android:exported="false" />
+        <activity android:name=".admin.AdminMapsActivity" android:exported="false" />
+        <activity android:name=".admin.AdminRankingActivity" android:exported="false" />
+        <activity android:name=".admin.ProfilAdminActivity" android:exported="false" />
 
         <!-- General -->
-        <activity android:name=".RegisterActivity" android:exported="false" />
-        <activity android:name=".MainActivity" android:exported="false" />
-        <activity android:name=".ScanActivity" android:exported="false" />
-        <activity android:name=".ResultActivity" android:exported="false" />
+        <activity android:name=".auth.RegisterActivity" android:exported="false" />
+        <activity android:name=".auth.MainActivity" android:exported="false" />
+        <activity android:name=".user.ScanActivity" android:exported="false" />
+        <activity android:name=".user.ResultActivity" android:exported="false" />
 
     </application>
 

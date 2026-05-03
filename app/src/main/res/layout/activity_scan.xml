@@ -54,7 +54,7 @@
                     android:src="@drawable/ic_scan"
                     android:tint="#A5D6A7" />
 
-                <com.example.ecosnap.OverlayView
+                <com.example.ecosnap.helper.OverlayView
                     android:id="@+id/overlayView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />

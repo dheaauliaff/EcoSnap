@@ -1,4 +1,4 @@
-package com.example.ecosnap;
+package com.example.ecosnap.network;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

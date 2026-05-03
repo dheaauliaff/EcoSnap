@@ -1,4 +1,4 @@
-package com.example.ecosnap;
+package com.example.ecosnap.admin;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -12,6 +12,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 
+import com.example.ecosnap.network.ApiService;
+import com.example.ecosnap.auth.LoginActivity;
+import com.example.ecosnap.R;
+import com.example.ecosnap.network.RetrofitClient;
+import com.example.ecosnap.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 

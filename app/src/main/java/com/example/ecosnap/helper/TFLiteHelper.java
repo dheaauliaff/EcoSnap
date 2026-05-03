@@ -1,4 +1,4 @@
-package com.example.ecosnap;
+package com.example.ecosnap.helper;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
