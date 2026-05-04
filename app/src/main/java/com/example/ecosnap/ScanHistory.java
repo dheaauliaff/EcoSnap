@@ -31,6 +31,17 @@ public class ScanHistory {
     @SerializedName("created_at")
     private String createdAt;
 
+    // 🔥 TAMBAHAN GPS
+    @SerializedName("latitud")
+    private Double latitud;
+
+    @SerializedName("longitud")
+    private Double longitud;
+
+    // =====================
+    // GETTER
+    // =====================
+
     public String getId() { return id; }
     public String getUserId() { return userId; }
     public String getRwId() { return rwId; }
@@ -40,4 +51,14 @@ public class ScanHistory {
     public String getFotoUrl() { return fotoUrl; }
     public Float getAkurasi() { return akurasi; }
     public String getCreatedAt() { return createdAt; }
+
+    // 🔥 GETTER GPS
+    @SerializedName("latitude")
+    private Double latitude;
+
+    @SerializedName("longitude")
+    private Double longitude;
+
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
 }
