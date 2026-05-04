@@ -28,41 +28,32 @@ public class RekapAdminActivity extends AppCompatActivity {
 
         // halaman aktif sekarang = Rekap
         bottomNav.setSelectedItemId(R.id.nav_admin_rekap);
-
         bottomNav.setOnItemSelectedListener(item -> {
-
             int id = item.getItemId();
-
             if (id == R.id.nav_admin_dashboard) {
-
                 startActivity(new Intent(this, DashboardAdminActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
                 return true;
-
             } else if (id == R.id.nav_admin_rekap) {
-
                 // sedang di halaman ini
                 return true;
-
             } else if (id == R.id.nav_admin_ranking) {
-
                 startActivity(new Intent(this, AdminRankingActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
                 return true;
-
             } else if (id == R.id.nav_admin_maps) {
-
                 startActivity(new Intent(this, AdminMapsActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
                 return true;
-
             } else if (id == R.id.nav_admin_profil) {
-
                 startActivity(new Intent(this, ProfilAdminActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
                 return true;
             }
-
             return false;
         });
     }

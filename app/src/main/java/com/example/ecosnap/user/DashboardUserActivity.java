@@ -85,15 +85,19 @@ public class DashboardUserActivity extends AppCompatActivity {
                 return true;
             } else if (id == R.id.nav_statistik) {
                 startActivity(new Intent(this, RekapActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out); //biar perpondahannya smooth
                 return true;
             } else if (id == R.id.nav_scan) {
                 startActivity(new Intent(this, ScanActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 return true;
             } else if (id == R.id.nav_maps) {
                 startActivity(new Intent(this, MapsActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 return true;
             } else if (id == R.id.nav_profil) {
                 startActivity(new Intent(this, ProfilUserActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 return true;
             }
             return false;

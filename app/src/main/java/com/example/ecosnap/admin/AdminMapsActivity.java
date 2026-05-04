@@ -63,17 +63,21 @@ public class AdminMapsActivity extends AppCompatActivity {
             int id = item.getItemId();
             if (id == R.id.nav_admin_dashboard) {
                 startActivity(new Intent(this, DashboardAdminActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 return true;
             } else if (id == R.id.nav_admin_rekap) {
                 startActivity(new Intent(this, RekapAdminActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 return true;
             } else if (id == R.id.nav_admin_ranking) {
                 startActivity(new Intent(this, AdminRankingActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 return true;
             } else if (id == R.id.nav_admin_maps) {
                 return true;
             } else if (id == R.id.nav_admin_profil) {
                 startActivity(new Intent(this, ProfilAdminActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 return true;
             }
             return false;
