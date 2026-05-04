@@ -159,7 +159,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
     }
 
     private void loadStatistik() {
-        if (rwId.isEmpty()) return;
+        if (rwId == null || rwId.isEmpty()) return;
 
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
         Call<List<ScanHistory>> call = apiService.getScanByRw("eq." + rwId);

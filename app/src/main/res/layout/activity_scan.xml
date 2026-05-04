@@ -44,6 +44,12 @@
                 android:layout_height="match_parent"
                 android:background="#F8FBF8">
 
+                <androidx.camera.view.PreviewView
+                    android:id="@+id/previewView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
+
                 <ImageView
                     android:id="@+id/viewFinder"
                     android:layout_width="match_parent"
@@ -85,12 +91,12 @@
             android:textStyle="bold" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCapture"
+            android:id="@+id/btnRealtime"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="20dp"
             android:background="@drawable/bg_button_gradient"
-            android:text="Ambil Foto"
+            android:text="Scan Real-time"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
@@ -98,6 +104,22 @@
             app:icon="@drawable/ic_scan"
             app:iconGravity="textStart"
             app:iconTint="#FFFFFF" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCapture"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            app:backgroundTint="#E8F5E9"
+            app:cornerRadius="18dp"
+            android:text="Ambil Foto"
+            android:textAllCaps="false"
+            android:textColor="#1B5E20"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:icon="@drawable/ic_scan"
+            app:iconGravity="textStart"
+            app:iconTint="#1B5E20" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGallery"
