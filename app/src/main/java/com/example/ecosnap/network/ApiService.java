@@ -32,6 +32,9 @@ public interface ApiService {
     );
 
     @GET("scan_history?select=*")
+    Call<List<ScanHistory>> getAllScans();
+
+    @GET("scan_history?select=*")
     Call<List<ScanHistory>> getScanByUser(
             @Query("user_id") String userId
     );

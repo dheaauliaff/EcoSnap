@@ -13,6 +13,9 @@ public class ScanHistory {
     @SerializedName("rw_id")
     private String rwId;
 
+    @SerializedName("rt_id")
+    private String rtId;
+
     @SerializedName("wilayah")
     private String wilayah;
 
@@ -27,6 +30,12 @@ public class ScanHistory {
 
     @SerializedName("akurasi")
     private Float akurasi;
+
+    @SerializedName("latitude")
+    private Double latitude;
+
+    @SerializedName("longitude")
+    private Double longitude;
 
     @SerializedName("created_at")
     private String createdAt;
@@ -45,12 +54,16 @@ public class ScanHistory {
     public String getId() { return id; }
     public String getUserId() { return userId; }
     public String getRwId() { return rwId; }
+    public String getRtId() { return rtId; }
     public String getWilayah() { return wilayah; }
     public String getJenisSampah() { return jenisSampah; }
     public String getKategori() { return kategori; }
     public String getFotoUrl() { return fotoUrl; }
     public Float getAkurasi() { return akurasi; }
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
     public String getCreatedAt() { return createdAt; }
+<<<<<<< Updated upstream
 
     // 🔥 GETTER GPS
     @SerializedName("latitude")
@@ -62,3 +75,6 @@ public class ScanHistory {
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
 }
+=======
+}
+>>>>>>> Stashed changes

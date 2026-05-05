@@ -40,6 +40,10 @@
         android:theme="@style/Theme.EcoSnap">
 
         <!-- File provider untuk kamera -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -63,7 +67,12 @@
 
         </activity>
 
+<<<<<<< Updated upstream
         <activity android:name=".auth.LoginActivity" android:exported="false" />
+=======
+        <activity android:name=".LoginActivity" android:exported="false" />
+        <activity android:name=".MainDashboardActivity" android:exported="false" />
+>>>>>>> Stashed changes
 
         <!-- User -->
         <activity android:name=".user.DashboardUserActivity" android:exported="false" />

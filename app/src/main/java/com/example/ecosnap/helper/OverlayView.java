@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 public class OverlayView extends View {
 
@@ -58,7 +59,7 @@ public class OverlayView extends View {
 
         textPaint.setAntiAlias(true);
         textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(dp(13));
+        textPaint.setTextSize(dp(12));
         textPaint.setFakeBoldText(true);
 
         bgPaint.setAntiAlias(true);
@@ -172,44 +173,45 @@ public class OverlayView extends View {
     }
 
     private void drawDetectionBox(Canvas canvas, RectF rect, TFLiteHelper.Result result, int color) {
-        int alpha = result.confidence >= 90f ? 235 : 210;
-        if (result.isLocked) {
-            float pulse = 0.65f + 0.35f * (float) Math.sin(System.currentTimeMillis() / 130.0);
-            glowPaint.setColor(applyAlpha(color, (int) (95 * pulse)));
-            glowPaint.setPathEffect(null);
-            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, glowPaint);
-        } else {
-            glowPaint.setColor(applyAlpha(color, 42));
-            glowPaint.setPathEffect(null);
-            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, glowPaint);
-        }
-
-        boxPaint.setColor(applyAlpha(color, alpha));
-        boxPaint.setStrokeWidth(result.confidence >= 90f ? dp(6) : strokeWidth);
-        if (result.isLowConfidence || result.confidence < 75f) {
-            boxPaint.setPathEffect(new DashPathEffect(new float[]{dp(12), dp(8)}, 0));
-        } else {
-            boxPaint.setPathEffect(null);
-        }
-        canvas.drawRoundRect(rect, cornerRadius, cornerRadius, boxPaint);
+        boxPaint.setColor(color);
+        boxPaint.setStrokeWidth(dp(2));
         boxPaint.setPathEffect(null);
+        canvas.drawRoundRect(rect, dp(12), dp(12), boxPaint);
     }
 
     private RectF drawDetectionLabel(Canvas canvas, RectF box, TFLiteHelper.Result result, int color,
                                      int width, int height, float hudBottom, RectF hudRect,
                                      List<RectF> occupiedLabels) {
         String label = buildLabel(result);
-        textPaint.setTextSize(dp(13));
+        textPaint.setTextSize(dp(12));
         textPaint.setFakeBoldText(true);
         float textWidth = textPaint.measureText(label);
-        float labelHeight = dp(34);
-        float labelWidth = Math.min(width - dp(16), textWidth + dp(24));
-        RectF labelRect = chooseLabelRect(box, labelWidth, labelHeight, width, height, hudBottom, hudRect, occupiedLabels);
-        bgPaint.setColor(applyAlpha(color, 220));
-        canvas.drawRoundRect(labelRect, labelRadius, labelRadius, bgPaint);
-
+        
+        Paint.FontMetrics fm = textPaint.getFontMetrics();
+        float textHeight = fm.descent - fm.ascent;
+        
+        float labelHeight = textHeight + dp(12);
+        float labelWidth = textWidth + dp(24);
+        
+        float margin = dp(6);
+        float left = box.left;
+        float top = box.top - labelHeight - margin;
+        
+        if (top < margin) {
+            top = box.top + margin;
+        }
+        
+        RectF labelRect = new RectF(left, top, left + labelWidth, top + labelHeight);
+        
+        bgPaint.setColor(color);
+        bgPaint.setShadowLayer(dp(2), 0, dp(1), 0x40000000);
+        canvas.drawRoundRect(labelRect, dp(50), dp(50), bgPaint);
+        bgPaint.clearShadowLayer();
+        
         textPaint.setColor(Color.WHITE);
-        canvas.drawText(label, labelRect.left + dp(12), labelRect.top + dp(22), textPaint);
+        float textY = labelRect.top + dp(6) - fm.ascent;
+        canvas.drawText(label, labelRect.left + dp(12), textY, textPaint);
+        
         return labelRect;
     }
 
@@ -390,10 +392,22 @@ public class OverlayView extends View {
     }
 
     private String buildLabel(TFLiteHelper.Result result) {
-        if (result.classId == 6 || "Bukan Sampah".equalsIgnoreCase(result.label)) {
-            return "Ignored Object (" + String.format("%.0f", result.confidence) + "%)";
-        }
-        return displayLabel(result) + " #" + result.trackingId + " (" + String.format("%.0f", result.confidence) + "%)";
+        String cat = getKategoriForLabel(result.label);
+        String prefix = "";
+        if (cat.equals("Bukan Sampah")) prefix = "! ";
+        else if (cat.equals("Organik")) prefix = "🌿 ";
+        else if (cat.equals("Recycle")) prefix = "♽ ";
+        return prefix + cat + " • " + String.format(Locale.US, "%.0f", result.confidence) + "%";
+    }
+
+    private String getKategoriForLabel(String label) {
+        if (label == null) return "Lainnya";
+        String l = label.toLowerCase();
+        if (l.contains("organik")) return "Organik";
+        if (l.contains("plastik") || l.contains("styrofoam")) return "Anorganik";
+        if (l.contains("kertas") || l.contains("kardus") || l.contains("kaca") || l.contains("logam")) return "Recycle";
+        if (l.contains("bukan")) return "Bukan Sampah";
+        return "Lainnya";
     }
 
     private String displayLabel(TFLiteHelper.Result result) {
@@ -407,27 +421,15 @@ public class OverlayView extends View {
     }
 
     private int getClassColor(int classId, String label) {
-        switch (classId) {
-            case 0: return Color.GREEN;
-            case 1: return 0xFFFF9800;
-            case 2: return 0xFF00BCD4;
-            case 3: return Color.GRAY;
-            case 4: return Color.BLUE;
-            case 5: return Color.YELLOW;
-            case 6: return Color.RED;
-            default:
-                if (label == null) return Color.YELLOW;
-                switch (label.toLowerCase()) {
-                    case "organik": return Color.GREEN;
-                    case "kardus": return 0xFFFF9800;
-                    case "kaca": return 0xFF00BCD4;
-                    case "logam": return Color.GRAY;
-                    case "kertas": return Color.BLUE;
-                    case "plastik": return Color.YELLOW;
-                    case "bukan sampah": return Color.RED;
-                    default: return Color.YELLOW;
-                }
-        }
+        String l = label != null ? label.toLowerCase() : "";
+        if (l.contains("organik")) return 0xFF4CAF50; // Hijau
+        if (l.contains("kardus")) return 0xFF2196F3; // Biru
+        if (l.contains("kaca")) return 0xFF00BCD4; // Cyan
+        if (l.contains("logam")) return 0xFF9C27B0; // Ungu
+        if (l.contains("kertas")) return 0xFFFFC107; // Kuning
+        if (l.contains("plastik") || l.contains("styrofoam")) return 0xFFFF9800; // Orange
+        if (l.contains("bukan")) return 0xFFFF5252; // Merah
+        return 0xFF9E9E9E;
     }
 
     private int applyAlpha(int color, int alpha) {
