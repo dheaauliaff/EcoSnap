@@ -1,8 +1,14 @@
 package com.example.ecosnap;
 
-import android.animation.ObjectAnimator;
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,43 +18,85 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.example.ecosnap.network.ApiService;
+import com.example.ecosnap.network.RetrofitClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polygon;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MapsFragment extends Fragment {
 
-    private final String[] categoryOrder = SharedPrototypeData.CATEGORIES;
-    private CimahiMapView mapView;
+    private static final String[] CATEGORIES = {"Organik", "Plastik", "Kertas", "Kaca", "Kardus", "Logam"};
+    private static final double ZONE_RADIUS_METERS = 80.0; // radius lingkaran zona (meter)
+
+    // Views
+    private MapView osmMap;
     private LinearLayout legendRow;
     private LinearLayout topRegionRow;
-    private View mapsRoot;
-    private Map<String, CimahiMapView.RegionStat> latestRegionStats = new HashMap<>();
-    private LinkedHashMap<String, Integer> latestCategoryTotals = new LinkedHashMap<>();
+
+    // OSMDroid
+    private MyLocationNewOverlay myLocationOverlay;
+
+    // Location
+    private FusedLocationProviderClient fusedLocationClient;
+
+    // Data stats
     private int totalReports = 0;
+    private final Map<String, Integer> globalCategoryCount = new HashMap<>();
+    private final Map<String, Integer> rtCount = new HashMap<>();
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_maps, container, false);
-        mapsRoot = view.findViewById(R.id.mapsRoot);
-        mapView = view.findViewById(R.id.cimahiMapView);
-        legendRow = view.findViewById(R.id.legendRow);
+
+        Configuration.getInstance().setUserAgentValue(requireContext().getPackageName());
+
+        osmMap       = view.findViewById(R.id.osmMapView);
+        legendRow    = view.findViewById(R.id.legendRow);
         topRegionRow = view.findViewById(R.id.topRegionRow);
 
-        setupStaticUi(view);
-        setupInteractions(view);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+
+        // Minta izin lokasi runtime
+        if (ActivityCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            }, 1001);
+        }
+
+        setupMap();
+        setupControls(view);
+        buildLegend();
+        buildTopRegions(new ArrayList<>());
         animatePage(view);
         return view;
     }
@@ -56,304 +104,353 @@ public class MapsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadData();
+        if (osmMap != null) osmMap.onResume();
+        if (myLocationOverlay != null) myLocationOverlay.enableMyLocation();
+        loadDataFromSupabase();
     }
 
-    private void setupStaticUi(View root) {
-        bindMetric(root.findViewById(R.id.metricKelurahan), R.drawable.ic_user_outline, "0", "RT");
-        bindMetric(root.findViewById(R.id.metricLaporan), R.drawable.ic_document_outline, "0", "Total Laporan");
-        bindMetric(root.findViewById(R.id.metricDominan), R.drawable.ic_leaf, "-", "Dominan");
-        bindMetric(root.findViewById(R.id.metricPersentase), R.drawable.ic_pie_chart, "0%", "Persentase");
-        buildLegend();
-        buildTopRegions(new ArrayList<>());
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (osmMap != null) osmMap.onPause();
+        if (myLocationOverlay != null) myLocationOverlay.disableMyLocation();
     }
 
-    private void setupInteractions(View root) {
-        if (mapView != null) {
-            mapView.setOnRegionClickListener(this::showRegionDetail);
-        }
+    // ─── Setup OSMDroid ───────────────────────────────────────────────────────
 
-        View locate = root.findViewById(R.id.btnLocate);
-        TextView zoomIn = root.findViewById(R.id.btnZoomIn);
+    private void setupMap() {
+        if (osmMap == null) return;
+        osmMap.setTileSource(TileSourceFactory.MAPNIK);
+        osmMap.setMultiTouchControls(true);
+        osmMap.setBuiltInZoomControls(false);
+
+        osmMap.getController().setZoom(14.0);
+        osmMap.getController().setCenter(new GeoPoint(-6.8900, 107.5400));
+
+        // Overlay titik biru GPS user
+        myLocationOverlay = new MyLocationNewOverlay(
+                new GpsMyLocationProvider(requireContext()), osmMap);
+        myLocationOverlay.enableMyLocation();
+        myLocationOverlay.enableFollowLocation();
+        osmMap.getOverlays().add(myLocationOverlay);
+    }
+
+    private void setupControls(View root) {
+        View btnLocate  = root.findViewById(R.id.btnLocate);
+        TextView zoomIn  = root.findViewById(R.id.btnZoomIn);
         TextView zoomOut = root.findViewById(R.id.btnZoomOut);
 
-        if (locate != null) locate.setOnClickListener(v -> {
-            CimahiMapView.RegionInfo selected = mapView != null ? mapView.getSelectedRegion() : null;
-            if (selected != null) showRegionDetail(selected);
-        });
-        if (zoomIn != null) zoomIn.setOnClickListener(v -> animateMapScale(1.04f));
-        if (zoomOut != null) zoomOut.setOnClickListener(v -> animateMapScale(1f));
+        if (btnLocate != null) btnLocate.setOnClickListener(v -> centerOnMyLocation());
+        if (zoomIn    != null) zoomIn.setOnClickListener(v  -> osmMap.getController().zoomIn());
+        if (zoomOut   != null) zoomOut.setOnClickListener(v -> osmMap.getController().zoomOut());
     }
 
-    private void animatePage(View root) {
-        root.setAlpha(0f);
-        root.setTranslationY(dp(12f));
-        root.animate()
-                .alpha(1f)
-                .translationY(0f)
-                .setDuration(320L)
-                .setInterpolator(new DecelerateInterpolator())
-                .start();
-    }
-
-    private void animateMapScale(float scale) {
-        if (mapView == null) return;
-        mapView.animate()
-                .scaleX(scale)
-                .scaleY(scale)
-                .setDuration(200L)
-                .setInterpolator(new DecelerateInterpolator())
-                .start();
-    }
-
-    private void loadData() {
-        SharedPrototypeData data = SharedPrototypeData.getInstance();
-        latestCategoryTotals = data.getGlobalCategoryTotals();
-        totalReports = data.getGlobalTotalReports();
-        latestRegionStats = buildRegionStatsFromPrototype(data);
-
-        if (mapView != null) {
-            mapView.setRegionStats(latestRegionStats);
+    private void centerOnMyLocation() {
+        if (myLocationOverlay != null && myLocationOverlay.getMyLocation() != null) {
+            osmMap.getController().animateTo(myLocationOverlay.getMyLocation());
+            osmMap.getController().setZoom(17.0);
+            return;
         }
-
-        String dominant = data.getGlobalDominantCategory();
-        int dominantCount = latestCategoryTotals.getOrDefault(dominant, 0);
-        int percentage = totalReports == 0 ? 0 : Math.round((dominantCount * 100f) / totalReports);
-
-        View root = getView();
-        if (root != null) {
-            int totalRt = mapView != null ? mapView.getRegions().size() : 0;
-            bindMetric(root.findViewById(R.id.metricKelurahan), R.drawable.ic_user_outline, String.valueOf(totalRt), "RT");
-            bindMetric(root.findViewById(R.id.metricLaporan), R.drawable.ic_document_outline, String.valueOf(totalReports), "Total Laporan");
-            bindMetric(root.findViewById(R.id.metricDominan), R.drawable.ic_leaf, dominant, "Dominan");
-            bindMetric(root.findViewById(R.id.metricPersentase), R.drawable.ic_pie_chart, percentage + "%", "Persentase");
+        if (ActivityCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(loc -> {
+                if (loc != null) {
+                    osmMap.getController().animateTo(new GeoPoint(loc.getLatitude(), loc.getLongitude()));
+                    osmMap.getController().setZoom(17.0);
+                } else {
+                    Toast.makeText(getContext(), "Lokasi belum tersedia", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
-
-        buildTopRegions(sortedRegions());
     }
 
-    private Map<String, CimahiMapView.RegionStat> buildRegionStatsFromPrototype(SharedPrototypeData data) {
-        Map<String, CimahiMapView.RegionStat> result = new HashMap<>();
-        List<CimahiMapView.RegionInfo> regions = mapView != null ? mapView.getRegions() : new ArrayList<>();
-        
-        Map<String, Map<String, Integer>> allWaste = data.getWasteData();
+    // ─── Supabase ─────────────────────────────────────────────────────────────
 
-        for (CimahiMapView.RegionInfo region : regions) {
-            CimahiMapView.RegionStat stat = new CimahiMapView.RegionStat();
-            
-            // Region name is usually like "RT 01". Let's match it to mock data.
-            Map<String, Integer> counts = allWaste.getOrDefault(region.name, new HashMap<>());
-            
-            stat.categoryCounts.putAll(counts);
-            for (int v : counts.values()) {
-                stat.totalReports += v;
+    private void loadDataFromSupabase() {
+        ApiService api = RetrofitClient.getClient().create(ApiService.class);
+        api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
+            @Override
+            public void onResponse(Call<List<ScanHistory>> call,
+                                   Response<List<ScanHistory>> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    processData(response.body());
+                } else {
+                    showError("Gagal memuat data peta");
+                }
             }
-            
-            stat.dominantCategory = data.getDominantCategoryForRT(region.name);
-            int dominantCount = counts.getOrDefault(stat.dominantCategory, 0);
-            stat.percentage = stat.totalReports == 0 ? 0 : Math.round((dominantCount * 100f) / stat.totalReports);
-            stat.dominantColor = CategoryDonutView.colorFor(stat.dominantCategory);
-            
-            result.put(region.name, stat);
-        }
-        return result;
+            @Override
+            public void onFailure(Call<List<ScanHistory>> call, Throwable t) {
+                if (isAdded()) showError("Tidak dapat terhubung ke server");
+            }
+        });
     }
 
-    private List<CimahiMapView.RegionInfo> sortedRegions() {
-        List<CimahiMapView.RegionInfo> regions = mapView != null ? mapView.getRegions() : new ArrayList<>();
-        Collections.sort(regions, (a, b) -> Integer.compare(b.stat.totalReports, a.stat.totalReports));
-        return regions;
+    private void processData(List<ScanHistory> list) {
+        totalReports = list.size();
+        globalCategoryCount.clear();
+        rtCount.clear();
+
+        // Hapus semua marker & polygon lama (kecuali GPS overlay)
+        osmMap.getOverlays().removeIf(o -> (o instanceof Marker) || (o instanceof Polygon));
+
+        for (ScanHistory s : list) {
+            String nama = s.getJenisSampah();
+            String rt   = s.getRtId();
+
+            if (nama != null) globalCategoryCount.put(nama,
+                    globalCategoryCount.getOrDefault(nama, 0) + 1);
+            if (rt   != null && !rt.isEmpty()) rtCount.put(rt,
+                    rtCount.getOrDefault(rt, 0) + 1);
+
+            // Tambah marker + zona hanya jika ada koordinat valid
+            if (s.getLatitude()  != null && s.getLongitude() != null
+                    && s.getLatitude()  != 0.0
+                    && s.getLongitude() != 0.0) {
+                addScanPinAndZone(s);
+            }
+        }
+
+        osmMap.invalidate();
+        updateStatCards();
+        buildTopRegions(sortedRtList());
+    }
+
+    // ─── Pin berwarna + lingkaran zona ────────────────────────────────────────
+
+    private void addScanPinAndZone(ScanHistory scan) {
+        double lat  = scan.getLatitude();
+        double lng  = scan.getLongitude();
+        String nama = scan.getJenisSampah() != null ? scan.getJenisSampah() : "Sampah";
+        String kat  = scan.getKategori()    != null ? scan.getKategori()    : "-";
+        int    color = colorForNama(nama);
+
+        // 1. Lingkaran zona semi-transparan
+        Polygon zone = new Polygon(osmMap);
+        zone.setPoints(circlePoints(lat, lng, ZONE_RADIUS_METERS));
+        zone.setFillColor(withAlpha(color, 45));     // sangat transparan
+        zone.setStrokeColor(withAlpha(color, 160));  // outline sedikit lebih solid
+        zone.setStrokeWidth(2.5f);
+        osmMap.getOverlays().add(zone);
+
+        // 2. Pin berwarna custom (gambar via Canvas)
+        Marker marker = new Marker(osmMap);
+        marker.setPosition(new GeoPoint(lat, lng));
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        marker.setTitle(nama);
+        marker.setSnippet("Kategori: " + kat);
+        marker.setIcon(new BitmapDrawable(getResources(), createPinBitmap(color)));
+        osmMap.getOverlays().add(marker);
+    }
+
+    // ─── Canvas: gambar custom pin tearDrop ───────────────────────────────────
+
+    private Bitmap createPinBitmap(int color) {
+        int w = dp(36);
+        int h = dp(52);
+        Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+
+        float cx = w / 2f;
+        float r  = w * 0.42f;           // radius lingkaran kepala
+
+        Paint paintFill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintFill.setColor(color);
+        paintFill.setStyle(Paint.Style.FILL);
+
+        Paint paintStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintStroke.setColor(withAlpha(darken(color), 200));
+        paintStroke.setStyle(Paint.Style.STROKE);
+        paintStroke.setStrokeWidth(dp(1.5f));
+
+        Paint paintWhite = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintWhite.setColor(Color.WHITE);
+        paintWhite.setStyle(Paint.Style.FILL);
+
+        // Ekor / ujung pin (segitiga ke bawah)
+        Path tail = new Path();
+        tail.moveTo(cx - r * 0.5f, r * 1.05f);
+        tail.lineTo(cx + r * 0.5f, r * 1.05f);
+        tail.lineTo(cx, h - dp(2));
+        tail.close();
+        canvas.drawPath(tail, paintFill);
+
+        // Kepala lingkaran
+        canvas.drawCircle(cx, r, r, paintFill);
+        canvas.drawCircle(cx, r, r, paintStroke);
+
+        // Titik putih di tengah
+        canvas.drawCircle(cx, r, r * 0.38f, paintWhite);
+
+        return bmp;
+    }
+
+    // ─── Hitung titik-titik lingkaran (Polygon) ───────────────────────────────
+
+    private List<GeoPoint> circlePoints(double lat, double lng, double radiusM) {
+        List<GeoPoint> pts = new ArrayList<>();
+        int segments = 48;
+        for (int i = 0; i < segments; i++) {
+            double angle  = Math.toRadians(i * 360.0 / segments);
+            double dLat   = (radiusM / 111320.0) * Math.cos(angle);
+            double dLng   = (radiusM / (111320.0 * Math.cos(Math.toRadians(lat)))) * Math.sin(angle);
+            pts.add(new GeoPoint(lat + dLat, lng + dLng));
+        }
+        return pts;
+    }
+
+    // ─── Warna berdasarkan jenis sampah ──────────────────────────────────────
+
+    private int colorForNama(String nama) {
+        if (nama == null) return Color.parseColor("#9E9E9E");
+        switch (nama.toLowerCase()) {
+            case "organik":  return Color.parseColor("#4CAF50"); // hijau
+            case "plastik":  return Color.parseColor("#FF9800"); // oranye
+            case "kertas":   return Color.parseColor("#FFC107"); // kuning amber
+            case "kaca":     return Color.parseColor("#00BCD4"); // cyan
+            case "kardus":   return Color.parseColor("#2196F3"); // biru
+            case "logam":    return Color.parseColor("#9C27B0"); // ungu
+            default:         return Color.parseColor("#F44336"); // merah
+        }
+    }
+
+    private int withAlpha(int color, int alpha) {
+        return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color));
+    }
+
+    private int darken(int color) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        hsv[2] *= 0.65f;
+        return Color.HSVToColor(hsv);
+    }
+
+    // ─── Stat cards ───────────────────────────────────────────────────────────
+
+    private void updateStatCards() {
+        if (!isAdded() || getView() == null) return;
+        String dominant = getDominant(globalCategoryCount);
+        int domCount = globalCategoryCount.getOrDefault(dominant, 0);
+        int pct = totalReports == 0 ? 0 : Math.round((domCount * 100f) / totalReports);
+
+        bindMetric(getView().findViewById(R.id.metricKelurahan),
+                R.drawable.ic_user_outline, String.valueOf(rtCount.size()), "RT");
+        bindMetric(getView().findViewById(R.id.metricLaporan),
+                R.drawable.ic_document_outline, String.valueOf(totalReports), "Total Laporan");
+        bindMetric(getView().findViewById(R.id.metricDominan),
+                R.drawable.ic_leaf, dominant, "Dominan");
+        bindMetric(getView().findViewById(R.id.metricPersentase),
+                R.drawable.ic_pie_chart, pct + "%", "Persentase");
     }
 
     private void bindMetric(View metric, int iconRes, String value, String label) {
         if (metric == null) return;
         ImageView icon = metric.findViewById(R.id.ivMetricIcon);
-        TextView valueView = metric.findViewById(R.id.tvMetricValue);
-        TextView labelView = metric.findViewById(R.id.tvMetricLabel);
+        TextView  val  = metric.findViewById(R.id.tvMetricValue);
+        TextView  lab  = metric.findViewById(R.id.tvMetricLabel);
         if (icon != null) icon.setImageResource(iconRes);
-        if (valueView != null) valueView.setText(value);
-        if (labelView != null) labelView.setText(label);
+        if (val  != null) val.setText(value);
+        if (lab  != null) lab.setText(label);
     }
+
+    // ─── Legenda ──────────────────────────────────────────────────────────────
 
     private void buildLegend() {
         if (legendRow == null || getContext() == null) return;
         legendRow.removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        for (String category : categoryOrder) {
-            View item = inflater.inflate(R.layout.item_legend_category, legendRow, false);
+        for (String cat : CATEGORIES) {
+            View item        = inflater.inflate(R.layout.item_legend_category, legendRow, false);
             FrameLayout circle = item.findViewById(R.id.legendCircle);
-            ImageView icon = item.findViewById(R.id.ivLegendIcon);
-            TextView label = item.findViewById(R.id.tvLegendLabel);
-            int color = CategoryDonutView.colorFor(category);
-            if (circle != null) circle.setBackgroundTintList(ColorStateList.valueOf(softColor(color)));
+            ImageView icon     = item.findViewById(R.id.ivLegendIcon);
+            TextView label     = item.findViewById(R.id.tvLegendLabel);
+            int color = colorForNama(cat);
+            if (circle != null) circle.setBackgroundTintList(
+                    ColorStateList.valueOf(softColor(color)));
             if (icon != null) {
-                icon.setImageResource(iconFor(category));
+                icon.setImageResource(iconFor(cat));
                 icon.setImageTintList(ColorStateList.valueOf(color));
             }
-            if (label != null) label.setText(category);
+            if (label != null) label.setText(cat);
             legendRow.addView(item);
         }
     }
 
-    private void buildTopRegions(List<CimahiMapView.RegionInfo> regions) {
+    // ─── Top RT ───────────────────────────────────────────────────────────────
+
+    private List<Map.Entry<String, Integer>> sortedRtList() {
+        List<Map.Entry<String, Integer>> list = new ArrayList<>(rtCount.entrySet());
+        list.sort((a, b) -> b.getValue() - a.getValue());
+        return list;
+    }
+
+    private void buildTopRegions(List<Map.Entry<String, Integer>> list) {
         if (topRegionRow == null || getContext() == null) return;
         topRegionRow.removeAllViews();
-        LayoutInflater inflater = LayoutInflater.from(getContext());
+        LayoutInflater inf = LayoutInflater.from(getContext());
         for (int i = 0; i < 3; i++) {
-            View item = inflater.inflate(R.layout.item_top_kelurahan, topRegionRow, false);
-            TextView rank = item.findViewById(R.id.tvRank);
-            TextView name = item.findViewById(R.id.tvTopName);
+            View item    = inf.inflate(R.layout.item_top_kelurahan, topRegionRow, false);
+            TextView rank  = item.findViewById(R.id.tvRank);
+            TextView name  = item.findViewById(R.id.tvTopName);
             TextView total = item.findViewById(R.id.tvTopTotal);
-
             if (rank != null) {
                 rank.setText(String.valueOf(i + 1));
-                rank.setBackgroundResource(i == 0 ? R.drawable.bg_rank_badge_green : i == 1 ? R.drawable.bg_rank_badge_blue : R.drawable.bg_rank_badge_orange);
+                rank.setBackgroundResource(i == 0 ? R.drawable.bg_rank_badge_green
+                        : i == 1 ? R.drawable.bg_rank_badge_blue
+                        : R.drawable.bg_rank_badge_orange);
             }
-            if (i < regions.size()) {
-                CimahiMapView.RegionInfo region = regions.get(i);
-                if (name != null) name.setText(region.name);
-                if (total != null) total.setText(String.valueOf(region.stat.totalReports));
-                item.setOnClickListener(v -> showRegionDetail(region));
+            if (i < list.size()) {
+                Map.Entry<String, Integer> e = list.get(i);
+                if (name  != null) name.setText(e.getKey());
+                if (total != null) total.setText(e.getValue() + " scan");
             } else {
-                if (name != null) name.setText("-");
+                if (name  != null) name.setText("-");
                 if (total != null) total.setText("0");
             }
             topRegionRow.addView(item);
         }
     }
 
-    private void showRegionDetail(CimahiMapView.RegionInfo region) {
-        if (!isAdded() || getContext() == null || region == null) return;
-        
-        SharedPrototypeData.getInstance().setSelectedRT(region.name);
-        
-        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
-        View sheet = LayoutInflater.from(requireContext()).inflate(R.layout.bottom_sheet_kelurahan_detail, null, false);
-        dialog.setContentView(sheet);
+    // ─── Helper ───────────────────────────────────────────────────────────────
 
-        ImageView back = sheet.findViewById(R.id.btnDetailBack);
-        CimahiMapView detailMap = sheet.findViewById(R.id.detailMapView);
+    private String getDominant(Map<String, Integer> counts) {
+        String dom = "-"; int max = 0;
+        for (Map.Entry<String, Integer> e : counts.entrySet())
+            if (e.getValue() > max) { max = e.getValue(); dom = e.getKey(); }
+        return dom;
+    }
 
-        if (back != null) back.setOnClickListener(v -> dialog.dismiss());
-        if (detailMap != null) {
-            detailMap.setRegionStats(latestRegionStats);
-            detailMap.selectRegion(region.name);
-            
-            detailMap.setOnRegionClickListener(clickedRegion -> {
-                SharedPrototypeData.getInstance().setSelectedRT(clickedRegion.name);
-                updateDetailUi(sheet, clickedRegion);
-            });
+    private int iconFor(String cat) {
+        switch (cat) {
+            case "Kardus":  return R.drawable.ic_box_outline;
+            case "Kaca":    return R.drawable.ic_bottle_outline;
+            case "Logam":   return R.drawable.ic_can_outline;
+            case "Kertas":  return R.drawable.ic_document_outline;
+            case "Plastik": return R.drawable.ic_plastic_bottle_outline;
+            default:        return R.drawable.ic_leaf;
         }
-
-        updateDetailUi(sheet, region);
-
-        dialog.setOnShowListener(d -> {
-            View parent = (View) sheet.getParent();
-            if (parent != null) {
-                parent.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-                parent.requestLayout();
-            }
-        });
-        dialog.show();
-    }
-
-    private void updateDetailUi(View sheet, CimahiMapView.RegionInfo region) {
-        if (region == null) return;
-        
-        // RE-FETCH data specific to this RT to ensure it's not holding old state
-        SharedPrototypeData data = SharedPrototypeData.getInstance();
-        Map<String, Integer> counts = data.getWasteData().getOrDefault(region.name, new HashMap<>());
-        int totalReports = data.getTotalReportsForRT(region.name);
-        String dominantCategory = data.getDominantCategoryForRT(region.name);
-        int dominantCount = counts.getOrDefault(dominantCategory, 0);
-        int percentage = totalReports == 0 ? 0 : Math.round((dominantCount * 100f) / totalReports);
-        
-        TextView badge = sheet.findViewById(R.id.tvDetailBadge);
-        TextView name = sheet.findViewById(R.id.tvDetailName);
-        TextView dominant = sheet.findViewById(R.id.tvDetailDominan);
-        CategoryDonutView donut = sheet.findViewById(R.id.detailDonut);
-        LinearLayout breakdown = sheet.findViewById(R.id.categoryBreakdown);
-        
-        if (badge != null) badge.setText(region.number);
-        if (name != null) name.setText(region.name);
-        if (dominant != null) dominant.setText(dominantCategory);
-        if (donut != null) donut.setValues(counts);
-
-        bindDetailMetric(sheet.findViewById(R.id.detailTotal), "Total Laporan", totalReports > 0 ? String.valueOf(totalReports) : "-", totalReports > 0 ? "laporan" : "");
-        bindDetailMetric(sheet.findViewById(R.id.detailPercent), "Persentase", totalReports > 0 ? percentage + "%" : "-", "");
-        bindDetailMetric(sheet.findViewById(R.id.detailArea), "RW", "-", "");
-        bindDetailMetric(sheet.findViewById(R.id.detailResidents), "Status Data", totalReports > 0 ? "Aktif" : "-", "");
-        
-        buildBreakdown(breakdown, counts, totalReports);
-    }
-
-    private void bindDetailMetric(View metric, String label, String value, String suffix) {
-        if (metric == null) return;
-        TextView labelView = metric.findViewById(R.id.tvDetailMetricLabel);
-        TextView valueView = metric.findViewById(R.id.tvDetailMetricValue);
-        TextView suffixView = metric.findViewById(R.id.tvDetailMetricSuffix);
-        if (labelView != null) labelView.setText(label);
-        if (valueView != null) valueView.setText(value);
-        if (suffixView != null) {
-            if (suffix == null || suffix.isEmpty()) {
-                suffixView.setVisibility(View.GONE);
-            } else {
-                suffixView.setVisibility(View.VISIBLE);
-                suffixView.setText(suffix);
-            }
-        }
-    }
-
-    private void buildBreakdown(LinearLayout parent, Map<String, Integer> counts, int localTotal) {
-        if (parent == null || getContext() == null) return;
-        parent.removeAllViews();
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-
-        for (String category : categoryOrder) {
-            int value = counts.containsKey(category) ? counts.get(category) : 0;
-            int percentage = localTotal == 0 ? 0 : Math.round((value * 100f) / localTotal);
-            int color = CategoryDonutView.colorFor(category);
-            View row = inflater.inflate(R.layout.item_category_progress, parent, false);
-            View dot = row.findViewById(R.id.categoryDot);
-            TextView name = row.findViewById(R.id.tvCategoryName);
-            TextView count = row.findViewById(R.id.tvCategoryValue);
-            View fill = row.findViewById(R.id.progressFill);
-            if (dot != null) dot.setBackgroundTintList(ColorStateList.valueOf(color));
-            if (name != null) name.setText(category);
-            if (count != null) count.setText(value + " (" + percentage + "%)");
-            if (fill != null) {
-                fill.setBackgroundTintList(ColorStateList.valueOf(color));
-                fill.post(() -> {
-                    View parentTrack = (View) fill.getParent();
-                    ViewGroup.LayoutParams params = fill.getLayoutParams();
-                    params.width = Math.max(dp(4f), Math.round(parentTrack.getWidth() * (percentage / 100f)));
-                    fill.setLayoutParams(params);
-                    ObjectAnimator animator = ObjectAnimator.ofFloat(fill, "alpha", 0.2f, 1f);
-                    animator.setDuration(260L);
-                    animator.start();
-                });
-            }
-            parent.addView(row);
-        }
-    }
-
-    private int iconFor(String category) {
-        if ("Kardus".equals(category)) return R.drawable.ic_box_outline;
-        if ("Kaca".equals(category)) return R.drawable.ic_bottle_outline;
-        if ("Logam".equals(category)) return R.drawable.ic_can_outline;
-        if ("Kertas".equals(category)) return R.drawable.ic_document_outline;
-        if ("Plastik".equals(category)) return R.drawable.ic_plastic_bottle_outline;
-        return R.drawable.ic_leaf;
     }
 
     private int softColor(int color) {
-        int r = Math.min(255, (int) (Color.red(color) * 0.18f + 230));
-        int g = Math.min(255, (int) (Color.green(color) * 0.18f + 230));
-        int b = Math.min(255, (int) (Color.blue(color) * 0.18f + 230));
-        return Color.rgb(r, g, b);
+        return Color.rgb(
+                Math.min(255, (int) (Color.red(color)   * 0.18f + 230)),
+                Math.min(255, (int) (Color.green(color) * 0.18f + 230)),
+                Math.min(255, (int) (Color.blue(color)  * 0.18f + 230)));
     }
 
-    private int dp(float value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
+    private int dp(float v) {
+        return Math.round(v * getResources().getDisplayMetrics().density);
+    }
+
+    private void animatePage(View root) {
+        root.setAlpha(0f);
+        root.setTranslationY(20f);
+        root.animate().alpha(1f).translationY(0f)
+                .setDuration(320L).setInterpolator(new DecelerateInterpolator()).start();
+    }
+
+    private void showError(String msg) {
+        if (isAdded() && getContext() != null)
+            Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
     }
 }

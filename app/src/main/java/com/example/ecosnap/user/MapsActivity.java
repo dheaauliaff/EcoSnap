@@ -134,23 +134,39 @@ public class MapsActivity extends AppCompatActivity {
 
     private void tampilkanMarkers(List<ScanHistory> data) {
         mapView.getOverlays().clear();
-        if (data.isEmpty()) return;
+        if (data.isEmpty()) {
+            Toast.makeText(this, "Belum ada scan di wilayah ini", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         double totalLat = 0, totalLng = 0;
         int count = 0;
+
         for (ScanHistory s : data) {
-            if (s.getLatitude() != null && s.getLongitude() != null) {
+            if (s.getLatitude() != null && s.getLongitude() != null
+                    && s.getLatitude() != 0 && s.getLongitude() != 0) {
                 double lat = s.getLatitude();
                 double lng = s.getLongitude();
+
                 Marker marker = new Marker(mapView);
                 marker.setPosition(new GeoPoint(lat, lng));
                 marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                marker.setTitle(s.getJenisSampah());
-                marker.setSnippet(s.getKategori());
+
+                // Judul: nama sampah yang terdeteksi
+                String nama = s.getJenisSampah(); // ← nama_sampah dari Supabase
+                String kat  = s.getKategori();
+                marker.setTitle(nama != null ? nama : "Sampah");
+                marker.setSnippet(kat != null ? kat : "-");
+
                 mapView.getOverlays().add(marker);
-                totalLat += lat; totalLng += lng; count++;
+                totalLat += lat;
+                totalLng += lng;
+                count++;
             }
         }
+
         if (count > 0) {
+            // Pusatkan peta ke rata-rata lokasi semua scan
             mapView.getController().setZoom(16.0);
             mapView.getController().setCenter(new GeoPoint(totalLat / count, totalLng / count));
         }

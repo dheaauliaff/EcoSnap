@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -87,23 +88,33 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         loadDataUser();
-        loadPrototypeData();
+        // loadPrototypeData diganti dengan loadCategoryStats() via Supabase
     }
     
-    private void loadPrototypeData() {
-        SharedPrototypeData data = SharedPrototypeData.getInstance();
-        java.util.LinkedHashMap<String, Integer> totals = data.getGlobalCategoryTotals();
-        
-        if (tvHomeOrganik != null) tvHomeOrganik.setText(totals.getOrDefault("Organik", 0) > 0 ? String.valueOf(totals.get("Organik")) : "-");
-        if (tvHomeKardus != null) tvHomeKardus.setText(totals.getOrDefault("Kardus", 0) > 0 ? String.valueOf(totals.get("Kardus")) : "-");
-        if (tvHomeKaca != null) tvHomeKaca.setText(totals.getOrDefault("Kaca", 0) > 0 ? String.valueOf(totals.get("Kaca")) : "-");
-        if (tvHomeLogam != null) tvHomeLogam.setText(totals.getOrDefault("Logam", 0) > 0 ? String.valueOf(totals.get("Logam")) : "-");
-        if (tvHomeKertas != null) tvHomeKertas.setText(totals.getOrDefault("Kertas", 0) > 0 ? String.valueOf(totals.get("Kertas")) : "-");
-        if (tvHomePlastik != null) tvHomePlastik.setText(totals.getOrDefault("Plastik", 0) > 0 ? String.valueOf(totals.get("Plastik")) : "-");
-        
-        if (tvJenisTerakhir != null) tvJenisTerakhir.setText(data.getLatestScanJenis());
-        if (tvKategoriTerakhir != null) tvKategoriTerakhir.setText(data.getLatestScanKategori());
-        if (tvWaktuTerakhir != null) tvWaktuTerakhir.setText(data.getLatestScanWaktu());
+    // Ambil data kategori nyata dari Supabase berdasarkan scan user yang login
+    private void loadCategoryStats(String uid) {
+        com.example.ecosnap.network.ApiService api =
+                com.example.ecosnap.network.RetrofitClient.getClient()
+                        .create(com.example.ecosnap.network.ApiService.class);
+        api.getScanByUser("eq." + uid).enqueue(new Callback<List<ScanHistory>>() {
+            @Override
+            public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
+                if (!isAdded() || !response.isSuccessful() || response.body() == null) return;
+                java.util.Map<String, Integer> counts = new java.util.HashMap<>();
+                for (ScanHistory s : response.body()) {
+                    String nama = s.getJenisSampah(); // nama_sampah dari Supabase
+                    if (nama != null) counts.put(nama, counts.getOrDefault(nama, 0) + 1);
+                }
+                if (tvHomeOrganik != null) tvHomeOrganik.setText(counts.getOrDefault("Organik", 0) > 0 ? String.valueOf(counts.get("Organik")) : "-");
+                if (tvHomeKardus  != null) tvHomeKardus.setText(counts.getOrDefault("Kardus",  0) > 0 ? String.valueOf(counts.get("Kardus"))  : "-");
+                if (tvHomeKaca   != null) tvHomeKaca.setText(counts.getOrDefault("Kaca",    0) > 0 ? String.valueOf(counts.get("Kaca"))    : "-");
+                if (tvHomeLogam  != null) tvHomeLogam.setText(counts.getOrDefault("Logam",   0) > 0 ? String.valueOf(counts.get("Logam"))   : "-");
+                if (tvHomeKertas != null) tvHomeKertas.setText(counts.getOrDefault("Kertas",  0) > 0 ? String.valueOf(counts.get("Kertas"))  : "-");
+                if (tvHomePlastik!= null) tvHomePlastik.setText(counts.getOrDefault("Plastik", 0) > 0 ? String.valueOf(counts.get("Plastik")) : "-");
+            }
+            @Override
+            public void onFailure(Call<List<ScanHistory>> call, Throwable t) {}
+        });
     }
 
     private void loadDataUser() {
@@ -116,9 +127,10 @@ public class HomeFragment extends Fragment {
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 if (isAdded() && response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     User user = response.body().get(0);
-                    if (tvNamaUser != null) tvNamaUser.setText(user.getNama());
+                    if (tvNamaUser    != null) tvNamaUser.setText(user.getNama());
                     if (tvWilayahUser != null) tvWilayahUser.setText(user.getRtId() + " - " + user.getRwId());
                     loadStatistikScan(uid);
+                    loadCategoryStats(uid); // ← ambil kategori dari Supabase
                 }
             }
             @Override
