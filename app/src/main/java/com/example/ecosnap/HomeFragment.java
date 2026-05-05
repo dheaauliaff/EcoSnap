@@ -12,7 +12,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 
+<<<<<<< HEAD
 import com.example.ecosnap.model.User;
+=======
+>>>>>>> 5267092143cead4c49f0890c2914264aa129435c
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 

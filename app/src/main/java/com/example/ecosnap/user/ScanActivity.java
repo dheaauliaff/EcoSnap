@@ -9,7 +9,6 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -27,8 +26,8 @@ import com.example.ecosnap.R;
 import com.example.ecosnap.helper.TFLiteHelper;
 import com.google.android.material.button.MaterialButton;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -161,11 +160,12 @@ public class ScanActivity extends AppCompatActivity {
         if (bitmap == null) return null;
 
         int rotation = readRotation(uri);
-        if (rotation == 0) return bitmap;
-
-        Matrix matrix = new Matrix();
-        matrix.postRotate(rotation);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        if (rotation != 0) {
+            Matrix matrix = new Matrix();
+            matrix.postRotate(rotation);
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        }
+        return scaleBitmap(bitmap, 640);
     }
 
     private int readRotation(Uri uri) {
@@ -202,21 +202,38 @@ public class ScanActivity extends AppCompatActivity {
         float confidence = dominant.confidence;
         String kategori = mapCategory(nama);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        currentBitmap.compress(Bitmap.CompressFormat.JPEG, 82, baos);
-        String imageBase64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+        try {
+            File file = new File(getCacheDir(), "scan.jpg");
+            try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                currentBitmap.compress(Bitmap.CompressFormat.JPEG, 82, outputStream);
+            }
 
-        Intent intent = new Intent(this, ResultActivity.class);
-        intent.putExtra("imageBase64", imageBase64);
-        intent.putExtra("nama", nama);
-        intent.putExtra("confidence", confidence);
-        intent.putExtra("kategori", kategori);
-        intent.putExtra("saran", buildSaran(nama));
-        intent.putExtra("funfact", buildFunfact(nama));
-        intent.putExtra("sourceWidth", currentBitmap.getWidth());
-        intent.putExtra("sourceHeight", currentBitmap.getHeight());
-        putFrozenDetections(intent, latestDetections);
-        startActivity(intent);
+            Intent intent = new Intent(this, ResultActivity.class);
+            intent.putExtra("imagePath", file.getAbsolutePath());
+            intent.putExtra("nama", nama);
+            intent.putExtra("confidence", confidence);
+            intent.putExtra("kategori", kategori);
+            intent.putExtra("saran", buildSaran(nama));
+            intent.putExtra("funfact", buildFunfact(nama));
+            intent.putExtra("sourceWidth", currentBitmap.getWidth());
+            intent.putExtra("sourceHeight", currentBitmap.getHeight());
+            putFrozenDetections(intent, latestDetections);
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(this, "Gagal menyiapkan hasil scan.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private Bitmap scaleBitmap(Bitmap bitmap, int maxSize) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int largest = Math.max(width, height);
+        if (largest <= maxSize) return bitmap;
+
+        float ratio = (float) maxSize / largest;
+        int targetWidth = Math.max(1, Math.round(width * ratio));
+        int targetHeight = Math.max(1, Math.round(height * ratio));
+        return Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true);
     }
 
     private TFLiteHelper.Result findDominant(List<TFLiteHelper.Result> detections) {
@@ -353,5 +370,6 @@ public class ScanActivity extends AppCompatActivity {
         if (analysisExecutor != null) {
             analysisExecutor.shutdown();
         }
+        currentBitmap = null;
     }
 }

@@ -10,8 +10,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+<<<<<<< HEAD
 import com.example.ecosnap.model.User;
 import com.example.ecosnap.auth.LoginActivity;
+=======
+>>>>>>> 5267092143cead4c49f0890c2914264aa129435c
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;

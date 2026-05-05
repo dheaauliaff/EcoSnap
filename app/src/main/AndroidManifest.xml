@@ -61,8 +61,16 @@
 
         </activity>
 
+<<<<<<< Updated upstream
         <activity android:name=".auth.LoginActivity" android:exported="false" />
+<<<<<<< HEAD
         <activity android:name=".MainDashboardActivity" android:exported="false" />
+=======
+=======
+        <activity android:name=".LoginActivity" android:exported="false" />
+        <activity android:name=".MainDashboardActivity" android:exported="false" />
+>>>>>>> Stashed changes
+>>>>>>> 5267092143cead4c49f0890c2914264aa129435c
 
         <!-- User -->
         <activity android:name=".user.DashboardUserActivity" android:exported="false" />
