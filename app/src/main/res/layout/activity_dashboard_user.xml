@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8F9FA"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
 
     <ScrollView
@@ -68,37 +69,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tvNamaUser" />
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="3dp"
-                    app:strokeWidth="0dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:layout_marginTop="8dp">
-                    
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent">
-                        
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_bell_outline"
-                            app:tint="#212121" />
 
-                        <View
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:layout_gravity="top|end"
-                            android:layout_marginTop="12dp"
-                            android:layout_marginEnd="12dp"
-                            android:background="@drawable/bg_red_dot" />
-                    </FrameLayout>
-                </com.google.android.material.card.MaterialCardView>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- 3️⃣ MAIN CTA CARD (SCAN) -->
@@ -123,26 +94,12 @@
                     android:layout_height="match_parent"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp">
-
-                    <FrameLayout
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:background="@drawable/bg_white_circle_elevated"
-                        android:backgroundTint="#33FFFFFF">
-                        <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_scan"
-                            app:tint="#FFFFFF" />
-                    </FrameLayout>
+                    android:paddingHorizontal="20dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
                         android:orientation="vertical">
                         <TextView
@@ -169,7 +126,7 @@
                             android:layout_width="28dp"
                             android:layout_height="28dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_scan"
+                            android:src="@drawable/ic_camera"
                             app:tint="#2E7D32" />
                     </FrameLayout>
                 </LinearLayout>
@@ -609,109 +566,43 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tvLihatSemua"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Lihat semua \u203A"
                     android:textColor="#2E7D32"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground" />
             </LinearLayout>
 
-            <!-- List Item: Plastik -->
-            <LinearLayout
+            <!-- Empty state text -->
+            <TextView
+                android:id="@+id/tvEmptyRiwayat"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="@drawable/bg_premium_card"
-                android:elevation="4dp"
-                android:outlineAmbientShadowColor="#0F000000"
-                android:outlineSpotShadowColor="#0A000000"
-                android:stateListAnimator="@animator/card_bounce_anim"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
+                android:text="Belum ada riwayat scan"
+                android:textColor="#757575"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:visibility="gone" />
 
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@drawable/bg_icon_gradient_plastik">
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_plastic_bottle_outline"
-                        app:tint="#FF9800" />
-                </FrameLayout>
+            <!-- RecyclerView for recent scan list -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvScanTerakhir"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/tvJenisTerakhir"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Plastik"
-                        android:textColor="#212121"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="2dp">
-                        <TextView
-                            android:id="@+id/tvKategoriTerakhir"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Anorganik"
-                            android:textColor="#FF9800"
-                            android:textSize="12sp" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" • "
-                            android:textColor="#757575"
-                            android:textSize="12sp" />
-                        <TextView
-                            android:id="@+id/tvWaktuTerakhir"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Hari ini, 20.20"
-                            android:textColor="#757575"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Thumbnail placeholder -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="0dp"
-                    app:strokeColor="#EEEEEE"
-                    app:strokeWidth="1dp">
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/logoecosnap" />
-                </com.google.android.material.card.MaterialCardView>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="\u203A"
-                    android:textColor="#757575"
-                    android:textSize="24sp" />
-            </LinearLayout>
+            <!-- Hidden fields used by HomeFragment -->
+            <TextView android:id="@+id/tvJenisTerakhir" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+            <TextView android:id="@+id/tvKategoriTerakhir" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+            <TextView android:id="@+id/tvWaktuTerakhir" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
 
             <!-- Padding at bottom -->
             <View

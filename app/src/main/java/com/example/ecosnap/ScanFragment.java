@@ -326,24 +326,26 @@ public class ScanFragment extends Fragment {
 
     private String buildSaran(String nama) {
         switch (nama.toLowerCase()) {
-            case "organik": return "Kumpulkan dan jadikan kompos untuk menyuburkan tanaman.";
-            case "kardus": return "Lipat kardus hingga pipih, lalu serahkan ke bank sampah.";
-            case "kertas": return "Pastikan kertas kering sebelum dikumpulkan untuk daur ulang.";
-            case "kaca": return "Bilas bersih dan pisahkan dari sampah lain. Hati-hati jika pecah.";
-            case "plastik": return "Bersihkan dan remas plastik untuk menghemat ruang sebelum didaur ulang.";
-            case "logam": return "Kumpulkan kaleng atau logam lain dan serahkan ke pengepul.";
+            case "organik": return "🌿 Kumpulkan sisa makanan, sayuran, dan buah ke wadah kompos. Sampah organik bisa diolah menjadi pupuk kompos yang menyuburkan tanaman. Hindari mencampurnya dengan plastik atau logam.";
+            case "kardus": return "📦 Lipat kardus hingga pipih, pastikan dalam keadaan kering dan bersih. Serahkan ke bank sampah atau pengepul untuk didaur ulang menjadi produk baru.";
+            case "kertas": return "📄 Pastikan kertas kering dan tidak terkontaminasi minyak sebelum dikumpulkan. Pisahkan berdasarkan jenis untuk memudahkan daur ulang. Gunakan kedua sisi kertas saat mencetak.";
+            case "kaca": return "🔍 Bilas wadah kaca bersih dan pisahkan dari sampah lain. Bungkus pecahan kaca dengan koran untuk menghindari cedera. Botol kaca bisa digunakan ulang sebagai wadah penyimpanan.";
+            case "plastik": return "♻️ Bersihkan dan remas botol plastik untuk menghemat ruang. Pisahkan berdasarkan jenis (PET, HDPE, PP). Kurangi plastik sekali pakai dan beralih ke alternatif reusable.";
+            case "logam": return "🔧 Kumpulkan kaleng dan logam dalam wadah terpisah. Bilas kaleng bekas sebelum dikumpulkan. Logam bernilai tinggi untuk didaur ulang, serahkan ke pengepul atau bank sampah.";
+            case "bukan sampah": return "✅ Objek ini terdeteksi bukan sebagai sampah. Pastikan barang masih layak digunakan. Jika tidak diperlukan, pertimbangkan untuk mendonasikannya.";
             default: return "Pisahkan sesuai kategori agar proses pengelolaan lebih mudah.";
         }
     }
 
     private String buildFunfact(String nama) {
         switch (nama.toLowerCase()) {
-            case "organik": return "Sampah organik dapat menjadi kompos dan mengurangi timbunan TPA.";
-            case "kardus": return "Kardus yang dipipihkan membuat proses pengumpulan jauh lebih efisien.";
-            case "kertas": return "Kertas bersih lebih mudah masuk proses daur ulang.";
-            case "kaca": return "Kaca dapat didaur ulang berulang kali tanpa banyak menurunkan kualitas.";
-            case "plastik": return "Plastik yang dipilah membantu mencegah pencemaran lingkungan.";
-            case "logam": return "Daur ulang logam dapat menghemat energi produksi bahan baru.";
+            case "organik": return "🌱 Sampah organik menyumbang 60% total sampah di Indonesia! Jika dikelola jadi kompos, bisa mengurangi emisi gas metana di TPA. 1 ton kompos menyuburkan hingga 1 hektar lahan.";
+            case "kardus": return "📦 Mendaur ulang 1 ton kardus menghemat 17 pohon besar, 26.000 liter air, dan 4.000 kWh listrik. Kardus bisa didaur ulang 5-7 kali sebelum seratnya terlalu pendek.";
+            case "kertas": return "📄 Setiap orang menggunakan rata-rata 55 kg kertas per tahun. Mendaur ulang kertas menghemat 70% energi. Satu pohon besar menghasilkan sekitar 8.000 lembar kertas HVS.";
+            case "kaca": return "🔍 Kaca bisa didaur ulang 100% tanpa kehilangan kualitas! Botol kaca daur ulang bisa kembali jadi botol baru dalam 30 hari. Menghemat 30% energi dibanding dari bahan mentah.";
+            case "plastik": return "⚠️ 1 botol plastik butuh 450 tahun untuk terurai! Setiap tahun 8 juta ton plastik berakhir di lautan. Indonesia penyumbang sampah plastik laut terbesar kedua di dunia.";
+            case "logam": return "🔧 Mendaur ulang aluminium menghemat 95% energi! Kaleng aluminium bisa kembali ke rak toko dalam 60 hari. 75% aluminium yang pernah diproduksi masih digunakan hari ini.";
+            case "bukan sampah": return "💡 Memperpanjang umur barang adalah cara paling efektif mengurangi jejak karbon. Memperbaiki daripada membuang menghemat rata-rata 5 kg CO₂ per barang.";
             default: return "Pemilahan kecil di rumah membantu pengelolaan sampah kota.";
         }
     }

@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8F9FA"
+    android:fitsSystemWindows="true"
     android:overScrollMode="never">
 
     <LinearLayout
@@ -29,31 +30,7 @@
                 app:tint="#FFFFFF"
                 android:alpha="0.08" />
 
-            <!-- Notification Bell -->
-            <FrameLayout
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="top|end"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp"
-                android:background="@drawable/bg_white_circle_elevated"
-                android:elevation="2dp"
-                android:outlineAmbientShadowColor="#0F000000"
-                android:outlineSpotShadowColor="#0A000000">
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_bell_outline"
-                    app:tint="#212121" />
-                <View
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:layout_gravity="top|end"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:background="@drawable/bg_red_dot" />
-            </FrameLayout>
+
 
             <!-- Profile Info Content -->
             <LinearLayout

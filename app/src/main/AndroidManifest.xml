@@ -85,6 +85,7 @@
         <activity android:name=".auth.MainActivity" android:exported="false" />
         <activity android:name=".user.ScanActivity" android:exported="false" />
         <activity android:name=".user.ResultActivity" android:exported="false" />
+        <activity android:name=".user.DetailScanActivity" android:exported="false" />
 
     </application>
 

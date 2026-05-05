@@ -1,5 +1,6 @@
 package com.example.ecosnap;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,16 +12,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.ecosnap.adapter.RiwayatScanAdapter;
 import com.example.ecosnap.model.User;
+import com.example.ecosnap.network.ApiService;
+import com.example.ecosnap.network.RetrofitClient;
+import com.example.ecosnap.user.HistoryActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -35,6 +42,12 @@ public class HomeFragment extends Fragment {
             tvWaktuTerakhir, tvQuote;
     TextView tvHomeOrganik, tvHomeKardus, tvHomeKaca, tvHomeLogam, tvHomeKertas, tvHomePlastik;
     AppCompatButton btnScanCepat;
+
+    // Scan Terakhir (RecyclerView)
+    RecyclerView rvScanTerakhir;
+    TextView tvEmptyRiwayat, tvLihatSemua;
+    RiwayatScanAdapter scanAdapter;
+    List<ScanHistory> recentScans = new ArrayList<>();
 
     String[] quotes = {
             "\"Memilah sampah hari ini, menyelamatkan bumi 🌍\"",
@@ -69,6 +82,16 @@ public class HomeFragment extends Fragment {
         tvHomeKertas = view.findViewById(R.id.tvHomeKertas);
         tvHomePlastik = view.findViewById(R.id.tvHomePlastik);
 
+        // Scan Terakhir views
+        rvScanTerakhir = view.findViewById(R.id.rvScanTerakhir);
+        tvEmptyRiwayat = view.findViewById(R.id.tvEmptyRiwayat);
+        tvLihatSemua = view.findViewById(R.id.tvLihatSemua);
+
+        // Setup RecyclerView
+        scanAdapter = new RiwayatScanAdapter(requireContext(), recentScans);
+        rvScanTerakhir.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvScanTerakhir.setAdapter(scanAdapter);
+
         int randomIndex = (int) (Math.random() * quotes.length);
         if (tvQuote != null) tvQuote.setText(quotes[randomIndex]);
 
@@ -81,6 +104,13 @@ public class HomeFragment extends Fragment {
             });
         }
 
+        // Lihat Semua → buka HistoryActivity
+        if (tvLihatSemua != null) {
+            tvLihatSemua.setOnClickListener(v -> {
+                startActivity(new Intent(requireContext(), HistoryActivity.class));
+            });
+        }
+
         return view;
     }
 
@@ -88,14 +118,11 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         loadDataUser();
-        // loadPrototypeData diganti dengan loadCategoryStats() via Supabase
     }
     
     // Ambil data kategori nyata dari Supabase berdasarkan scan user yang login
     private void loadCategoryStats(String uid) {
-        com.example.ecosnap.network.ApiService api =
-                com.example.ecosnap.network.RetrofitClient.getClient()
-                        .create(com.example.ecosnap.network.ApiService.class);
+        ApiService api = RetrofitClient.getClient().create(ApiService.class);
         api.getScanByUser("eq." + uid).enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
@@ -130,7 +157,8 @@ public class HomeFragment extends Fragment {
                     if (tvNamaUser    != null) tvNamaUser.setText(user.getNama());
                     if (tvWilayahUser != null) tvWilayahUser.setText(user.getRtId() + " - " + user.getRwId());
                     loadStatistikScan(uid);
-                    loadCategoryStats(uid); // ← ambil kategori dari Supabase
+                    loadCategoryStats(uid);
+                    loadRecentScans(uid);
                 }
             }
             @Override
@@ -168,21 +196,55 @@ public class HomeFragment extends Fragment {
             @Override
             public void onFailure(Call<List<ScanHistory>> call, Throwable t) {}
         });
+    }
 
-        Call<List<ScanHistory>> callLast = repository.getLastScan();
-        if (callLast == null) return;
-        callLast.enqueue(new Callback<List<ScanHistory>>() {
+    // ─── Load 5 scan terbaru dari Supabase (sama seperti Riwayat Scan) ────────
+    private void loadRecentScans(String uid) {
+        ApiService api = RetrofitClient.getClient().create(ApiService.class);
+        api.getScanByUserOrdered("eq." + uid).enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
-                if (isAdded() && response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                    ScanHistory last = response.body().get(0);
-                    if (tvJenisTerakhir != null) tvJenisTerakhir.setText(last.getJenisSampah());
-                    if (tvKategoriTerakhir != null) tvKategoriTerakhir.setText(last.getKategori());
-                    if (tvWaktuTerakhir != null) tvWaktuTerakhir.setText(last.getCreatedAt());
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    List<ScanHistory> allScans = response.body();
+
+                    recentScans.clear();
+                    // Tampilkan max 5 scan terbaru
+                    int limit = Math.min(allScans.size(), 5);
+                    for (int i = 0; i < limit; i++) {
+                        recentScans.add(allScans.get(i));
+                    }
+                    scanAdapter.notifyDataSetChanged();
+
+                    // Empty state
+                    if (recentScans.isEmpty()) {
+                        rvScanTerakhir.setVisibility(View.GONE);
+                        tvEmptyRiwayat.setVisibility(View.VISIBLE);
+                    } else {
+                        rvScanTerakhir.setVisibility(View.VISIBLE);
+                        tvEmptyRiwayat.setVisibility(View.GONE);
+                    }
+
+                    // Update hidden last scan fields (backwards compat)
+                    if (!allScans.isEmpty()) {
+                        ScanHistory last = allScans.get(0);
+                        if (tvJenisTerakhir != null) tvJenisTerakhir.setText(last.getJenisSampah());
+                        if (tvKategoriTerakhir != null) tvKategoriTerakhir.setText(last.getKategori());
+                        if (tvWaktuTerakhir != null) tvWaktuTerakhir.setText(last.getCreatedAt());
+                    }
+                } else {
+                    rvScanTerakhir.setVisibility(View.GONE);
+                    tvEmptyRiwayat.setVisibility(View.VISIBLE);
                 }
             }
+
             @Override
-            public void onFailure(Call<List<ScanHistory>> call, Throwable t) {}
+            public void onFailure(Call<List<ScanHistory>> call, Throwable t) {
+                if (isAdded()) {
+                    rvScanTerakhir.setVisibility(View.GONE);
+                    tvEmptyRiwayat.setVisibility(View.VISIBLE);
+                }
+            }
         });
     }
 }

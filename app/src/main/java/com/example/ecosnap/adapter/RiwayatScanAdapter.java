@@ -1,6 +1,7 @@
 package com.example.ecosnap.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.example.ecosnap.R;
 import com.example.ecosnap.ScanHistory;
+import com.example.ecosnap.user.DetailScanActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -87,6 +89,17 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
         } else {
             h.ivThumbnail.setImageResource(R.drawable.ic_scan);
         }
+
+        // Klik → buka DetailScanActivity
+        h.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, DetailScanActivity.class);
+            intent.putExtra("nama", item.getJenisSampah());
+            intent.putExtra("kategori", item.getKategori());
+            intent.putExtra("confidence", item.getAkurasi() != null ? item.getAkurasi() : 0f);
+            intent.putExtra("tanggal", item.getCreatedAt());
+            intent.putExtra("imageUrl", item.getFotoUrl());
+            context.startActivity(intent);
+        });
     }
 
     @Override
