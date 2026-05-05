@@ -53,28 +53,7 @@ public class ScanHistory {
     public String getKategori() { return kategori; }
     public String getFotoUrl() { return fotoUrl; }
     public Float getAkurasi() { return akurasi; }
-<<<<<<< HEAD
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
     public String getCreatedAt() { return createdAt; }
 }
-=======
-    public Double getLatitude() { return latitude; }
-    public Double getLongitude() { return longitude; }
-    public String getCreatedAt() { return createdAt; }
-<<<<<<< Updated upstream
-
-    // 🔥 GETTER GPS
-    @SerializedName("latitude")
-    private Double latitude;
-
-    @SerializedName("longitude")
-    private Double longitude;
-
-    public Double getLatitude() { return latitude; }
-    public Double getLongitude() { return longitude; }
-}
-=======
-}
->>>>>>> Stashed changes
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c

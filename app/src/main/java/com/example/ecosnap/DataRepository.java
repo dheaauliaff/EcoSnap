@@ -1,11 +1,8 @@
 package com.example.ecosnap;
 
-<<<<<<< HEAD
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.model.User;
-=======
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 

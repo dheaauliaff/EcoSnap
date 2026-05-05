@@ -25,12 +25,9 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
-<<<<<<< HEAD
 import com.example.ecosnap.helper.TFLiteHelper;
 import com.example.ecosnap.helper.OverlayView;
 import com.example.ecosnap.user.ResultActivity;
-=======
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
 import com.google.android.material.button.MaterialButton;
 
 import java.io.File;

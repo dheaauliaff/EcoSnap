@@ -6,34 +6,14 @@
     android:layout_height="match_parent"
     android:background="#F8F9FA">
 
-<<<<<<< HEAD
     <androidx.core.widget.NestedScrollView
-=======
-<<<<<<< Updated upstream
-    <!-- ===================== SCROLL CONTENT ===================== -->
-    <ScrollView
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
         android:overScrollMode="never"
         app:layout_constraintTop_toTopOf="parent"
-<<<<<<< HEAD
         app:layout_constraintBottom_toTopOf="@id/navDivider"
-=======
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
-=======
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:overScrollMode="never"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
->>>>>>> Stashed changes
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -41,96 +21,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-<<<<<<< HEAD
-            android:paddingHorizontal="16dp"
-=======
-<<<<<<< Updated upstream
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="24dp"
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
-            android:paddingBottom="24dp">
-
-            <!-- 1️⃣ HEADER -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="24dp"
-                android:gravity="center_vertical">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Statistik"
-                        android:textColor="#1B5E20"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="12dp"
-                        android:text="Pantau kontribusi &amp; jaga lingkungan bersama"
-                        android:textColor="#757575"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:background="@drawable/bg_filter_btn"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="12dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_calendar_month"
-                        app:tint="#4CAF50" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="Bulan ini"
-                        android:textColor="#1B5E20"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_marginStart="4dp"
-                        android:src="@drawable/ic_back"
-                        android:rotation="-90"
-                        app:tint="#1B5E20" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- 2️⃣ CARD DISTRIBUSI -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-<<<<<<< HEAD
-=======
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#EEEEEE">
-=======
             android:paddingHorizontal="16dp"
             android:paddingBottom="24dp">
 
@@ -206,7 +96,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
                 android:layout_marginTop="24dp"
                 android:background="@drawable/bg_premium_card"
                 android:elevation="4dp"
@@ -214,133 +103,12 @@
                 android:outlineSpotShadowColor="#0A000000"
                 android:orientation="vertical"
                 android:padding="16dp">
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-<<<<<<< HEAD
                     android:gravity="center_vertical">
-=======
-<<<<<<< Updated upstream
-                    android:weightSum="3"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="16dp">
-
-                    <!-- TOTAL -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvTotal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:textColor="#000000" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Total"
-                            android:textSize="13sp"
-                            android:textColor="#666666"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="#EEEEEE" />
-
-                    <!-- ORGANIK -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvOrganik"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:textColor="#2E7D32" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Organik"
-                            android:textSize="13sp"
-                            android:textColor="#666666"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="#EEEEEE" />
-
-                    <!-- ANORGANIK -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvAnorganik"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:textColor="#FB8C00" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Anorganik"
-                            android:textSize="13sp"
-                            android:textColor="#666666"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- DISTRIBUSI -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#EEEEEE">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-=======
-                    android:gravity="center_vertical">
->>>>>>> Stashed changes
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
 
                     <TextView
                         android:layout_width="0dp"
@@ -355,7 +123,6 @@
                         android:id="@+id/tvTotalSemua"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-<<<<<<< HEAD
                         android:text="Total 98"
                         android:textColor="#2E7D32"
                         android:textSize="12sp"
@@ -365,28 +132,6 @@
                         android:background="@drawable/bg_green_soft_card" />
                 </LinearLayout>
 
-=======
-<<<<<<< Updated upstream
-                        android:layout_marginTop="20dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <!-- PIE CHART -->
-                        <com.github.mikephil.charting.charts.PieChart
-                            android:id="@+id/pieChart"
-                            android:layout_width="140dp"
-                            android:layout_height="140dp" />
-=======
-                        android:text="Total 98"
-                        android:textColor="#2E7D32"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="6dp"
-                        android:background="@drawable/bg_green_soft_card" />
-                </LinearLayout>
-
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -404,25 +149,13 @@
                             android:id="@+id/donutChart"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent" />
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-<<<<<<< HEAD
                             android:layout_gravity="center"
                             android:orientation="vertical"
                             android:gravity="center">
-=======
-<<<<<<< Updated upstream
-                            android:layout_weight="1"
-                            android:layout_marginStart="20dp"
-                            android:orientation="vertical">
-
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
                             <TextView
                                 android:id="@+id/tvTotalTengah"
                                 android:layout_width="wrap_content"
@@ -453,44 +186,7 @@
                             <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Organik" android:textColor="#757575" android:textSize="12sp"/>
                             <TextView android:id="@+id/tvStatOrganik" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="25 (25%)" android:textColor="#4CAF50" android:textSize="12sp"/>
                         </LinearLayout>
-=======
-                            android:layout_gravity="center"
-                            android:orientation="vertical"
-                            android:gravity="center">
-                            <TextView
-                                android:id="@+id/tvTotalTengah"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="98"
-                                android:textColor="#212121"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Total"
-                                android:textColor="#757575"
-                                android:textSize="14sp" />
-                        </LinearLayout>
-                    </FrameLayout>
 
-<<<<<<< HEAD
-=======
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="24dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <!-- Category 0: Organik #4CAF50 -->
-                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
-                            <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#4CAF50" android:layout_marginEnd="8dp"/>
-                            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Organik" android:textColor="#757575" android:textSize="12sp"/>
-                            <TextView android:id="@+id/tvStatOrganik" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="25 (25%)" android:textColor="#4CAF50" android:textSize="12sp"/>
-                        </LinearLayout>
-
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
                         <!-- Category 1: Kardus #2196F3 -->
                         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
                             <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#2196F3" android:layout_marginEnd="8dp"/>
@@ -509,11 +205,7 @@
                         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
                             <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#9C27B0" android:layout_marginEnd="8dp"/>
                             <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Logam" android:textColor="#757575" android:textSize="12sp"/>
-<<<<<<< HEAD
                             <TextView android:id="@+id/tvStatLogam" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5 (5%)" android:textColor="#9C27B0" android:textSize="12sp"/>
-=======
-                            <TextView android:id="@+id/tvStatLogam" android:layout_width="wrap_content" android:layout_height="wrap_content" text="5 (5%)" android:textColor="#9C27B0" android:textSize="12sp"/>
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
                         </LinearLayout>
 
                         <!-- Category 4: Kertas #FFC107 -->
@@ -679,10 +371,6 @@
                             android:elevation="4dp"
                             android:outlineAmbientShadowColor="#0F000000"
                             android:outlineSpotShadowColor="#0A000000"/>
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
 
                         <TextView
                             android:id="@+id/tvRank1RT"
@@ -752,7 +440,6 @@
                             android:textSize="12sp" />
                     </LinearLayout>
                 </LinearLayout>
-<<<<<<< HEAD
 
                 <View
                     android:layout_width="match_parent"
@@ -772,32 +459,32 @@
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
                     <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="5." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 05" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="120" android:textColor="#757575" android:textSize="14sp"/>
+                    <TextView android:id="@+id/tvRank5RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 05" android:textColor="#212121" android:textSize="14sp"/>
+                    <TextView android:id="@+id/tvRank5Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="120" android:textColor="#757575" android:textSize="14sp"/>
                 </LinearLayout>
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
                     <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="6." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 06" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="100" android:textColor="#757575" android:textSize="14sp"/>
+                    <TextView android:id="@+id/tvRank6RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 06" android:textColor="#212121" android:textSize="14sp"/>
+                    <TextView android:id="@+id/tvRank6Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="100" android:textColor="#757575" android:textSize="14sp"/>
                 </LinearLayout>
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
                     <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="7." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 07" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="80" android:textColor="#757575" android:textSize="14sp"/>
+                    <TextView android:id="@+id/tvRank7RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 07" android:textColor="#212121" android:textSize="14sp"/>
+                    <TextView android:id="@+id/tvRank7Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="80" android:textColor="#757575" android:textSize="14sp"/>
                 </LinearLayout>
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
                     <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="8." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 08" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="60" android:textColor="#757575" android:textSize="14sp"/>
+                    <TextView android:id="@+id/tvRank8RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 08" android:textColor="#212121" android:textSize="14sp"/>
+                    <TextView android:id="@+id/tvRank8Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="60" android:textColor="#757575" android:textSize="14sp"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -827,10 +514,6 @@
                 </LinearLayout>
 
             </LinearLayout>
-=======
-<<<<<<< Updated upstream
-            </com.google.android.material.card.MaterialCardView>
->>>>>>> 5267092143cead4c49f0890c2914264aa129435c
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
@@ -858,84 +541,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-=======
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="32dp"
-                    android:layout_marginBottom="8dp"
-                    android:background="#EEEEEE" />
-
-                <!-- LIST RANK 4-8 -->
-                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="4." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank4RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 04" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank4Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="150" android:textColor="#757575" android:textSize="14sp"/>
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="5." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 05" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="120" android:textColor="#757575" android:textSize="14sp"/>
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="6." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 06" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="100" android:textColor="#757575" android:textSize="14sp"/>
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="7." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 07" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="80" android:textColor="#757575" android:textSize="14sp"/>
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="8." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 08" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="60" android:textColor="#757575" android:textSize="14sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="16dp"
-                    android:background="@drawable/bg_button_outline"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Lihat Semua Ranking"
-                        android:textColor="#2E7D32"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_marginStart="6dp"
-                        android:src="@drawable/ic_back"
-                        android:rotation="180"
-                        app:tint="#2E7D32"/>
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
->>>>>>> Stashed changes
 
 </androidx.constraintlayout.widget.ConstraintLayout>
