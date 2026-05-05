@@ -34,6 +34,11 @@ public interface ApiService {
     @GET("scan_history?select=*")
     Call<List<ScanHistory>> getAllScans();
 
+    @GET("scan_history?select=*&order=created_at.desc")
+    Call<List<ScanHistory>> getScanByUserOrdered(
+            @Query("firebase_id") String userId
+    );
+
     @GET("scan_history?select=*")
     Call<List<ScanHistory>> getScanByUser(
             @Query("firebase_id") String userId

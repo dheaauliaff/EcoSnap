@@ -22,6 +22,7 @@ public class TFLiteHelper {
     private static final String TAG = "EcoSnapDetector";
 
     private Interpreter interpreter;
+    private org.tensorflow.lite.gpu.GpuDelegate gpuDelegate = null;
 
     private final int INPUT_SIZE = 640;
 
@@ -45,8 +46,25 @@ public class TFLiteHelper {
     private void initModel(Context context) {
         try {
             Interpreter.Options options = new Interpreter.Options();
-            options.setNumThreads(4);
-            options.setUseXNNPACK(true);
+            
+            try {
+                org.tensorflow.lite.gpu.CompatibilityList compatList = new org.tensorflow.lite.gpu.CompatibilityList();
+                if (compatList.isDelegateSupportedOnThisDevice()) {
+                    org.tensorflow.lite.gpu.GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
+                    gpuDelegate = new org.tensorflow.lite.gpu.GpuDelegate(delegateOptions);
+                    options.addDelegate(gpuDelegate);
+                    Log.d(TAG, "GPU Delegate initialized successfully");
+                } else {
+                    options.setNumThreads(4);
+                    options.setUseXNNPACK(true);
+                    Log.d(TAG, "GPU Delegate not supported, fallback to CPU XNNPACK");
+                }
+            } catch (Exception e) {
+                options.setNumThreads(4);
+                options.setUseXNNPACK(true);
+                Log.d(TAG, "Failed to init GPU delegate, fallback to CPU XNNPACK", e);
+            }
+
             interpreter = new Interpreter(loadModelFile(context), options);
             Log.d(TAG, "Model loaded. inputShape="
                     + java.util.Arrays.toString(interpreter.getInputTensor(0).shape())
@@ -511,6 +529,10 @@ public class TFLiteHelper {
         if (interpreter != null) {
             interpreter.close();
             interpreter = null;
+        }
+        if (gpuDelegate != null) {
+            gpuDelegate.close();
+            gpuDelegate = null;
         }
     }
 }

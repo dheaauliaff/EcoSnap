@@ -198,7 +198,8 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
         for (ScanHistory s : data) {
             if (s.getKategori() != null) {
-                switch (s.getKategori()) {
+                String kategori = s.getKategori().toLowerCase().replace(" ", "_");
+                switch (kategori) {
                     case "organik": organik++; break;
                     case "anorganik": anorganik++; break;
                     case "bukan_sampah": bukanSampah++; break;

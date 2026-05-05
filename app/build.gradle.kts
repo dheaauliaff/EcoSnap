@@ -83,6 +83,10 @@ dependencies {
     //cloudinary
     implementation("com.cloudinary:cloudinary-android:3.1.2")
 
+    //glide (for loading Cloudinary images)
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
     //maps
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.android.gms:play-services-maps:20.0.0")

@@ -46,7 +46,10 @@ public class ProfilFragment extends Fragment {
         initView(view);
 
         if (btnEditProfil != null) btnEditProfil.setOnClickListener(v -> {
-            if (isAdded()) Toast.makeText(getContext(), "Fitur edit profil coming soon!", Toast.LENGTH_SHORT).show();
+            if (isAdded() && getActivity() != null) {
+                Intent i = new Intent(getActivity(), com.example.ecosnap.user.HistoryActivity.class);
+                startActivity(i);
+            }
         });
 
         if (btnLogout != null) btnLogout.setOnClickListener(v -> {
@@ -135,12 +138,54 @@ public class ProfilFragment extends Fragment {
     }
 
     private void loadStatistik() {
-        SharedPrototypeData data = SharedPrototypeData.getInstance();
-        int total = data.getGlobalTotalReports();
-        String terbanyak = data.getGlobalDominantCategory();
-        
-        if (tvTotalScan != null) tvTotalScan.setText(String.valueOf(total));
-        if (tvJenisTerbanyak != null) tvJenisTerbanyak.setText(terbanyak);
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) return;
+
+        String uid = currentUser.getUid();
+        com.example.ecosnap.network.ApiService api =
+                com.example.ecosnap.network.RetrofitClient.getClient()
+                        .create(com.example.ecosnap.network.ApiService.class);
+
+        api.getScanByUser("eq." + uid).enqueue(new Callback<List<ScanHistory>>() {
+            @Override
+            public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    List<ScanHistory> list = response.body();
+                    int total = list.size();
+                    if (tvTotalScan != null) tvTotalScan.setText(String.valueOf(total));
+
+                    // Cari jenis sampah terbanyak
+                    Map<String, Integer> countMap = new HashMap<>();
+                    for (ScanHistory s : list) {
+                        String jenis = s.getJenisSampah();
+                        if (jenis != null && !jenis.isEmpty()) {
+                            countMap.put(jenis, countMap.getOrDefault(jenis, 0) + 1);
+                        }
+                    }
+
+                    String terbanyak = "-";
+                    int maxCount = 0;
+                    for (Map.Entry<String, Integer> entry : countMap.entrySet()) {
+                        if (entry.getValue() > maxCount) {
+                            maxCount = entry.getValue();
+                            terbanyak = entry.getKey();
+                        }
+                    }
+                    if (tvJenisTerbanyak != null) tvJenisTerbanyak.setText(terbanyak);
+                } else {
+                    if (tvTotalScan != null) tvTotalScan.setText("0");
+                    if (tvJenisTerbanyak != null) tvJenisTerbanyak.setText("-");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<ScanHistory>> call, Throwable t) {
+                if (!isAdded()) return;
+                if (tvTotalScan != null) tvTotalScan.setText("0");
+                if (tvJenisTerbanyak != null) tvJenisTerbanyak.setText("-");
+            }
+        });
     }
 
     private String safe(String text) {

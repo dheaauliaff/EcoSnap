@@ -32,11 +32,21 @@ public class StatistikFragment extends Fragment {
     private TextView tvRank2RT, tvRank2Total;
     private TextView tvRank3RT, tvRank3Total;
     private TextView tvRank4RT, tvRank4Total;
+    private TextView tvRank5RT, tvRank5Total;
+    private TextView tvRank6RT, tvRank6Total;
+    private TextView tvRank7RT, tvRank7Total;
+    private TextView tvRank8RT, tvRank8Total;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_rekap_admin, container, false);
+
+        // Sembunyikan bottom navigation admin karena di dalam fragment user sudah ada bottom nav sendiri
+        View bottomNav = view.findViewById(R.id.bottomNav);
+        if (bottomNav != null) {
+            bottomNav.setVisibility(View.GONE);
+        }
 
         tvTotalSemua  = view.findViewById(R.id.tvTotalSemua);
         tvTotalTengah = view.findViewById(R.id.tvTotalTengah);
@@ -57,6 +67,14 @@ public class StatistikFragment extends Fragment {
         tvRank3Total = view.findViewById(R.id.tvRank3Total);
         tvRank4RT    = view.findViewById(R.id.tvRank4RT);
         tvRank4Total = view.findViewById(R.id.tvRank4Total);
+        tvRank5RT    = view.findViewById(R.id.tvRank5RT);
+        tvRank5Total = view.findViewById(R.id.tvRank5Total);
+        tvRank6RT    = view.findViewById(R.id.tvRank6RT);
+        tvRank6Total = view.findViewById(R.id.tvRank6Total);
+        tvRank7RT    = view.findViewById(R.id.tvRank7RT);
+        tvRank7Total = view.findViewById(R.id.tvRank7Total);
+        tvRank8RT    = view.findViewById(R.id.tvRank8RT);
+        tvRank8Total = view.findViewById(R.id.tvRank8Total);
 
         return view;
     }
@@ -143,6 +161,10 @@ public class StatistikFragment extends Fragment {
         updateRankRow(tvRank2RT, tvRank2Total, rtList, 1);
         updateRankRow(tvRank3RT, tvRank3Total, rtList, 2);
         updateRankRow(tvRank4RT, tvRank4Total, rtList, 3);
+        updateRankRow(tvRank5RT, tvRank5Total, rtList, 4);
+        updateRankRow(tvRank6RT, tvRank6Total, rtList, 5);
+        updateRankRow(tvRank7RT, tvRank7Total, rtList, 6);
+        updateRankRow(tvRank8RT, tvRank8Total, rtList, 7);
     }
 
     // ─── Helper UI ───────────────────────────────────────────────────────────
