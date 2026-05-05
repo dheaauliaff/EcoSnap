@@ -3,294 +3,467 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_screen_soft"
+    android:background="#F8F9FA"
     android:overScrollMode="never">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="100dp">
 
-        <LinearLayout
+        <!-- 1️⃣ HEADER PROFILE -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:background="@drawable/bg_header"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="22dp">
+            android:layout_height="160dp"
+            android:background="@drawable/bg_profile_header_rounded">
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="76dp"
-                android:layout_height="76dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="38dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#80FFFFFF"
-                app:strokeWidth="2dp">
+            <!-- Leaf Decoration (Subtle) -->
+            <ImageView
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:layout_gravity="bottom|end"
+                android:layout_marginBottom="-20dp"
+                android:layout_marginEnd="-10dp"
+                android:src="@drawable/ic_leaf_outline"
+                app:tint="#FFFFFF"
+                android:alpha="0.08" />
 
-                <TextView
-                    android:id="@+id/tvAvatarInisial"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="U"
-                    android:textColor="#1B5E20"
-                    android:textSize="30sp"
-                    android:textStyle="bold" />
-            </com.google.android.material.card.MaterialCardView>
+            <!-- Notification Bell -->
+            <FrameLayout
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/bg_white_circle_elevated"
+                android:elevation="2dp"
+                android:outlineAmbientShadowColor="#0F000000"
+                android:outlineSpotShadowColor="#0A000000">
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_bell_outline"
+                    app:tint="#212121" />
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/bg_red_dot" />
+            </FrameLayout>
 
+            <!-- Profile Info Content -->
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_gravity="center_vertical"
+                android:paddingHorizontal="24dp"
+                android:layout_marginTop="8dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Profil"
-                    android:textColor="#D9F1DC"
-                    android:textSize="14sp" />
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_white_circle_elevated"
+                    android:elevation="0dp">
+                    <TextView
+                        android:id="@+id/tvAvatarInisial"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="D"
+                        android:textColor="#2E7D32"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
 
-                <TextView
-                    android:id="@+id/tvNamaProfil"
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Nama User"
-                    android:textColor="#FFFFFF"
-                    android:textSize="21sp"
-                    android:textStyle="bold" />
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvRoleProfil"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_badge_role"
-                    android:paddingStart="12dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="12dp"
-                    android:paddingBottom="4dp"
-                    android:text="User"
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Halo,"
+                        android:textColor="#E8F5E9"
+                        android:textSize="13sp" />
 
-                <TextView
-                    android:id="@+id/tvInfoWilayahHeader"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="RT 01 - RW 01"
-                    android:textColor="#D9F1DC"
-                    android:textSize="13sp" />
+                    <TextView
+                        android:id="@+id/tvNamaProfil"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Daffa Danishwara"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_badge_role"
+                        android:backgroundTint="#1B5E20"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp">
+                        
+                        <TextView
+                            android:id="@+id/tvRoleProfil"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="User"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                            
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=" • "
+                            android:textColor="#80FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvInfoWilayahHeader"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="RT 01"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="18dp">
+            android:paddingHorizontal="16dp"
+            android:paddingTop="24dp">
 
+            <!-- 2️⃣ RINGKASAN SAYA -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Ringkasan Saya"
-                android:textColor="#0D2F16"
-                android:textSize="17sp"
+                android:textColor="#1B5E20"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:strokeColor="#E6F1E7"
-                app:strokeWidth="1dp">
+                android:background="@drawable/bg_premium_card"
+                android:elevation="4dp"
+                android:outlineAmbientShadowColor="#0F000000"
+                android:outlineSpotShadowColor="#0A000000"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="16dp">
 
+                <!-- Kiri: Total Scan -->
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent"
                     android:orientation="horizontal"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/tvTotalScan"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="Total Scan : 0"
-                        android:textColor="#0D2F16"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <View
-                        android:layout_width="1dp"
+                    android:gravity="center_vertical">
+                    
+                    <FrameLayout
+                        android:layout_width="44dp"
                         android:layout_height="44dp"
-                        android:background="#E6F1E7" />
-
-                    <TextView
-                        android:id="@+id/tvJenisTerbanyak"
-                        android:layout_width="0dp"
+                        android:background="@drawable/bg_white_circle_elevated"
+                        android:backgroundTint="#E8F5E9"
+                        android:elevation="0dp">
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_scan"
+                            app:tint="#4CAF50" />
+                    </FrameLayout>
+                    
+                    <LinearLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="Jenis Terbanyak : -"
-                        android:textColor="#0D2F16"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Scan"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="bottom"
+                            android:layout_marginTop="2dp">
+                            <TextView
+                                android:id="@+id/tvTotalScan"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textColor="#4CAF50"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:text="scan"
+                                android:textColor="#757575"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="16dp"
+                    android:background="#EEEEEE" />
+
+                <!-- Kanan: Jenis Terbanyak -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    
+                    <FrameLayout
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/bg_white_circle_elevated"
+                        android:backgroundTint="#FFF3E0"
+                        android:elevation="0dp">
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_chart_outline"
+                            app:tint="#FF9800" />
+                    </FrameLayout>
+                    
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Jenis Terbanyak"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+                        <TextView
+                            android:id="@+id/tvJenisTerbanyak"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Belum ada data"
+                            android:textColor="#FF9800"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 3️⃣ INFORMASI AKUN -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
+                android:layout_marginTop="24dp"
                 android:text="Informasi Akun"
-                android:textColor="#0D2F16"
-                android:textSize="17sp"
+                android:textColor="#1B5E20"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="3dp"
-                app:strokeColor="#E6F1E7"
-                app:strokeWidth="1dp">
+                android:background="@drawable/bg_premium_card"
+                android:elevation="4dp"
+                android:outlineAmbientShadowColor="#0F000000"
+                android:outlineSpotShadowColor="#0A000000"
+                android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/tvInfoNama"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Nama"
-                        android:textColor="#0D2F16"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvInfoNomorHp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:text="Nomor HP"
-                        android:textColor="#607D63"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/tvInfoWilayah"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:text="Wilayah"
-                        android:textColor="#607D63"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/tvInfoRole"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:text="Role"
-                        android:textColor="#607D63"
-                        android:textSize="14sp" />
+                <!-- Row: Nama -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
+                    <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_user_outline" app:tint="#2E7D32" />
+                    </FrameLayout>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="Nama" android:textColor="#757575" android:textSize="14sp" />
+                    <Space android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+                    <TextView android:id="@+id/tvInfoNama" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Daffa Danishwara" android:textColor="#212121" android:textSize="14sp" android:textStyle="bold" />
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_arrow_right" app:tint="#BDBDBD" android:layout_marginStart="8dp"/>
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginHorizontal="16dp"/>
 
+                <!-- Row: Nomor HP -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
+                    <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_phone_outline" app:tint="#2E7D32" />
+                    </FrameLayout>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="Nomor HP" android:textColor="#757575" android:textSize="14sp" />
+                    <Space android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+                    <TextView android:id="@+id/tvInfoNomorHp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="085136926723" android:textColor="#212121" android:textSize="14sp" android:textStyle="bold" />
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_arrow_right" app:tint="#BDBDBD" android:layout_marginStart="8dp"/>
+                </LinearLayout>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginHorizontal="16dp"/>
+
+                <!-- Row: Wilayah -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
+                    <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_location_outline" app:tint="#2E7D32" />
+                    </FrameLayout>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="Wilayah" android:textColor="#757575" android:textSize="14sp" />
+                    <Space android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+                    <TextView android:id="@+id/tvInfoWilayah" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RW 01 / RT 01" android:textColor="#212121" android:textSize="14sp" android:textStyle="bold" />
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_arrow_right" app:tint="#BDBDBD" android:layout_marginStart="8dp"/>
+                </LinearLayout>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginHorizontal="16dp"/>
+
+                <!-- Row: Role -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
+                    <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_shield_outline" app:tint="#2E7D32" />
+                    </FrameLayout>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="Role" android:textColor="#757575" android:textSize="14sp" />
+                    <Space android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+                    <TextView android:id="@+id/tvInfoRole" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="User" android:textColor="#212121" android:textSize="14sp" android:textStyle="bold" />
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_arrow_right" app:tint="#BDBDBD" android:layout_marginStart="8dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 4️⃣ MENU SECTION -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
+                android:layout_marginTop="24dp"
                 android:text="Menu"
-                android:textColor="#0D2F16"
-                android:textSize="17sp"
+                android:textColor="#1B5E20"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="3dp"
-                app:strokeColor="#E6F1E7"
-                app:strokeWidth="1dp">
+                android:background="@drawable/bg_premium_card"
+                android:elevation="4dp"
+                android:outlineAmbientShadowColor="#0F000000"
+                android:outlineSpotShadowColor="#0A000000"
+                android:orientation="vertical">
 
-                <LinearLayout
+                <!-- Menu 1: Riwayat Scan -->
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
+                    android:layout_height="60dp"
+                    android:background="?attr/selectableItemBackground">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp">
+                        <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
+                            <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_history_outline" app:tint="#2E7D32" />
+                        </FrameLayout>
+                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="Riwayat Scan" android:textColor="#424242" android:textSize="14sp" />
+                        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_arrow_right" app:tint="#BDBDBD" />
+                    </LinearLayout>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnEditProfil"
                         android:layout_width="match_parent"
-                        android:layout_height="52dp"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        app:backgroundTint="@android:color/transparent"
+                        app:rippleColor="#204CAF50"
+                        android:stateListAnimator="@null" />
+                </FrameLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginHorizontal="16dp"/>
+
+                <!-- Menu 2: Tentang Aplikasi -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:background="?attr/selectableItemBackground">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:text="Riwayat Scan"
-                        android:textColor="#0D2F16"
-                        android:textSize="14sp"
-                        app:backgroundTint="#FFFFFF"
-                        app:cornerRadius="0dp"
-                        app:icon="@drawable/ic_total"
-                        app:iconGravity="textStart"
-                        app:iconTint="#1B5E20" />
+                        android:paddingHorizontal="16dp">
+                        <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
+                            <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_info_outline" app:tint="#2E7D32" />
+                        </FrameLayout>
+                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="Tentang Aplikasi" android:textColor="#424242" android:textSize="14sp" />
+                        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_arrow_right" app:tint="#BDBDBD" />
+                    </LinearLayout>
+                </FrameLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#EEF5EF" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginHorizontal="16dp"/>
 
-                    <TextView
+                <!-- Menu 3: Bantuan -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:background="?attr/selectableItemBackground">
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="52dp"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:text="Tentang Aplikasi"
-                        android:textColor="#0D2F16"
-                        android:textSize="14sp" />
+                        android:paddingHorizontal="16dp">
+                        <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
+                            <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_help_outline" app:tint="#2E7D32" />
+                        </FrameLayout>
+                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="Bantuan" android:textColor="#424242" android:textSize="14sp" />
+                        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_arrow_right" app:tint="#BDBDBD" />
+                    </LinearLayout>
+                </FrameLayout>
+            </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#EEF5EF" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:gravity="center_vertical"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:text="Bantuan"
-                        android:textColor="#0D2F16"
-                        android:textSize="14sp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
+            <!-- 5️⃣ LOGOUT BUTTON -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:layout_marginTop="18dp"
-                android:layout_marginBottom="26dp"
-                android:background="@drawable/bg_logout_outline"
+                android:layout_height="52dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="24dp"
                 android:text="Logout"
                 android:textAllCaps="false"
-                android:textColor="#F44336"
-                android:textStyle="bold" />
+                android:textColor="#D32F2F"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:backgroundTint="#FFEBEE"
+                app:cornerRadius="20dp"
+                app:icon="@drawable/ic_logout"
+                app:iconGravity="textStart"
+                app:iconTint="#D32F2F"
+                app:rippleColor="#20FF5252"
+                android:stateListAnimator="@null"
+                app:elevation="0dp" />
+
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

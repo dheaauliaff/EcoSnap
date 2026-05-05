@@ -13,6 +13,7 @@ import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.model.User;
 import com.example.ecosnap.admin.DashboardAdminActivity;
 import com.example.ecosnap.user.DashboardUserActivity;
+import com.example.ecosnap.MainDashboardActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
@@ -111,7 +112,7 @@ public class LoginActivity extends AppCompatActivity {
                         startActivity(intent);
                     } else {
                         Intent intent = new Intent(LoginActivity.this,
-                                DashboardUserActivity.class);
+                                MainDashboardActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                                 | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);

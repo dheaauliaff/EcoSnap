@@ -1,8 +1,6 @@
 package com.example.ecosnap.user;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -12,8 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
-import android.util.Log;
-import android.util.Size;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -22,23 +18,14 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageProxy;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import com.example.ecosnap.helper.OverlayView;
 import com.example.ecosnap.R;
 import com.example.ecosnap.helper.TFLiteHelper;
 import com.google.android.material.button.MaterialButton;
-import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -56,27 +43,13 @@ public class ScanActivity extends AppCompatActivity {
     TFLiteHelper tflite;
     OverlayView overlayView;
     ImageView viewFinder;
-    PreviewView previewView;
-    MaterialButton btnCapture, btnGallery, btnRealtime;
+    MaterialButton btnCapture, btnGallery;
     ProgressBar progressScan;
 
     private Bitmap currentBitmap = null;
     private List<TFLiteHelper.Result> latestDetections = new ArrayList<>();
     private ExecutorService analysisExecutor;
     private Uri cameraImageUri;
-
-    private boolean isRealtimeActive = false;
-    private ProcessCameraProvider cameraProvider;
-    private long lastAnalysisTime = 0;
-
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    startRealtimeScan();
-                } else {
-                    Toast.makeText(this, "Izin kamera ditolak", Toast.LENGTH_SHORT).show();
-                }
-            });
 
     private final ActivityResultLauncher<Intent> galleryLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -100,10 +73,8 @@ public class ScanActivity extends AppCompatActivity {
         tvHasil = findViewById(R.id.tvHasil);
         overlayView = findViewById(R.id.overlayView);
         viewFinder = findViewById(R.id.viewFinder);
-        previewView = findViewById(R.id.previewView);
         btnCapture = findViewById(R.id.btnCapture);
         btnGallery = findViewById(R.id.btnGallery);
-        btnRealtime = findViewById(R.id.btnRealtime);
         progressScan = findViewById(R.id.progressScan);
 
         tflite = new TFLiteHelper(this);
@@ -111,118 +82,6 @@ public class ScanActivity extends AppCompatActivity {
 
         btnCapture.setOnClickListener(v -> openCameraIntent());
         btnGallery.setOnClickListener(v -> openGalleryIntent());
-        btnRealtime.setOnClickListener(v -> toggleRealtimeScan());
-    }
-
-    private void toggleRealtimeScan() {
-        if (isRealtimeActive) {
-            stopRealtimeScan();
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                    == PackageManager.PERMISSION_GRANTED) {
-                startRealtimeScan();
-            } else {
-                requestPermissionLauncher.launch(Manifest.permission.CAMERA);
-            }
-        }
-    }
-
-    private void startRealtimeScan() {
-        isRealtimeActive = true;
-        btnRealtime.setText("Berhenti Real-time");
-        btnRealtime.setIconResource(R.drawable.ic_total); // Pakai icon lain untuk stop
-        
-        viewFinder.setVisibility(View.GONE);
-        previewView.setVisibility(View.VISIBLE);
-        tvHasil.setText("Mencari sampah...");
-
-        ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
-                ProcessCameraProvider.getInstance(this);
-
-        cameraProviderFuture.addListener(() -> {
-            try {
-                cameraProvider = cameraProviderFuture.get();
-                bindCameraUseCases();
-            } catch (Exception e) {
-                Log.e("ScanActivity", "Gagal memulai kamera", e);
-            }
-        }, ContextCompat.getMainExecutor(this));
-    }
-
-    private void stopRealtimeScan() {
-        isRealtimeActive = false;
-        btnRealtime.setText("Scan Real-time");
-        btnRealtime.setIconResource(R.drawable.ic_scan);
-        
-        if (cameraProvider != null) {
-            cameraProvider.unbindAll();
-        }
-        
-        previewView.setVisibility(View.GONE);
-        viewFinder.setVisibility(View.VISIBLE);
-        overlayView.updateBoxes(new ArrayList<>());
-        tvHasil.setText("Pilih opsi untuk memulai");
-    }
-
-    private void bindCameraUseCases() {
-        CameraSelector cameraSelector = new CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                .build();
-
-        Preview preview = new Preview.Builder().build();
-        preview.setSurfaceProvider(previewView.getSurfaceProvider());
-
-        ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
-                .setTargetResolution(new Size(640, 640))
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                .build();
-
-        imageAnalysis.setAnalyzer(analysisExecutor, image -> {
-            long now = System.currentTimeMillis();
-            if (now - lastAnalysisTime < 150) { // Limit FPS biar gak panas
-                image.close();
-                return;
-            }
-            lastAnalysisTime = now;
-
-            Bitmap bitmap = previewView.getBitmap();
-            if (bitmap != null) {
-                List<TFLiteHelper.Result> detections = tflite.detect(bitmap);
-                
-                runOnUiThread(() -> {
-                    if (isRealtimeActive) {
-                        overlayView.setFrameInfo(bitmap.getWidth(), bitmap.getHeight(), 0);
-                        overlayView.updateBoxes(detections);
-                        updateResultText(detections);
-                        
-                        // Jika terdeteksi stabil & yakin, bisa capture otomatis
-                        checkAutoCapture(detections, bitmap);
-                    }
-                });
-            }
-            image.close();
-        });
-
-        try {
-            cameraProvider.unbindAll();
-            cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis);
-        } catch (Exception e) {
-            Log.e("ScanActivity", "Binding gagal", e);
-        }
-    }
-
-    private void checkAutoCapture(List<TFLiteHelper.Result> detections, Bitmap bitmap) {
-        if (detections.isEmpty()) return;
-        
-        TFLiteHelper.Result dominant = findDominant(detections);
-        // Jika stabil lebih dari 15 frame dan confidence tinggi (>85%)
-        if (dominant.stableFrames > 15 && dominant.confidence > 85f) {
-            currentBitmap = bitmap;
-            latestDetections = copyDetections(detections);
-            stopRealtimeScan();
-            openResult(detections);
-        }
     }
 
     private void openGalleryIntent() {
@@ -428,7 +287,6 @@ public class ScanActivity extends AppCompatActivity {
         progressScan.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         btnCapture.setEnabled(!isLoading);
         btnGallery.setEnabled(!isLoading);
-        btnRealtime.setEnabled(!isLoading);
     }
 
     private List<TFLiteHelper.Result> copyDetections(List<TFLiteHelper.Result> source) {
@@ -484,14 +342,6 @@ public class ScanActivity extends AppCompatActivity {
         intent.putExtra("frozenLocked", locked);
         intent.putExtra("frozenLowConfidence", lowConfidence);
         intent.putExtra("frozenLabels", labels);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (isRealtimeActive) {
-            stopRealtimeScan();
-        }
     }
 
     @Override

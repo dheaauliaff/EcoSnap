@@ -6,17 +6,11 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
 
     <!--ini buat yg maps-->
-    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
-    <!-- Kalau nanti maps / lokasi -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- Android 13+ kalau ambil gambar galeri -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
@@ -40,6 +34,10 @@
         android:theme="@style/Theme.EcoSnap">
 
         <!-- File provider untuk kamera -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -64,6 +62,7 @@
         </activity>
 
         <activity android:name=".auth.LoginActivity" android:exported="false" />
+        <activity android:name=".MainDashboardActivity" android:exported="false" />
 
         <!-- User -->
         <activity android:name=".user.DashboardUserActivity" android:exported="false" />

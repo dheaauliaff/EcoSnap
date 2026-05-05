@@ -3,13 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="#F8F9FA"
     android:orientation="vertical">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:fillViewport="true"
@@ -18,342 +17,712 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <LinearLayout
+            <!-- 2️⃣ HEADER -->
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="24dp"
-                android:paddingTop="32dp">
+                android:layout_height="wrap_content">
 
                 <TextView
+                    android:id="@+id/tvEcoSnap"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="EcoSnap"
                     android:textColor="#1B5E20"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
+                    android:id="@+id/tvGreeting"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="20dp"
                     android:text="Selamat datang"
-                    android:textColor="#666666"
-                    android:textSize="14sp" />
+                    android:textColor="#757575"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvEcoSnap" />
 
                 <TextView
                     android:id="@+id/tvNamaUser"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="User"
-                    android:textColor="#1B5E20"
-                    android:textSize="26sp"
-                    android:textStyle="bold" />
+                    android:text="Daffa Danishwara"
+                    android:textColor="#212121"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvGreeting" />
 
                 <TextView
                     android:id="@+id/tvWilayahUser"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
                     android:text="RT 01 - 001"
-                    android:textColor="#666666"
-                    android:textSize="13sp" />
-            </LinearLayout>
+                    android:textColor="#757575"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvNamaUser" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="3dp"
+                    app:strokeWidth="0dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="8dp">
+                    
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_bell_outline"
+                            app:tint="#212121" />
+
+                        <View
+                            android:layout_width="8dp"
+                            android:layout_height="8dp"
+                            android:layout_gravity="top|end"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginEnd="12dp"
+                            android:background="@drawable/bg_red_dot" />
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- 3️⃣ MAIN CTA CARD (SCAN) -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_green_gradient_card">
+                
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="-20dp"
+                    android:src="@drawable/ic_leaf_outline"
+                    app:tint="#FFFFFF"
+                    android:alpha="0.1" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp">
+
+                    <FrameLayout
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_white_circle_elevated"
+                        android:backgroundTint="#33FFFFFF">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_scan"
+                            app:tint="#FFFFFF" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Scan Sampah Sekarang"
+                            android:textColor="#FFFFFF"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Ayo mulai scan sampah di sekitar Anda"
+                            android:textColor="#CCFFFFFF"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_white_circle_elevated">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_scan"
+                            app:tint="#2E7D32" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnScanCepat"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:stateListAnimator="@null" />
+            </FrameLayout>
+
+            <!-- 4️⃣ RINGKASAN HARI INI (GRID 2x3) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Ringkasan Hari Ini"
+                android:textColor="#212121"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:clipChildren="false"
-                android:clipToPadding="false"
-                android:orientation="vertical"
-                android:paddingHorizontal="24dp">
+                android:layout_marginTop="16dp"
+                android:orientation="vertical">
 
-                <com.google.android.material.card.MaterialCardView
+                                <!-- ROW 1 -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#E0E0E0"
-                    app:strokeWidth="1dp">
+                    android:orientation="horizontal"
+                    android:baselineAligned="false"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
+                    <!-- Organik -->
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_premium_card"
+                        android:elevation="4dp"
+                        android:outlineAmbientShadowColor="#0F000000"
+                        android:outlineSpotShadowColor="#0A000000"
+                        android:stateListAnimator="@animator/card_bounce_anim"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:orientation="horizontal"
-                        android:padding="16dp">
-
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+                        
                         <FrameLayout
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:background="@drawable/bg_green_circle">
-
+                            android:background="@drawable/bg_icon_gradient_organik">
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:layout_gravity="center"
-                                android:contentDescription="Scan"
-                                android:src="@drawable/ic_scan"
-                                app:tint="#2E7D32" />
+                                android:src="@drawable/ic_leaf_outline"
+                                app:tint="#4CAF50" />
                         </FrameLayout>
 
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="14dp"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical"
+                            android:gravity="center">
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Scan Sampah Sekarang"
-                                android:textColor="#1B5E20"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
-
+                                android:text="Organik"
+                                android:textColor="#212121"
+                                android:textSize="14sp" />
                             <TextView
+                                android:id="@+id/tvHomeOrganik"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="Ayo mulai scan sampah di sekitar Anda"
-                                android:textColor="#666666"
+                                android:text="5"
+                                android:textColor="#4CAF50"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="items"
+                                android:textColor="#757575"
                                 android:textSize="12sp" />
                         </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnScanCepat"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:minWidth="0dp"
-                            android:padding="0dp"
-                            app:backgroundTint="#E8F5E9"
-                            app:cornerRadius="12dp"
-                            app:icon="@drawable/ic_scan"
-                            app:iconGravity="textStart"
-                            app:iconPadding="0dp"
-                            app:iconSize="20dp"
-                            app:iconTint="#2E7D32" />
                     </LinearLayout>
+
+                    <!-- Kardus -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_premium_card"
+                        android:elevation="4dp"
+                        android:outlineAmbientShadowColor="#0F000000"
+                        android:outlineSpotShadowColor="#0A000000"
+                        android:stateListAnimator="@animator/card_bounce_anim"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+                        
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_gradient_kardus">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_box_outline"
+                                app:tint="#2196F3" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Kardus"
+                                android:textColor="#212121"
+                                android:textSize="14sp" />
+                            <TextView
+                                android:id="@+id/tvHomeKardus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="10"
+                                android:textColor="#2196F3"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="items"
+                                android:textColor="#757575"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                                <!-- ROW 2 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+
+                    <!-- Kaca -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_premium_card"
+                        android:elevation="4dp"
+                        android:outlineAmbientShadowColor="#0F000000"
+                        android:outlineSpotShadowColor="#0A000000"
+                        android:stateListAnimator="@animator/card_bounce_anim"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+                        
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_gradient_kaca">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_bottle_outline"
+                                app:tint="#00BCD4" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Kaca"
+                                android:textColor="#212121"
+                                android:textSize="14sp" />
+                            <TextView
+                                android:id="@+id/tvHomeKaca"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="7"
+                                android:textColor="#00BCD4"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="items"
+                                android:textColor="#757575"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Logam -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_premium_card"
+                        android:elevation="4dp"
+                        android:outlineAmbientShadowColor="#0F000000"
+                        android:outlineSpotShadowColor="#0A000000"
+                        android:stateListAnimator="@animator/card_bounce_anim"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+                        
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_gradient_logam">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_can_outline"
+                                app:tint="#9C27B0" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Logam"
+                                android:textColor="#212121"
+                                android:textSize="14sp" />
+                            <TextView
+                                android:id="@+id/tvHomeLogam"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="3"
+                                android:textColor="#9C27B0"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="items"
+                                android:textColor="#757575"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                                <!-- ROW 3 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+
+                    <!-- Kertas -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_premium_card"
+                        android:elevation="4dp"
+                        android:outlineAmbientShadowColor="#0F000000"
+                        android:outlineSpotShadowColor="#0A000000"
+                        android:stateListAnimator="@animator/card_bounce_anim"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+                        
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_gradient_kertas">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_document_outline"
+                                app:tint="#FFC107" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Kertas"
+                                android:textColor="#212121"
+                                android:textSize="14sp" />
+                            <TextView
+                                android:id="@+id/tvHomeKertas"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="8"
+                                android:textColor="#FFC107"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="items"
+                                android:textColor="#757575"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Plastik -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_premium_card"
+                        android:elevation="4dp"
+                        android:outlineAmbientShadowColor="#0F000000"
+                        android:outlineSpotShadowColor="#0A000000"
+                        android:stateListAnimator="@animator/card_bounce_anim"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+                        
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_gradient_plastik">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_plastic_bottle_outline"
+                                app:tint="#FF9800" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Plastik"
+                                android:textColor="#212121"
+                                android:textSize="14sp" />
+                            <TextView
+                                android:id="@+id/tvHomePlastik"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="12"
+                                android:textColor="#FF9800"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="items"
+                                android:textColor="#757575"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+                </LinearLayout>
+
+            <!-- 5️⃣ SCAN TERAKHIR (LIST) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Scan Terakhir"
+                    android:textColor="#212121"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lihat semua \u203A"
+                    android:textColor="#2E7D32"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- List Item: Plastik -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_premium_card"
+                android:elevation="4dp"
+                android:outlineAmbientShadowColor="#0F000000"
+                android:outlineSpotShadowColor="#0A000000"
+                android:stateListAnimator="@animator/card_bounce_anim"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <FrameLayout
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_icon_gradient_plastik">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_plastic_bottle_outline"
+                        app:tint="#FF9800" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvJenisTerakhir"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Plastik"
+                        android:textColor="#212121"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="2dp">
+                        <TextView
+                            android:id="@+id/tvKategoriTerakhir"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Anorganik"
+                            android:textColor="#FF9800"
+                            android:textSize="12sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=" • "
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+                        <TextView
+                            android:id="@+id/tvWaktuTerakhir"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Hari ini, 20.20"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Thumbnail placeholder -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#EEEEEE"
+                    app:strokeWidth="1dp">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/logoecosnap" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:text="Ringkasan Hari Ini"
-                    android:textColor="#1B5E20"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center_horizontal"
-                    android:orientation="horizontal"
-                    android:clipChildren="false"
-                    android:clipToPadding="false">
-
-                    <include layout="@layout/item_category_organik" />
-                    <include layout="@layout/item_category_recycle" />
-                    <include layout="@layout/item_category_anorganik" />
-                    <include layout="@layout/item_category_bukan_sampah" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Scan Terakhir"
-                        android:textColor="#1B5E20"
-                        android:textSize="17sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Lihat semua"
-                        android:textColor="#2E7D32"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="86dp"
-                    android:layout_marginTop="12dp"
-                    app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#E0E0E0"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="12dp">
-
-                        <FrameLayout
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="@drawable/bg_orange_circle">
-
-                            <ImageView
-                                android:layout_width="28dp"
-                                android:layout_height="28dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_anorganik"
-                                app:tint="#F57C00" />
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="14dp"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tvJenisTerakhir"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Plastik"
-                                android:textColor="#1B5E20"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/tvKategoriTerakhir"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Anorganik"
-                                android:textColor="#F57C00"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/tvWaktuTerakhir"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Hari ini"
-                                android:textColor="#666666"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-                        
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:text=">"
-                            android:textColor="#2E7D32"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginBottom="24dp"
-                    app:cardBackgroundColor="#E8F5E9"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="18dp">
-
-                        <FrameLayout
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:background="@drawable/bg_white_circle">
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_idea"
-                                app:tint="#2E7D32" />
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="14dp"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Tips Hari Ini"
-                                android:textColor="#1B5E20"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/tvQuote"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Setiap sampah berarti memilah..."
-                                android:textColor="#666666"
-                                android:textSize="13sp" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:id="@+id/tvScanHariIni"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="5" />
-
-                    <TextView
-                        android:id="@+id/tvScanMingguIni"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="20" />
-                </LinearLayout>
+                    android:layout_marginStart="12dp"
+                    android:text="\u203A"
+                    android:textColor="#757575"
+                    android:textSize="24sp" />
             </LinearLayout>
+
+            <!-- Padding at bottom -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="32dp" />
+
+            <!-- Hidden fields to avoid crashes in HomeFragment if it checks them -->
+            <TextView android:id="@+id/tvScanHariIni" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+            <TextView android:id="@+id/tvScanMingguIni" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+            <TextView android:id="@+id/tvQuote" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+
         </LinearLayout>
     </ScrollView>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNav"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#FFFFFF"
-        app:elevation="10dp"
-        app:itemIconTint="@color/bottom_nav_color"
-        app:itemTextColor="@color/bottom_nav_color"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/nav_menu" />
 </LinearLayout>

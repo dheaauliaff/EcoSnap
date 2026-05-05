@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.ecosnap.HomeFragment"
+        android:label="Home" />
+
+    <fragment
+        android:id="@+id/nav_statistik"
+        android:name="com.example.ecosnap.StatistikFragment"
+        android:label="Statistik" />
+
+    <fragment
+        android:id="@+id/nav_scan"
+        android:name="com.example.ecosnap.ScanFragment"
+        android:label="Scan" />
+
+    <fragment
+        android:id="@+id/nav_maps"
+        android:name="com.example.ecosnap.MapsFragment"
+        android:label="Maps" />
+
+    <fragment
+        android:id="@+id/nav_profil"
+        android:name="com.example.ecosnap.ProfilFragment"
+        android:label="Profil" />
+</navigation>

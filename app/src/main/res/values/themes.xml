@@ -9,6 +9,8 @@
         <item name="colorSecondaryContainer">#C8E6C9</item>
         <item name="colorOnSecondaryContainer">#1B5E20</item>
         <item name="android:windowBackground">@color/eco_bg_soft</item>
+        <item name="android:statusBarColor">@color/eco_bg_soft</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="Theme.EcoSnap" parent="Base.Theme.EcoSnap" />

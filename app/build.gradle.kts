@@ -41,12 +41,14 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation("androidx.navigation:navigation-fragment:2.9.8")
+    implementation("androidx.navigation:navigation-ui:2.9.8")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
     implementation("com.google.firebase:firebase-auth")
 
     // Retrofit
@@ -62,30 +64,27 @@ dependencies {
 
     // Navigation Drawer
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
-    implementation("com.google.android.material:material:1.11.0")
-
-    //github
-    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     //tensorflow
-    implementation("org.tensorflow:tensorflow-lite:2.14.0")
-    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
-    implementation("org.tensorflow:tensorflow-lite-gpu-api:2.14.0")
+    implementation("org.tensorflow:tensorflow-lite:2.17.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.17.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu-api:2.17.0")
 
     // CameraX
-    val camerax_version = "1.3.0"
-    implementation("androidx.camera:camera-core:${camerax_version}")
-    implementation("androidx.camera:camera-camera2:${camerax_version}")
-    implementation("androidx.camera:camera-lifecycle:${camerax_version}")
-    implementation("androidx.camera:camera-view:${camerax_version}")
+    val cameraXVersion = "1.6.0"
+    implementation("androidx.camera:camera-core:${cameraXVersion}")
+    implementation("androidx.camera:camera-camera2:${cameraXVersion}")
+    implementation("androidx.camera:camera-lifecycle:${cameraXVersion}")
+    implementation("androidx.camera:camera-view:${cameraXVersion}")
     implementation("com.google.guava:guava:31.1-android")
 
     //cloudinary
-    implementation("com.cloudinary:cloudinary-android:2.3.1")
+    implementation("com.cloudinary:cloudinary-android:3.1.2")
 
     //maps
-    implementation("com.google.android.gms:play-services-location:21.2.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.android.gms:play-services-maps:20.0.0")
 
     // OSMDroid
-    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
 }

@@ -4,17 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#F8F9FA">
 
-    <!-- ===================== SCROLL CONTENT ===================== -->
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
         android:overScrollMode="never"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintBottom_toTopOf="@id/navDivider"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -22,267 +21,502 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="24dp"
+            android:paddingHorizontal="16dp"
             android:paddingBottom="24dp">
 
-            <!-- TITLE -->
-            <TextView
+            <!-- 1️⃣ HEADER -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Statistik"
-                android:textColor="#1B5E20"
-                android:textSize="26sp"
-                android:textStyle="bold" />
-
-            <!-- FILTER -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="16dp"
-                app:cardBackgroundColor="#F1F5F2"
-                app:cardCornerRadius="25dp"
-                app:cardElevation="0dp">
+                android:orientation="horizontal"
+                android:layout_marginTop="24dp"
+                android:gravity="center_vertical">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:padding="5dp">
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/btnMingguan"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="Mingguan"
-                        android:textColor="#2E7D32"
-                        android:textStyle="bold"
-                        android:textSize="14sp" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Statistik"
+                        android:textColor="#1B5E20"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/btnBulanan"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="Bulanan"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="bold"
-                        android:textSize="14sp"
-                        android:background="@drawable/bg_pill_active" />
-
-                    <TextView
-                        android:id="@+id/btnTahunan"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="Tahunan"
-                        android:textColor="#2E7D32"
-                        android:textStyle="bold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="12dp"
+                        android:text="Pantau kontribusi &amp; jaga lingkungan bersama"
+                        android:textColor="#757575"
                         android:textSize="14sp" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
-            <!-- CARD TOTAL -->
-            <com.google.android.material.card.MaterialCardView
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_filter_btn"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_calendar_month"
+                        app:tint="#4CAF50" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Bulan ini"
+                        android:textColor="#1B5E20"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="4dp"
+                        android:src="@drawable/ic_back"
+                        android:rotation="-90"
+                        app:tint="#1B5E20" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 2️⃣ CARD DISTRIBUSI -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#EEEEEE">
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_premium_card"
+                android:elevation="4dp"
+                android:outlineAmbientShadowColor="#0F000000"
+                android:outlineSpotShadowColor="#0A000000"
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:weightSum="3"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="16dp">
-
-                    <!-- TOTAL -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvTotal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:textColor="#000000" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Total"
-                            android:textSize="13sp"
-                            android:textColor="#666666"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="#EEEEEE" />
-
-                    <!-- ORGANIK -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvOrganik"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:textColor="#2E7D32" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Organik"
-                            android:textSize="13sp"
-                            android:textColor="#666666"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="#EEEEEE" />
-
-                    <!-- ANORGANIK -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvAnorganik"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:textColor="#FB8C00" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Anorganik"
-                            android:textSize="13sp"
-                            android:textColor="#666666"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- DISTRIBUSI -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#EEEEEE">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
+                    android:gravity="center_vertical">
 
                     <TextView
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Distribusi 4 Kategori"
+                        android:layout_weight="1"
+                        android:text="Distribusi 6 Kategori"
                         android:textColor="#1B5E20"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/tvTotalSemua"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:text="Total 98"
+                        android:textColor="#2E7D32"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:background="@drawable/bg_green_soft_card" />
+                </LinearLayout>
 
-                        <!-- PIE CHART -->
-                        <com.github.mikephil.charting.charts.PieChart
-                            android:id="@+id/pieChart"
-                            android:layout_width="140dp"
-                            android:layout_height="140dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                        <!-- LEGEND -->
+                    <!-- CHART SEGMENTED NATIVE -->
+                    <FrameLayout
+                        android:layout_width="150dp"
+                        android:layout_height="150dp">
+
+                        <com.example.ecosnap.DonutChartView
+                            android:id="@+id/donutChart"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="20dp"
-                            android:orientation="vertical">
-
+                            android:layout_gravity="center"
+                            android:orientation="vertical"
+                            android:gravity="center">
                             <TextView
-                                android:id="@+id/tvLegend1"
+                                android:id="@+id/tvTotalTengah"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Organik"
-                                android:textSize="14sp"
-                                android:textColor="#4CAF50"
-                                android:layout_marginBottom="10dp"/>
-
+                                android:text="98"
+                                android:textColor="#212121"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
                             <TextView
-                                android:id="@+id/tvLegend2"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Recycle"
-                                android:textSize="14sp"
-                                android:textColor="#1E88E5"
-                                android:layout_marginBottom="10dp"/>
+                                android:text="Total"
+                                android:textColor="#757575"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </FrameLayout>
 
-                            <TextView
-                                android:id="@+id/tvLegend3"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Anorganik"
-                                android:textSize="14sp"
-                                android:textColor="#FB8C00"
-                                android:layout_marginBottom="10dp"/>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="24dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-                            <TextView
-                                android:id="@+id/tvLegend4"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Bukan Sampah"
-                                android:textSize="14sp"
-                                android:textColor="#E53935"/>
+                        <!-- Category 0: Organik #4CAF50 -->
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#4CAF50" android:layout_marginEnd="8dp"/>
+                            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Organik" android:textColor="#757575" android:textSize="12sp"/>
+                            <TextView android:id="@+id/tvStatOrganik" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="25 (25%)" android:textColor="#4CAF50" android:textSize="12sp"/>
                         </LinearLayout>
 
+                        <!-- Category 1: Kardus #2196F3 -->
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#2196F3" android:layout_marginEnd="8dp"/>
+                            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Kardus" android:textColor="#757575" android:textSize="12sp"/>
+                            <TextView android:id="@+id/tvStatKardus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="10 (10%)" android:textColor="#2196F3" android:textSize="12sp"/>
+                        </LinearLayout>
+
+                        <!-- Category 2: Kaca #00BCD4 -->
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#00BCD4" android:layout_marginEnd="8dp"/>
+                            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Kaca" android:textColor="#757575" android:textSize="12sp"/>
+                            <TextView android:id="@+id/tvStatKaca" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="15 (15%)" android:textColor="#00BCD4" android:textSize="12sp"/>
+                        </LinearLayout>
+
+                        <!-- Category 3: Logam #9C27B0 -->
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#9C27B0" android:layout_marginEnd="8dp"/>
+                            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Logam" android:textColor="#757575" android:textSize="12sp"/>
+                            <TextView android:id="@+id/tvStatLogam" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5 (5%)" android:textColor="#9C27B0" android:textSize="12sp"/>
+                        </LinearLayout>
+
+                        <!-- Category 4: Kertas #FFC107 -->
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#FFC107" android:layout_marginEnd="8dp"/>
+                            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Kertas" android:textColor="#757575" android:textSize="12sp"/>
+                            <TextView android:id="@+id/tvStatKertas" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="20 (20%)" android:textColor="#FFC107" android:textSize="12sp"/>
+                        </LinearLayout>
+
+                        <!-- Category 5: Plastik #FF9800 -->
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                            <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_green_circle" android:backgroundTint="#FF9800" android:layout_marginEnd="8dp"/>
+                            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Plastik" android:textColor="#757575" android:textSize="12sp"/>
+                            <TextView android:id="@+id/tvStatPlastik" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="23 (23%)" android:textColor="#FF9800" android:textSize="12sp"/>
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+
+                <!-- KONTRIBUSI INFO -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_green_soft_card"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="16dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_leaf"
+                        app:tint="#2E7D32" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="Nice! Kamu sudah berkontribusi mengurangi 7.2 kg sampah bulan ini 🌱"
+                        android:textColor="#2E7D32"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 3️⃣ CARD RANKING RT -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_premium_card"
+                android:elevation="4dp"
+                android:outlineAmbientShadowColor="#0F000000"
+                android:outlineSpotShadowColor="#0A000000"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🏆"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:text="Ranking RT"
+                        android:textColor="#1B5E20"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- PODIUM TOP 3 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:orientation="horizontal"
+                    android:gravity="bottom"
+                    android:baselineAligned="false">
+
+                    <!-- RANK 2 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_scan"
+                            app:tint="#2196F3"
+                            android:layout_marginBottom="8dp"/>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_podium_rank2"
+                            android:gravity="center"
+                            android:text="2"
+                            android:textColor="#FFFFFF"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:elevation="2dp"
+                            android:outlineAmbientShadowColor="#0F000000"
+                            android:outlineSpotShadowColor="#0A000000"/>
+
+                        <TextView
+                            android:id="@+id/tvRank2RT"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="RT 02"
+                            android:textColor="#212121"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tvRank2Total"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="280"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <!-- RANK 1 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.2"
+                        android:layout_marginHorizontal="6dp"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_scan"
+                            app:tint="#4CAF50"
+                            android:layout_marginBottom="8dp"/>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="72dp"
+                            android:background="@drawable/bg_podium_rank1"
+                            android:gravity="center"
+                            android:text="1"
+                            android:textColor="#FFFFFF"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:elevation="4dp"
+                            android:outlineAmbientShadowColor="#0F000000"
+                            android:outlineSpotShadowColor="#0A000000"/>
+
+                        <TextView
+                            android:id="@+id/tvRank1RT"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="RT 01"
+                            android:textColor="#212121"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tvRank1Total"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="320"
+                            android:textColor="#4CAF50"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- RANK 3 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_scan"
+                            app:tint="#FF9800"
+                            android:layout_marginBottom="8dp"/>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_podium_rank3"
+                            android:gravity="center"
+                            android:text="3"
+                            android:textColor="#FFFFFF"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:elevation="2dp"
+                            android:outlineAmbientShadowColor="#0F000000"
+                            android:outlineSpotShadowColor="#0A000000"/>
+
+                        <TextView
+                            android:id="@+id/tvRank3RT"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="RT 03"
+                            android:textColor="#212121"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tvRank3Total"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="210"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="32dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="#EEEEEE" />
+
+                <!-- LIST RANK 4-8 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="4." android:textColor="#757575" android:textSize="14sp"/>
+                    <TextView android:id="@+id/tvRank4RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 04" android:textColor="#212121" android:textSize="14sp"/>
+                    <TextView android:id="@+id/tvRank4Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="150" android:textColor="#757575" android:textSize="14sp"/>
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="5." android:textColor="#757575" android:textSize="14sp"/>
+                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 05" android:textColor="#212121" android:textSize="14sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="120" android:textColor="#757575" android:textSize="14sp"/>
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="6." android:textColor="#757575" android:textSize="14sp"/>
+                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 06" android:textColor="#212121" android:textSize="14sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="100" android:textColor="#757575" android:textSize="14sp"/>
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="7." android:textColor="#757575" android:textSize="14sp"/>
+                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 07" android:textColor="#212121" android:textSize="14sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="80" android:textColor="#757575" android:textSize="14sp"/>
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="8." android:textColor="#757575" android:textSize="14sp"/>
+                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 08" android:textColor="#212121" android:textSize="14sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="60" android:textColor="#757575" android:textSize="14sp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_button_outline"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lihat Semua Ranking"
+                        android:textColor="#2E7D32"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="6dp"
+                        android:src="@drawable/ic_back"
+                        android:rotation="180"
+                        app:tint="#2E7D32"/>
+                </LinearLayout>
+
+            </LinearLayout>
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- LINE -->
     <View
