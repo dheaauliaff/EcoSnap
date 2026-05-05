@@ -28,7 +28,7 @@ public interface ApiService {
 
     @GET("scan_history?select=*&order=created_at.desc&limit=1")
     Call<List<ScanHistory>> getScanTerakhir(
-            @Query("user_id") String userId
+            @Query("firebase_id") String userId
     );
 
     @GET("scan_history?select=*")
@@ -36,7 +36,7 @@ public interface ApiService {
 
     @GET("scan_history?select=*")
     Call<List<ScanHistory>> getScanByUser(
-            @Query("user_id") String userId
+            @Query("firebase_id") String userId
     );
 
     @GET("scan_history?select=*")

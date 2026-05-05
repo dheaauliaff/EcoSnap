@@ -7,7 +7,7 @@ public class ScanHistory {
     @SerializedName("id")
     private String id;
 
-    @SerializedName("user_id")
+    @SerializedName("firebase_id")
     private String userId;
 
     @SerializedName("rw_id")
@@ -19,16 +19,16 @@ public class ScanHistory {
     @SerializedName("wilayah")
     private String wilayah;
 
-    @SerializedName("jenis_sampah")
+    @SerializedName("nama_sampah")
     private String jenisSampah;
 
     @SerializedName("kategori")
     private String kategori;
 
-    @SerializedName("foto_url")
+    @SerializedName("image_url")
     private String fotoUrl;
 
-    @SerializedName("akurasi")
+    @SerializedName("confidence")
     private Float akurasi;
 
     @SerializedName("latitude")

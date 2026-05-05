@@ -139,7 +139,7 @@ public class TFLiteHelper {
         }
     }
 
-    public List<Result> detect(Bitmap bitmap) {
+    public synchronized List<Result> detect(Bitmap bitmap) {
         List<Result> results = new ArrayList<>();
         List<Result> preNmsResults = new ArrayList<>();
         DebugStats stats = new DebugStats();
@@ -148,6 +148,10 @@ public class TFLiteHelper {
             if (interpreter == null) {
                 Log.e(TAG, "detect() skipped because interpreter is null");
                 lastDebugStats = stats;
+                return results;
+            }
+
+            if (bitmap == null || bitmap.isRecycled()) {
                 return results;
             }
 
@@ -503,7 +507,10 @@ public class TFLiteHelper {
         return intersectionArea / union;
     }
 
-    public void close() {
-        if (interpreter != null) interpreter.close();
+    public synchronized void close() {
+        if (interpreter != null) {
+            interpreter.close();
+            interpreter = null;
+        }
     }
 }

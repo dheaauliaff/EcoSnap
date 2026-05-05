@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA"
-    android:orientation="vertical">
+    android:background="#F8F9FA">
 
     <!-- TOOLBAR -->
     <LinearLayout
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:padding="16dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:layout_width="24dp"
@@ -34,46 +35,22 @@
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#1B5E20" />
-
-        <LinearLayout
-            android:id="@+id/btnSimpan"
-            android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:background="@drawable/bg_filter_btn"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground">
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/ic_scan"
-                app:tint="#1B5E20" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="Simpan Hasil"
-                android:textColor="#1B5E20"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-        </LinearLayout>
     </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:fillViewport="true"
-        android:overScrollMode="never">
+        android:overScrollMode="never"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/btnSimpanContainer">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="20dp"
-            android:paddingBottom="40dp">
+            android:paddingBottom="24dp">
 
             <!-- IMAGE CARD -->
             <LinearLayout
@@ -102,7 +79,7 @@
                             android:layout_height="match_parent"
                             android:scaleType="centerCrop" />
 
-                        <com.example.ecosnap.OverlayView
+                        <com.example.ecosnap.helper.OverlayView
                             android:id="@+id/overlayView"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent" />
@@ -207,15 +184,12 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/bg_green_soft_card"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:orientation="horizontal">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Semua Objek"
+                    android:text="Detail Deteksi"
                     android:textColor="#2E7D32"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -329,4 +303,31 @@
 
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+
+    <!-- STICKY BOTTOM BUTTON -->
+    <LinearLayout
+        android:id="@+id/btnSimpanContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:elevation="12dp"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSimpan"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Simpan Data &amp; Kontribusi"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="#2E7D32"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_scan"
+            app:iconGravity="textStart"
+            app:iconTint="#FFFFFF" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

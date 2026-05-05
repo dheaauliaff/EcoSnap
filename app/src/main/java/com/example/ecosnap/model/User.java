@@ -4,6 +4,9 @@ import com.google.gson.annotations.SerializedName;
 
 public class User {
 
+    @SerializedName("id")
+    private String id;
+
     @SerializedName("firebase_uid")
     private String firebaseUid;
 
@@ -26,6 +29,7 @@ public class User {
     @SerializedName("rt_id")
     private String rtId;
 
+    public String getId() { return id; }
     public String getFirebaseUid() { return firebaseUid; }
     public String getNama() { return nama; }
     public String getNomorHp() { return nomorHp; }

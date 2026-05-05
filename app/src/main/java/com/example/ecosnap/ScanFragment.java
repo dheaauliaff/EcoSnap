@@ -1,7 +1,9 @@
 package com.example.ecosnap;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -10,10 +12,10 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,49 +24,64 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.FileProvider;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageProxy;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.example.ecosnap.helper.TFLiteHelper;
 import com.example.ecosnap.helper.OverlayView;
+import com.example.ecosnap.helper.TFLiteHelper;
 import com.example.ecosnap.user.ResultActivity;
 import com.google.android.material.button.MaterialButton;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ScanFragment extends Fragment {
 
-    private static final String TAG_IMAGE_FILE = "ecosnap_capture.jpg";
+    private static final String TAG = "ScanFragment";
 
-    TextView tvHasil;
-    TFLiteHelper tflite;
-    OverlayView overlayView;
-    ImageView viewFinder;
-    MaterialButton btnCapture, btnGallery;
-    ProgressBar progressScan;
+    private TextView tvHasil;
+    private TFLiteHelper tflite;
+    private OverlayView overlayView;
+    private PreviewView viewFinder;
+    private MaterialButton btnCapture, btnGallery;
+    private ProgressBar progressScan;
 
     private Bitmap currentBitmap = null;
     private List<TFLiteHelper.Result> latestDetections = new ArrayList<>();
     private ExecutorService analysisExecutor;
-    private Uri cameraImageUri;
+
+    private ProcessCameraProvider cameraProvider;
+    private long lastAnalysisTime = 0;
+    private int frameCount = 0;
+    private int fps = 0;
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    startCamera();
+                } else {
+                    Toast.makeText(getContext(), "Izin kamera ditolak", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     private final ActivityResultLauncher<Intent> galleryLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                     processImageUri(result.getData().getData());
-                }
-            });
-
-    private final ActivityResultLauncher<Intent> cameraLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    processImageUri(cameraImageUri);
                 }
             });
 
@@ -83,10 +100,114 @@ public class ScanFragment extends Fragment {
         tflite = new TFLiteHelper(requireContext());
         analysisExecutor = Executors.newSingleThreadExecutor();
 
-        if (btnCapture != null) btnCapture.setOnClickListener(v -> openCameraIntent());
+        if (btnCapture != null) {
+            btnCapture.setOnClickListener(v -> {
+                if (!latestDetections.isEmpty()) {
+                    openResult(latestDetections);
+                } else {
+                    Toast.makeText(getContext(), "Tidak ada objek terdeteksi untuk disimpan", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
         if (btnGallery != null) btnGallery.setOnClickListener(v -> openGalleryIntent());
 
+        checkPermissions();
+
         return view;
+    }
+
+    private void checkPermissions() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            startCamera();
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+
+    private void startCamera() {
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext());
+        cameraProviderFuture.addListener(() -> {
+            try {
+                cameraProvider = cameraProviderFuture.get();
+                bindCameraUseCases();
+            } catch (ExecutionException | InterruptedException e) {
+                Log.e(TAG, "Gagal mendapatkan camera provider", e);
+            }
+        }, ContextCompat.getMainExecutor(requireContext()));
+    }
+
+    private void bindCameraUseCases() {
+        if (cameraProvider == null) return;
+
+        Preview preview = new Preview.Builder().build();
+        preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
+
+        ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                .build();
+
+        imageAnalysis.setAnalyzer(analysisExecutor, this::processImageProxy);
+
+        CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+
+        try {
+            cameraProvider.unbindAll();
+            cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis);
+        } catch (Exception e) {
+            Log.e(TAG, "Gagal binding camera use cases", e);
+        }
+    }
+
+    private void processImageProxy(ImageProxy image) {
+        if (tflite == null) {
+            image.close();
+            return;
+        }
+
+        frameCount++;
+        long now = System.currentTimeMillis();
+        if (now - lastAnalysisTime >= 1000) {
+            fps = frameCount;
+            frameCount = 0;
+            lastAnalysisTime = now;
+        }
+
+        try {
+            Bitmap bitmap = image.toBitmap();
+            if (bitmap != null) {
+                // Apply rotation
+                int rotation = image.getImageInfo().getRotationDegrees();
+                if (rotation != 0) {
+                    Matrix matrix = new Matrix();
+                    matrix.postRotate(rotation);
+                    Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                    if (rotated != bitmap) {
+                        bitmap.recycle();
+                    }
+                    bitmap = rotated;
+                }
+
+                final Bitmap finalBitmap = bitmap;
+                List<TFLiteHelper.Result> detections = tflite.detect(finalBitmap);
+                latestDetections = detections;
+                currentBitmap = finalBitmap;
+
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> {
+                        if (overlayView != null) {
+                            overlayView.setFrameInfo(finalBitmap.getWidth(), finalBitmap.getHeight(), fps);
+                            overlayView.updateBoxes(detections);
+                        }
+                        updateResultText(detections);
+                    });
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error processing frame", e);
+        } finally {
+            image.close();
+        }
     }
 
     private void openGalleryIntent() {
@@ -95,103 +216,43 @@ public class ScanFragment extends Fragment {
         galleryLauncher.launch(intent);
     }
 
-    private void openCameraIntent() {
-        try {
-            File imageFile = new File(requireContext().getExternalFilesDir(null), TAG_IMAGE_FILE);
-            cameraImageUri = FileProvider.getUriForFile(
-                    requireContext(),
-                    requireContext().getPackageName() + ".provider",
-                    imageFile
-            );
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            cameraLauncher.launch(intent);
-        } catch (Exception e) {
-            if (isAdded()) Toast.makeText(getContext(), "Kamera tidak bisa dibuka", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     private void processImageUri(@Nullable Uri uri) {
-        if (uri == null) {
-            if (isAdded()) Toast.makeText(getContext(), "Gambar tidak ditemukan", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (uri == null) return;
 
         showLoading(true);
-        if (tvHasil != null) tvHasil.setText("Memproses gambar...");
-        if (overlayView != null) overlayView.updateBoxes(new ArrayList<>());
-
         analysisExecutor.execute(() -> {
             try {
                 Bitmap bitmap = readBitmap(uri);
-                if (bitmap == null) {
+                if (bitmap != null) {
+                    currentBitmap = bitmap;
+                    List<TFLiteHelper.Result> detections = tflite.detect(bitmap);
                     if (isAdded()) requireActivity().runOnUiThread(() -> {
                         showLoading(false);
-                        Toast.makeText(getContext(), "Gagal membaca gambar", Toast.LENGTH_SHORT).show();
+                        if (!detections.isEmpty()) {
+                            openResult(detections);
+                        } else {
+                            Toast.makeText(getContext(), "Tidak ada sampah terdeteksi", Toast.LENGTH_SHORT).show();
+                        }
                     });
-                    return;
                 }
-
-                currentBitmap = bitmap;
-                List<TFLiteHelper.Result> detections = tflite.detect(bitmap);
-                latestDetections = copyDetections(detections);
-
-                if (isAdded()) requireActivity().runOnUiThread(() -> {
-                    if (viewFinder != null) viewFinder.setImageBitmap(bitmap);
-                    if (overlayView != null) {
-                        overlayView.setImageSource(bitmap.getWidth(), bitmap.getHeight());
-                        overlayView.updateBoxes(detections);
-                    }
-                    updateResultText(detections);
-                    showLoading(false);
-                    if (!detections.isEmpty()) {
-                        openResult(detections);
-                    }
-                });
             } catch (Exception e) {
-                if (isAdded()) requireActivity().runOnUiThread(() -> {
-                    showLoading(false);
-                    Toast.makeText(getContext(), "Gagal memproses gambar", Toast.LENGTH_SHORT).show();
-                    if (tvHasil != null) tvHasil.setText("Pilih gambar lain untuk mencoba lagi");
-                });
+                if (isAdded()) requireActivity().runOnUiThread(() -> showLoading(false));
             }
         });
     }
 
     private Bitmap readBitmap(Uri uri) throws Exception {
-        Bitmap bitmap = null;
-        try {
-            InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(inputStream, null, options);
-            if (inputStream != null) inputStream.close();
-
-            int scale = 1;
-            while (options.outWidth / scale / 2 >= 800 && options.outHeight / scale / 2 >= 800) {
-                scale *= 2;
-            }
-
-            options.inJustDecodeBounds = false;
-            options.inSampleSize = scale;
-
-            inputStream = requireContext().getContentResolver().openInputStream(uri);
-            bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-            if (inputStream != null) inputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        if (bitmap == null) return null;
+        InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+        if (inputStream != null) inputStream.close();
+        
         int rotation = readRotation(uri);
         if (rotation != 0) {
             Matrix matrix = new Matrix();
             matrix.postRotate(rotation);
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
         }
-        return scaleBitmap(bitmap, 640);
+        return bitmap;
     }
 
     private int readRotation(Uri uri) {
@@ -209,11 +270,11 @@ public class ScanFragment extends Fragment {
     private void updateResultText(List<TFLiteHelper.Result> detections) {
         if (tvHasil == null) return;
         if (detections.isEmpty()) {
-            tvHasil.setText("Tidak ada objek terdeteksi. Coba gambar lain.");
+            tvHasil.setText("Posisikan sampah di dalam bingkai");
             return;
         }
         TFLiteHelper.Result dominant = findDominant(detections);
-        tvHasil.setText(dominant.label + " terdeteksi - " + String.format("%.0f%%", dominant.confidence));
+        tvHasil.setText(String.format(Locale.US, "%s terdeteksi (%.0f%%)", dominant.label, dominant.confidence));
     }
 
     private void openResult(List<TFLiteHelper.Result> detections) {
@@ -226,7 +287,7 @@ public class ScanFragment extends Fragment {
 
             File file = new File(requireContext().getCacheDir(), "scan.jpg");
             try (FileOutputStream outputStream = new FileOutputStream(file)) {
-                currentBitmap.compress(Bitmap.CompressFormat.JPEG, 82, outputStream);
+                currentBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream);
             }
 
             Intent intent = new Intent(requireContext(), ResultActivity.class);
@@ -238,24 +299,11 @@ public class ScanFragment extends Fragment {
             intent.putExtra("funfact", buildFunfact(nama));
             intent.putExtra("sourceWidth", currentBitmap.getWidth());
             intent.putExtra("sourceHeight", currentBitmap.getHeight());
-            putFrozenDetections(intent, latestDetections);
+            putFrozenDetections(intent, detections);
             startActivity(intent);
         } catch (Exception e) {
-            e.printStackTrace();
-            if (isAdded()) Toast.makeText(getContext(), "Gagal menyiapkan hasil scan.", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Gagal membuka hasil", e);
         }
-    }
-
-    private Bitmap scaleBitmap(Bitmap bitmap, int maxSize) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-        int largest = Math.max(width, height);
-        if (largest <= maxSize) return bitmap;
-
-        float ratio = (float) maxSize / largest;
-        int targetWidth = Math.max(1, Math.round(width * ratio));
-        int targetHeight = Math.max(1, Math.round(height * ratio));
-        return Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true);
     }
 
     private TFLiteHelper.Result findDominant(List<TFLiteHelper.Result> detections) {
@@ -272,7 +320,7 @@ public class ScanFragment extends Fragment {
         if ("Organik".equalsIgnoreCase(label)) return "Organik";
         if ("Kardus".equalsIgnoreCase(label) || "Kaca".equalsIgnoreCase(label) || "Logam".equalsIgnoreCase(label) || "Kertas".equalsIgnoreCase(label)) return "Recycle";
         if ("Plastik".equalsIgnoreCase(label)) return "Anorganik";
-        if ("Bukan Sampah".equalsIgnoreCase(label) || "Bukan_sampah".equalsIgnoreCase(label)) return "Bukan Sampah";
+        if ("Bukan Sampah".equalsIgnoreCase(label)) return "Bukan Sampah";
         return "Anorganik";
     }
 
@@ -284,7 +332,6 @@ public class ScanFragment extends Fragment {
             case "kaca": return "Bilas bersih dan pisahkan dari sampah lain. Hati-hati jika pecah.";
             case "plastik": return "Bersihkan dan remas plastik untuk menghemat ruang sebelum didaur ulang.";
             case "logam": return "Kumpulkan kaleng atau logam lain dan serahkan ke pengepul.";
-            case "bukan sampah": return "Ini bukan sampah. Simpan agar tetap dapat digunakan.";
             default: return "Pisahkan sesuai kategori agar proses pengelolaan lebih mudah.";
         }
     }
@@ -297,58 +344,38 @@ public class ScanFragment extends Fragment {
             case "kaca": return "Kaca dapat didaur ulang berulang kali tanpa banyak menurunkan kualitas.";
             case "plastik": return "Plastik yang dipilah membantu mencegah pencemaran lingkungan.";
             case "logam": return "Daur ulang logam dapat menghemat energi produksi bahan baru.";
-            case "bukan sampah": return "Menggunakan benda lebih lama adalah langkah awal mengurangi sampah.";
             default: return "Pemilahan kecil di rumah membantu pengelolaan sampah kota.";
         }
     }
 
     private void showLoading(boolean isLoading) {
         if (progressScan != null) progressScan.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        if (btnCapture != null) btnCapture.setEnabled(!isLoading);
-        if (btnGallery != null) btnGallery.setEnabled(!isLoading);
-    }
-
-    private List<TFLiteHelper.Result> copyDetections(List<TFLiteHelper.Result> source) {
-        List<TFLiteHelper.Result> copy = new ArrayList<>();
-        if (source == null) return copy;
-        for (TFLiteHelper.Result result : source) {
-            if (result != null && result.rect != null) {
-                copy.add(new TFLiteHelper.Result(result));
-            }
-        }
-        return copy;
     }
 
     private void putFrozenDetections(Intent intent, List<TFLiteHelper.Result> detections) {
         int count = detections.size();
         float[] left = new float[count]; float[] top = new float[count]; float[] right = new float[count]; float[] bottom = new float[count]; float[] confidence = new float[count];
-        int[] classId = new int[count]; int[] trackingId = new int[count]; int[] stableFrames = new int[count];
-        boolean[] locked = new boolean[count]; boolean[] lowConfidence = new boolean[count]; String[] labels = new String[count];
+        String[] labels = new String[count];
 
         for (int i = 0; i < count; i++) {
             TFLiteHelper.Result result = detections.get(i);
             RectF rect = result.rect;
             left[i] = rect.left; top[i] = rect.top; right[i] = rect.right; bottom[i] = rect.bottom;
-            confidence[i] = result.confidence; classId[i] = result.classId; trackingId[i] = result.trackingId; stableFrames[i] = result.stableFrames;
-            locked[i] = result.isLocked; lowConfidence[i] = result.isLowConfidence; labels[i] = result.label;
+            confidence[i] = result.confidence; labels[i] = result.label;
         }
 
         intent.putExtra("frozenDetectionCount", count); intent.putExtra("frozenLeft", left); intent.putExtra("frozenTop", top); intent.putExtra("frozenRight", right); intent.putExtra("frozenBottom", bottom);
-        intent.putExtra("frozenConfidence", confidence); intent.putExtra("frozenClassId", classId); intent.putExtra("frozenTrackingId", trackingId); intent.putExtra("frozenStableFrames", stableFrames);
-        intent.putExtra("frozenLocked", locked); intent.putExtra("frozenLowConfidence", lowConfidence); intent.putExtra("frozenLabels", labels);
+        intent.putExtra("frozenConfidence", confidence); intent.putExtra("frozenLabels", labels);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (tflite != null) {
-            tflite.close();
-            tflite = null;
-        }
         if (analysisExecutor != null) {
             analysisExecutor.shutdown();
-            analysisExecutor = null;
         }
-        currentBitmap = null;
+        if (tflite != null) {
+            tflite.close();
+        }
     }
 }

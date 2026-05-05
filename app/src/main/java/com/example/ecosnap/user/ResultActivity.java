@@ -24,6 +24,7 @@ import com.example.ecosnap.R;
 import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.helper.TFLiteHelper;
 import com.example.ecosnap.SharedPrototypeData;
+import com.example.ecosnap.model.User;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
@@ -40,7 +41,7 @@ public class ResultActivity extends AppCompatActivity {
     ImageView imgHasil;
     TextView tvTotalObjek, tvKategoriTerbanyak, tvSaran, tvFunfact;
     LinearLayout llDetectedObjects;
-    OverlayView overlayView;
+    com.example.ecosnap.helper.OverlayView overlayView;
     MaterialButton btnSimpan;
 
     Bitmap bitmapHasil;
@@ -76,7 +77,11 @@ public class ResultActivity extends AppCompatActivity {
         initCloudinary();
         loadIntentData();
 
-        if (btnSimpan != null) btnSimpan.setOnClickListener(v -> uploadCloudinary());
+        if (btnSimpan != null) {
+            btnSimpan.setOnClickListener(v -> uploadCloudinary());
+        }
+        // CATATAN: Upload TIDAK dipanggil otomatis di sini
+        // agar tidak terjadi double-upload. User harus tekan tombol Simpan.
     }
 
     private void loadIntentData() {
@@ -248,93 +253,189 @@ public class ResultActivity extends AppCompatActivity {
 
     private void initCloudinary() {
         try {
-            Map config = new HashMap();
-            config.put("cloud_name", "degqcksgm");
-            config.put("api_key", "137543667976958");
-            config.put("api_secret", "7gniTF71lnqNOdnNBud_COJFO48");
-
-            MediaManager.init(this, config);
+            // Cek apakah MediaManager sudah diinisialisasi sebelumnya
+            // Kalau sudah, jangan init ulang — ini yang sering menyebabkan crash
+            MediaManager.get();
             cloudinaryReady = true;
-
-        } catch (Exception e) {
-            cloudinaryReady = true;
+            android.util.Log.d("CLOUDINARY", "MediaManager sudah aktif sebelumnya, skip init.");
+        } catch (IllegalStateException notInitYet) {
+            // Belum diinit, lakukan init sekarang
+            try {
+                Map<String, String> config = new HashMap<>();
+                config.put("cloud_name", "degqcksgm");
+                config.put("api_key",    "137543667976958");
+                config.put("api_secret", "7gniTF71lnqNOdnNBud_COJFO48");
+                MediaManager.init(this, config);
+                cloudinaryReady = true;
+                android.util.Log.d("CLOUDINARY", "MediaManager berhasil diinisialisasi.");
+            } catch (Exception e) {
+                cloudinaryReady = false;
+                android.util.Log.e("CLOUDINARY", "Gagal init MediaManager: " + e.getMessage());
+            }
         }
     }
 
     private void uploadCloudinary() {
-        if (!cloudinaryReady || bitmapHasil == null) return;
+        if (!cloudinaryReady) {
+            Toast.makeText(this, "Cloudinary belum siap, coba lagi", Toast.LENGTH_SHORT).show();
+            android.util.Log.e("CLOUDINARY", "Upload dibatalkan: cloudinaryReady=false");
+            return;
+        }
+        if (bitmapHasil == null) {
+            Toast.makeText(this, "Gambar belum tersedia", Toast.LENGTH_SHORT).show();
+            android.util.Log.e("CLOUDINARY", "Upload dibatalkan: bitmapHasil=null");
+            return;
+        }
 
         if (btnSimpan != null) {
             btnSimpan.setEnabled(false);
-            btnSimpan.setText("Uploading...");
+            btnSimpan.setText("Sedang Menyimpan...");
         }
+
+        android.util.Log.d("CLOUDINARY", "Mulai upload gambar ke Cloudinary...");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmapHasil.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+        byte[] imageBytes = baos.toByteArray();
+        android.util.Log.d("CLOUDINARY", "Ukuran gambar: " + imageBytes.length + " bytes");
 
-        MediaManager.get().upload(baos.toByteArray())
+        MediaManager.get().upload(imageBytes)
                 .option("folder", "ecosnap")
                 .callback(new com.cloudinary.android.callback.UploadCallback() {
 
-                    @Override public void onStart(String requestId) {}
-                    @Override public void onProgress(String requestId, long bytes, long totalBytes) {}
+                    @Override
+                    public void onStart(String requestId) {
+                        android.util.Log.d("CLOUDINARY", "Upload dimulai, requestId=" + requestId);
+                    }
+
+                    @Override
+                    public void onProgress(String requestId, long bytes, long totalBytes) {
+                        android.util.Log.d("CLOUDINARY", "Progress: " + bytes + "/" + totalBytes);
+                    }
 
                     @Override
                     public void onSuccess(String requestId, Map resultData) {
                         String imageUrl = resultData.get("secure_url").toString();
-                        simpanKeSupabase(imageUrl);
+                        android.util.Log.d("CLOUDINARY", "Upload berhasil! URL: " + imageUrl);
+                        fetchUserAndSave(imageUrl);
                     }
 
                     @Override
                     public void onError(String requestId, com.cloudinary.android.callback.ErrorInfo error) {
-                        if (btnSimpan != null) {
-                            btnSimpan.setEnabled(true);
-                            btnSimpan.setText("Simpan Hasil");
-                        }
-                        Toast.makeText(ResultActivity.this, "Upload gagal", Toast.LENGTH_SHORT).show();
+                        android.util.Log.e("CLOUDINARY", "Upload GAGAL: " + error.getDescription());
+                        runOnUiThread(() -> {
+                            if (btnSimpan != null) {
+                                btnSimpan.setEnabled(true);
+                                btnSimpan.setText("Simpan Ulang");
+                            }
+                            Toast.makeText(ResultActivity.this,
+                                    "Cloudinary gagal: " + error.getDescription(),
+                                    Toast.LENGTH_LONG).show();
+                        });
                     }
 
-                    @Override public void onReschedule(String requestId, com.cloudinary.android.callback.ErrorInfo error) {}
+                    @Override
+                    public void onReschedule(String requestId, com.cloudinary.android.callback.ErrorInfo error) {
+                        android.util.Log.w("CLOUDINARY", "Upload dijadwalkan ulang: " + error.getDescription());
+                    }
                 }).dispatch();
     }
 
-    private void simpanKeSupabase(String imageUrl) {
+    private void fetchUserAndSave(String imageUrl) {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser == null) return;
 
         ApiService api = RetrofitClient.getClient().create(ApiService.class);
-
-        api.insertScan(new HashMap<String, Object>() {{
-            put("user_id", firebaseUser.getUid());
-            put("jenis_sampah", primaryNama);
-            put("kategori", primaryKategori);
-            put("akurasi", primaryConfidence);
-            put("foto_url", imageUrl);
-            put("latitude", latitude);
-            put("longitude", longitude);
-        }}).enqueue(new Callback<Void>() {
+        api.getUserByFirebaseUid("eq." + firebaseUser.getUid()).enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    User user = response.body().get(0);
+                    simpanKeSupabase(imageUrl, user);
+                } else {
+                    Toast.makeText(ResultActivity.this, "Gagal mengambil profil user", Toast.LENGTH_SHORT).show();
+                    if (btnSimpan != null) {
+                        btnSimpan.setEnabled(true);
+                        btnSimpan.setText("Simpan Ulang");
+                    }
+                }
+            }
 
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                Toast.makeText(ResultActivity.this, "Gagal terhubung ke database profil", Toast.LENGTH_SHORT).show();
                 if (btnSimpan != null) {
                     btnSimpan.setEnabled(true);
-                    btnSimpan.setText("Simpan Hasil");
+                    btnSimpan.setText("Simpan Ulang");
                 }
+            }
+        });
+    }
+
+    private void simpanKeSupabase(String imageUrl, User user) {
+        ApiService api = RetrofitClient.getClient().create(ApiService.class);
+
+        // firebase_id = Firebase UID user yang login (sesuai kolom di Supabase)
+        String firebaseId = user.getFirebaseUid();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("firebase_id",  firebaseId);        // ✅ sesuai kolom Supabase
+        data.put("nama_sampah",  primaryNama);        // ✅ sesuai kolom Supabase
+        data.put("kategori",     primaryKategori);    // ✅ sesuai kolom Supabase
+        data.put("confidence",   primaryConfidence);  // ✅ sesuai kolom Supabase
+        data.put("image_url",    imageUrl);           // ✅ sesuai kolom Supabase
+        data.put("latitude",     latitude != 0 ? latitude : -6.8900);   // ✅
+        data.put("longitude",    longitude != 0 ? longitude : 107.5400); // ✅
+        if (user.getWilayah() != null && !user.getWilayah().isEmpty()) {
+            data.put("wilayah", user.getWilayah());   // ✅ sesuai kolom Supabase
+        }
+        if (user.getRwId() != null && !user.getRwId().isEmpty()) {
+            data.put("rw_id", user.getRwId());        // ✅ sesuai kolom Supabase
+        }
+        if (user.getRtId() != null && !user.getRtId().isEmpty()) {
+            data.put("rt_id", user.getRtId());        // ✅ sesuai kolom Supabase
+        }
+
+        android.util.Log.d("SUPABASE_INSERT", "Mengirim data: " + data.toString());
+
+
+        api.insertScan(data).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(ResultActivity.this, "Berhasil disimpan", Toast.LENGTH_SHORT).show();
-                    SharedPrototypeData.getInstance().addScan("RT 01", primaryNama, primaryKategori, "Baru saja");
+                    if (btnSimpan != null) {
+                        btnSimpan.setEnabled(false);
+                        btnSimpan.setText("Berhasil Disimpan ✓");
+                    }
+                    Toast.makeText(ResultActivity.this, "Data Tersimpan!", Toast.LENGTH_SHORT).show();
+                    String rt = (user.getRtId() != null && !user.getRtId().isEmpty()) ? user.getRtId() : "RT 01";
+                    SharedPrototypeData.getInstance().addScan(rt, primaryNama, primaryKategori, "Baru saja");
                 } else {
-                    Toast.makeText(ResultActivity.this, "Gagal menyimpan data", Toast.LENGTH_SHORT).show();
+                    String err = "Gagal: " + response.code();
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            android.util.Log.e("SUPABASE_ERROR", "HTTP " + response.code() + " → " + errorBody);
+                            android.util.Log.e("SUPABASE_ERROR", "Data yang dikirim: " + data.toString());
+                            err += " - " + errorBody;
+                        }
+                    } catch (Exception ignored) {}
+                    Toast.makeText(ResultActivity.this, err, Toast.LENGTH_LONG).show();
+                    if (btnSimpan != null) {
+                        btnSimpan.setEnabled(true);
+                        btnSimpan.setText("Simpan Ulang");
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(ResultActivity.this, "Koneksi database gagal: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                android.util.Log.e("SUPABASE_ERROR", "Network failure: " + t.getMessage());
                 if (btnSimpan != null) {
                     btnSimpan.setEnabled(true);
-                    btnSimpan.setText("Simpan Hasil");
+                    btnSimpan.setText("Simpan Ulang");
                 }
-                Toast.makeText(ResultActivity.this, "Koneksi gagal", Toast.LENGTH_SHORT).show();
             }
         });
     }
