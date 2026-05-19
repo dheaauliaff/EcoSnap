@@ -26,6 +26,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 public class ProfilAdminActivity extends AppCompatActivity {
 
     TextView tvAvatarInisial, tvNamaProfil, tvRoleProfil;
@@ -54,6 +56,33 @@ public class ProfilAdminActivity extends AppCompatActivity {
         layoutDaftarRT = findViewById(R.id.layoutDaftarRT);
         btnEditProfil = findViewById(R.id.btnEditProfil);
         btnLogout = findViewById(R.id.btnLogout);
+
+        // Setup bottom navigation admin
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        bottomNav.setSelectedItemId(R.id.nav_admin_profil);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_admin_dashboard) {
+                startActivity(new Intent(this, DashboardAdminActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                return true;
+            } else if (id == R.id.nav_admin_rekap) {
+                startActivity(new Intent(this, RekapAdminActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                return true;
+            } else if (id == R.id.nav_admin_ranking) {
+                startActivity(new Intent(this, AdminRankingActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                return true;
+            } else if (id == R.id.nav_admin_maps) {
+                startActivity(new Intent(this, AdminMapsActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                return true;
+            } else if (id == R.id.nav_admin_profil) {
+                return true;
+            }
+            return false;
+        });
 
         loadDataProfil();
 
