@@ -24,16 +24,20 @@ import com.example.ecosnap.ScanHistory;
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.network.RetrofitClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+
+import android.widget.PopupMenu;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -51,6 +55,9 @@ public class RekapAdminActivity extends AppCompatActivity {
     // Section riwayat scan (semua user)
     private LinearLayout layoutRiwayatAll;
     private ProgressBar pbRiwayat;
+
+    private List<ScanHistory> allScans = new ArrayList<>();
+    private String activeRtFilter = "Semua RT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +97,9 @@ public class RekapAdminActivity extends AppCompatActivity {
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (isFinishing()) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    processAndDisplay(response.body());
+                    allScans = response.body();
+                    setupFilterDropdown();
+                    applyFilterAndDisplay();
                 } else {
                     showError("Gagal memuat statistik (server)");
                 }
@@ -101,6 +110,46 @@ public class RekapAdminActivity extends AppCompatActivity {
                 if (!isFinishing()) showError("Gagal terhubung ke server");
             }
         });
+    }
+
+    private void setupFilterDropdown() {
+        View btnFilterRt = findViewById(R.id.btnFilterRt);
+        TextView tvFilterRt = findViewById(R.id.tvFilterRt);
+        if (btnFilterRt == null || tvFilterRt == null) return;
+
+        btnFilterRt.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(this, btnFilterRt);
+            popup.getMenu().add("Semua RT");
+
+            List<String> rts = new ArrayList<>();
+            for (ScanHistory s : allScans) {
+                if (s.getRtId() != null && !s.getRtId().isEmpty() && !rts.contains(s.getRtId())) {
+                    rts.add(s.getRtId());
+                }
+            }
+            Collections.sort(rts);
+            for (String rt : rts) {
+                popup.getMenu().add(rt);
+            }
+
+            popup.setOnMenuItemClickListener(item -> {
+                activeRtFilter = item.getTitle().toString();
+                tvFilterRt.setText(activeRtFilter);
+                applyFilterAndDisplay();
+                return true;
+            });
+            popup.show();
+        });
+    }
+
+    private void applyFilterAndDisplay() {
+        List<ScanHistory> filtered = new ArrayList<>();
+        for (ScanHistory s : allScans) {
+            if ("Semua RT".equals(activeRtFilter) || (s.getRtId() != null && activeRtFilter.equals(s.getRtId()))) {
+                filtered.add(s);
+            }
+        }
+        processAndDisplay(filtered);
     }
 
     private void processAndDisplay(List<ScanHistory> list) {
@@ -369,7 +418,148 @@ public class RekapAdminActivity extends AppCompatActivity {
             row.addView(tvJumlah);
             row.addView(arrow);
             layoutRankingList.addView(row);
+
+            // Klik → tampilkan detail sampah RT ini
+            final Map<String, Integer> finalRtJenis = rtJenis;
+            final int totalRt = entry.getValue();
+            row.setClickable(true);
+            row.setFocusable(true);
+            android.util.TypedValue ripple = new android.util.TypedValue();
+            getTheme().resolveAttribute(android.R.attr.selectableItemBackground, ripple, true);
+            row.setForeground(getDrawable(ripple.resourceId));
+            row.setOnClickListener(v -> showRtDetailBottomSheet(rtId, finalRtJenis, totalRt));
         }
+    }
+
+    private void showRtDetailBottomSheet(String rtId, Map<String, Integer> jenisMap, int totalRt) {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(dp(24), dp(24), dp(24), dp(40));
+
+        // Header
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText("Detail Sampah — " + rtId);
+        tvTitle.setTextColor(Color.parseColor("#1B5E20"));
+        tvTitle.setTextSize(18);
+        tvTitle.setTypeface(null, Typeface.BOLD);
+        tvTitle.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        container.addView(tvTitle);
+
+        // Total
+        TextView tvTotal = new TextView(this);
+        tvTotal.setText("Total scan: " + totalRt + " item");
+        tvTotal.setTextColor(Color.parseColor("#757575"));
+        tvTotal.setTextSize(13);
+        LinearLayout.LayoutParams totalParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        totalParams.setMargins(0, dp(4), 0, dp(20));
+        tvTotal.setLayoutParams(totalParams);
+        container.addView(tvTotal);
+
+        // Sort jenis by count
+        List<Map.Entry<String, Integer>> sorted = new ArrayList<>(jenisMap.entrySet());
+        sorted.sort((a, b) -> b.getValue() - a.getValue());
+
+        int[] colors = {
+                Color.parseColor("#4CAF50"), // Organik
+                Color.parseColor("#FF9800"), // Plastik
+                Color.parseColor("#FFC107"), // Kertas
+                Color.parseColor("#00BCD4"), // Kaca
+                Color.parseColor("#2196F3"), // Kardus
+                Color.parseColor("#9C27B0"), // Logam
+                Color.parseColor("#F44336")  // default
+        };
+
+        for (int i = 0; i < sorted.size(); i++) {
+            Map.Entry<String, Integer> e = sorted.get(i);
+            int cnt = e.getValue();
+            int pct = totalRt == 0 ? 0 : Math.round((cnt * 100f) / totalRt);
+            int color = colors[i % colors.length];
+
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            rowParams.setMargins(0, 0, 0, dp(12));
+            row.setLayoutParams(rowParams);
+
+            // Label row (Dot + Nama + Persen)
+            LinearLayout labelRow = new LinearLayout(this);
+            labelRow.setOrientation(LinearLayout.HORIZONTAL);
+            labelRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+            // Dot
+            android.widget.FrameLayout dot = new android.widget.FrameLayout(this);
+            LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dp(12), dp(12));
+            dotParams.setMarginEnd(dp(10));
+            dot.setLayoutParams(dotParams);
+            android.graphics.drawable.GradientDrawable dotBg = new android.graphics.drawable.GradientDrawable();
+            dotBg.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            dotBg.setColor(color);
+            dot.setBackground(dotBg);
+
+            TextView tvNama = new TextView(this);
+            tvNama.setText(e.getKey());
+            tvNama.setTextColor(Color.parseColor("#212121"));
+            tvNama.setTextSize(14);
+            tvNama.setTypeface(null, Typeface.BOLD);
+            tvNama.setLayoutParams(new LinearLayout.LayoutParams(0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+            TextView tvCnt = new TextView(this);
+            tvCnt.setText(cnt + " (" + pct + "%)");
+            tvCnt.setTextColor(color);
+            tvCnt.setTextSize(13);
+            tvCnt.setTypeface(null, Typeface.BOLD);
+
+            labelRow.addView(dot);
+            labelRow.addView(tvNama);
+            labelRow.addView(tvCnt);
+
+            // Progress bar
+            LinearLayout progressBg = new LinearLayout(this);
+            android.graphics.drawable.GradientDrawable bgShape = new android.graphics.drawable.GradientDrawable();
+            bgShape.setCornerRadius(dp(4));
+            bgShape.setColor(Color.parseColor("#F0F0F0"));
+            LinearLayout.LayoutParams progressBgParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(8));
+            progressBgParams.setMargins(0, dp(6), 0, 0);
+            progressBg.setLayoutParams(progressBgParams);
+            progressBg.setBackground(bgShape);
+            progressBg.setWeightSum(100);
+
+            View progressFill = new View(this);
+            android.graphics.drawable.GradientDrawable fillShape = new android.graphics.drawable.GradientDrawable();
+            fillShape.setCornerRadius(dp(4));
+            fillShape.setColor(color);
+            progressFill.setLayoutParams(new LinearLayout.LayoutParams(0, dp(8), Math.max(pct, 1)));
+            progressFill.setBackground(fillShape);
+
+            View progressEmpty = new View(this);
+            progressEmpty.setLayoutParams(new LinearLayout.LayoutParams(0, dp(8), Math.max(100 - pct, 0)));
+
+            progressBg.addView(progressFill);
+            progressBg.addView(progressEmpty);
+
+            row.addView(labelRow);
+            row.addView(progressBg);
+            container.addView(row);
+        }
+
+        if (sorted.isEmpty()) {
+            TextView empty = new TextView(this);
+            empty.setText("Belum ada data untuk RT ini");
+            empty.setTextColor(Color.parseColor("#9E9E9E"));
+            empty.setTextSize(14);
+            empty.setGravity(android.view.Gravity.CENTER);
+            container.addView(empty);
+        }
+
+        dialog.setContentView(container);
+        dialog.show();
     }
 
     private String getDominant(Map<String, Integer> map) {

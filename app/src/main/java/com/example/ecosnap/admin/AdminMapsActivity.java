@@ -24,6 +24,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +49,7 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +89,8 @@ public class AdminMapsActivity extends AppCompatActivity {
 
     // Active filter (null = no filter = show all)
     String activeFilter = null;
+    String activeRwFilter = "Semua RW";
+    List<ScanHistory> displayedScans = new ArrayList<>();
 
     // Legend views for toggling selection state
     final List<View> legendItemViews = new ArrayList<>();
@@ -132,6 +136,50 @@ public class AdminMapsActivity extends AppCompatActivity {
                 refreshLegendSelection(-1);
                 refreshMapMarkers();
                 buildCategoryBreakdown();
+            });
+        }
+
+        // Dropdowns Filter Maps
+        View btnFilterPeriod = findViewById(R.id.btnFilterPeriod);
+        View btnFilterArea = findViewById(R.id.btnFilterArea);
+        TextView tvFilterPeriod = findViewById(R.id.tvFilterPeriod);
+
+        if (btnFilterPeriod != null) {
+            btnFilterPeriod.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(this, btnFilterPeriod);
+                popup.getMenu().add("Bulan Ini");
+                popup.getMenu().add("Semua Waktu");
+                popup.setOnMenuItemClickListener(item -> {
+                    if (tvFilterPeriod != null) tvFilterPeriod.setText(item.getTitle());
+                    Toast.makeText(this, "Menampilkan data: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                    return true;
+                });
+                popup.show();
+            });
+        }
+
+        if (btnFilterArea != null) {
+            btnFilterArea.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(this, btnFilterArea);
+                popup.getMenu().add("Semua RW");
+
+                List<String> rws = new ArrayList<>();
+                for(ScanHistory s : allScans) {
+                    if (s.getRwId() != null && !s.getRwId().isEmpty() && !rws.contains(s.getRwId())) {
+                        rws.add(s.getRwId());
+                    }
+                }
+                Collections.sort(rws);
+                for(String r : rws) popup.getMenu().add(r);
+
+                popup.setOnMenuItemClickListener(item -> {
+                    activeRwFilter = item.getTitle().toString();
+                    if (tvWilayahAdmin != null) tvWilayahAdmin.setText(activeRwFilter);
+                    applyFilters();
+                    Toast.makeText(this, "Area dipilih: " + activeRwFilter, Toast.LENGTH_SHORT).show();
+                    return true;
+                });
+                popup.show();
             });
         }
 
@@ -247,11 +295,22 @@ public class AdminMapsActivity extends AppCompatActivity {
 
     private void processData(List<ScanHistory> list) {
         allScans = list;
-        totalReports = list.size();
+        applyFilters();
+    }
+
+    private void applyFilters() {
+        displayedScans.clear();
+        for (ScanHistory s : allScans) {
+            if ("Semua RW".equals(activeRwFilter) || (s.getRwId() != null && activeRwFilter.equals(s.getRwId()))) {
+                displayedScans.add(s);
+            }
+        }
+
+        totalReports = displayedScans.size();
         globalCategoryCount.clear();
         rtCount.clear();
 
-        for (ScanHistory s : list) {
+        for (ScanHistory s : displayedScans) {
             String nama = s.getJenisSampah();
             String rt = s.getRtId();
             if (nama != null) globalCategoryCount.put(nama,
@@ -277,9 +336,9 @@ public class AdminMapsActivity extends AppCompatActivity {
         if (mapView == null) return;
         mapView.getOverlays().removeIf(o -> (o instanceof Marker) || (o instanceof Polygon));
 
-        List<ScanHistory> toShow = (activeFilter == null) ? allScans : new ArrayList<>();
+        List<ScanHistory> toShow = (activeFilter == null) ? displayedScans : new ArrayList<>();
         if (activeFilter != null) {
-            for (ScanHistory s : allScans) {
+            for (ScanHistory s : displayedScans) {
                 if (activeFilter.equalsIgnoreCase(s.getJenisSampah())) {
                     toShow.add(s);
                 }
@@ -309,11 +368,13 @@ public class AdminMapsActivity extends AppCompatActivity {
         zone.setStrokeWidth(2.5f);
         mapView.getOverlays().add(zone);
 
+        String rt = scan.getRtId() != null ? scan.getRtId() : "-";
+        
         Marker marker = new Marker(mapView);
         marker.setPosition(new GeoPoint(lat, lng));
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         marker.setTitle(nama);
-        marker.setSnippet("Kategori: " + kat);
+        marker.setSnippet("Kategori: " + kat + "\nSumber: " + rt);
         marker.setIcon(new BitmapDrawable(getResources(), createPinBitmap(nama, color)));
         mapView.getOverlays().add(marker);
     }

@@ -89,11 +89,24 @@ public class DashboardAdminActivity extends AppCompatActivity {
         }
 
         loadDataAdmin();
+        updateChipStyle(); // terapkan highlight chip default (minggu)
 
         // Period filters
-        if (btnMinggu != null) btnMinggu.setOnClickListener(v -> { periodAktif = "minggu"; loadStatistik(); });
-        if (btnBulan  != null) btnBulan.setOnClickListener(v  -> { periodAktif = "bulan";  loadStatistik(); });
-        if (btnTahun  != null) btnTahun.setOnClickListener(v  -> { periodAktif = "tahun";  loadStatistik(); });
+        if (btnMinggu != null) btnMinggu.setOnClickListener(v -> {
+            periodAktif = "minggu";
+            updateChipStyle();
+            loadStatistik();
+        });
+        if (btnBulan != null) btnBulan.setOnClickListener(v -> {
+            periodAktif = "bulan";
+            updateChipStyle();
+            loadStatistik();
+        });
+        if (btnTahun != null) btnTahun.setOnClickListener(v -> {
+            periodAktif = "tahun";
+            updateChipStyle();
+            loadStatistik();
+        });
 
         // Bottom nav
         bottomNav.setSelectedItemId(R.id.nav_admin_dashboard);
@@ -129,7 +142,37 @@ public class DashboardAdminActivity extends AppCompatActivity {
         });
     }
 
+    /** Highlight chip yang sedang aktif, reset yang lain */
+    private void updateChipStyle() {
+        Chip[] chips   = { btnMinggu, btnBulan, btnTahun };
+        String[] keys  = { "minggu",  "bulan",  "tahun"  };
+
+        for (int i = 0; i < chips.length; i++) {
+            if (chips[i] == null) continue;
+            boolean aktif = keys[i].equals(periodAktif);
+            if (aktif) {
+                // Chip aktif: solid hijau + teks putih
+                chips[i].setChipBackgroundColorResource(R.color.colorPrimary); // hijau tema
+                chips[i].setTextColor(android.graphics.Color.WHITE);
+                chips[i].setChipStrokeWidth(0f);
+                chips[i].setElevation(4f);
+            } else {
+                // Chip non-aktif: putih + border abu tipis + teks abu
+                chips[i].setChipBackgroundColor(
+                        android.content.res.ColorStateList.valueOf(
+                                android.graphics.Color.parseColor("#F5F5F5")));
+                chips[i].setTextColor(android.graphics.Color.parseColor("#757575"));
+                chips[i].setChipStrokeColor(
+                        android.content.res.ColorStateList.valueOf(
+                                android.graphics.Color.parseColor("#BDBDBD")));
+                chips[i].setChipStrokeWidth(1.5f);
+                chips[i].setElevation(0f);
+            }
+        }
+    }
+
     private void loadDataAdmin() {
+
         if (mAuth.getCurrentUser() == null) return;
         String uid = mAuth.getCurrentUser().getUid();
         ApiService api = RetrofitClient.getClient().create(ApiService.class);

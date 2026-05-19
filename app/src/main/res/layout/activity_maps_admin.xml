@@ -93,6 +93,7 @@
                 android:orientation="horizontal">
 
                 <LinearLayout
+                    android:id="@+id/btnFilterPeriod"
                     android:layout_width="0dp"
                     android:layout_height="52dp"
                     android:layout_marginEnd="8dp"
@@ -101,7 +102,10 @@
                     android:elevation="4dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingHorizontal="16dp">
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
                     <ImageView
                         android:layout_width="20dp"
@@ -110,11 +114,12 @@
                         app:tint="#2E7D32" />
 
                     <TextView
+                        android:id="@+id/tvFilterPeriod"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
-                        android:text="Bulan Ini"
+                        android:text="Semua Waktu"
                         android:textColor="#212121"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -127,6 +132,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/btnFilterArea"
                     android:layout_width="0dp"
                     android:layout_height="52dp"
                     android:layout_marginStart="8dp"
@@ -135,7 +141,10 @@
                     android:elevation="4dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingHorizontal="16dp">
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
                     <ImageView
                         android:layout_width="20dp"

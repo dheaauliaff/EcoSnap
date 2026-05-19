@@ -57,8 +57,45 @@
                         android:textSize="14sp" />
                 </LinearLayout>
 
+            </LinearLayout>
 
+            <!-- Filter RT Dropdown -->
+            <LinearLayout
+                android:id="@+id/btnFilterRt"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_maps_chip"
+                android:elevation="2dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
 
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_location_pin"
+                    app:tint="#2E7D32" />
+
+                <TextView
+                    android:id="@+id/tvFilterRt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="Semua RT"
+                    android:textColor="#212121"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_arrow_down"
+                    app:tint="#2E7D32" />
             </LinearLayout>
 
             <!-- 2️⃣ CARD DISTRIBUSI -->
