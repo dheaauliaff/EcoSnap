@@ -9,11 +9,17 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.graphics.Typeface;
+import android.view.Gravity;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -57,6 +63,10 @@ public class MapsFragment extends Fragment {
     private MapView osmMap;
     private LinearLayout legendRow;
     private LinearLayout topRegionRow;
+    private LinearLayout categoryBreakdownContainer;
+    private LinearLayout filterBadgeRow;
+    private TextView tvFilterBadge;
+    private TextView btnResetFilter;
 
     // OSMDroid
     private MyLocationNewOverlay myLocationOverlay;
@@ -64,10 +74,15 @@ public class MapsFragment extends Fragment {
     // Location
     private FusedLocationProviderClient fusedLocationClient;
 
-    // Data stats
+    // Data
     private int totalReports = 0;
+    private List<ScanHistory> allScans = new ArrayList<>();
     private final Map<String, Integer> globalCategoryCount = new HashMap<>();
     private final Map<String, Integer> rtCount = new HashMap<>();
+
+    // Filter state
+    private String activeFilter = null;
+    private final List<View> legendItemViews = new ArrayList<>();
 
     @Nullable
     @Override
@@ -78,9 +93,13 @@ public class MapsFragment extends Fragment {
 
         Configuration.getInstance().setUserAgentValue(requireContext().getPackageName());
 
-        osmMap       = view.findViewById(R.id.osmMapView);
-        legendRow    = view.findViewById(R.id.legendRow);
-        topRegionRow = view.findViewById(R.id.topRegionRow);
+        osmMap                     = view.findViewById(R.id.osmMapView);
+        legendRow                  = view.findViewById(R.id.legendRow);
+        topRegionRow               = view.findViewById(R.id.topRegionRow);
+        categoryBreakdownContainer = view.findViewById(R.id.categoryBreakdownContainer);
+        filterBadgeRow             = view.findViewById(R.id.filterBadgeRow);
+        tvFilterBadge              = view.findViewById(R.id.tvFilterBadge);
+        btnResetFilter             = view.findViewById(R.id.btnResetFilter);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
@@ -98,6 +117,18 @@ public class MapsFragment extends Fragment {
         buildLegend();
         buildTopRegions(new ArrayList<>());
         animatePage(view);
+
+        // Reset filter
+        if (btnResetFilter != null) {
+            btnResetFilter.setOnClickListener(v -> {
+                activeFilter = null;
+                if (filterBadgeRow != null) filterBadgeRow.setVisibility(View.GONE);
+                refreshLegendSelection(-1);
+                refreshMapMarkers();
+                buildCategoryBreakdown();
+            });
+        }
+
         return view;
     }
 
@@ -187,33 +218,55 @@ public class MapsFragment extends Fragment {
     }
 
     private void processData(List<ScanHistory> list) {
+        allScans = list;
         totalReports = list.size();
         globalCategoryCount.clear();
         rtCount.clear();
 
-        // Hapus semua marker & polygon lama (kecuali GPS overlay)
-        osmMap.getOverlays().removeIf(o -> (o instanceof Marker) || (o instanceof Polygon));
-
         for (ScanHistory s : list) {
             String nama = s.getJenisSampah();
             String rt   = s.getRtId();
-
             if (nama != null) globalCategoryCount.put(nama,
                     globalCategoryCount.getOrDefault(nama, 0) + 1);
-            if (rt   != null && !rt.isEmpty()) rtCount.put(rt,
+            if (rt != null && !rt.isEmpty()) rtCount.put(rt,
                     rtCount.getOrDefault(rt, 0) + 1);
+        }
 
-            // Tambah marker + zona hanya jika ada koordinat valid
-            if (s.getLatitude()  != null && s.getLongitude() != null
-                    && s.getLatitude()  != 0.0
-                    && s.getLongitude() != 0.0) {
-                addScanPinAndZone(s);
+        refreshMapMarkers();
+        updateStatCards();
+        buildTopRegions(sortedRtList());
+        buildLegend(); // rebuild with percentages
+    }
+
+    // ─── Map Markers with optional filter ─────────────────────────────────────
+
+    private void refreshMapMarkers() {
+        if (osmMap == null || !isAdded()) return;
+        osmMap.getOverlays().removeIf(o -> (o instanceof Marker) || (o instanceof Polygon));
+
+        List<ScanHistory> toShow = (activeFilter == null) ? allScans : new ArrayList<>();
+        if (activeFilter != null) {
+            for (ScanHistory s : allScans) {
+                if (activeFilter.equalsIgnoreCase(s.getJenisSampah())) toShow.add(s);
             }
         }
 
+        for (ScanHistory s : toShow) {
+            if (s.getLatitude() != null && s.getLongitude() != null
+                    && s.getLatitude() != 0.0 && s.getLongitude() != 0.0) {
+                addScanPinAndZone(s);
+            }
+        }
         osmMap.invalidate();
-        updateStatCards();
-        buildTopRegions(sortedRtList());
+    }
+
+    private void refreshLegendSelection(int selectedIdx) {
+        for (int i = 0; i < legendItemViews.size(); i++) {
+            View v = legendItemViews.get(i);
+            v.setAlpha(selectedIdx < 0 || i == selectedIdx ? 1f : 0.4f);
+            float scale = (i == selectedIdx) ? 1.08f : 1f;
+            v.animate().scaleX(scale).scaleY(scale).setDuration(180).start();
+        }
     }
 
     // ─── Pin berwarna + lingkaran zona ────────────────────────────────────────
@@ -233,54 +286,72 @@ public class MapsFragment extends Fragment {
         zone.setStrokeWidth(2.5f);
         osmMap.getOverlays().add(zone);
 
-        // 2. Pin berwarna custom (gambar via Canvas)
+        // 2. Pin ikon kategori (lingkaran berwarna + ikon)
         Marker marker = new Marker(osmMap);
         marker.setPosition(new GeoPoint(lat, lng));
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         marker.setTitle(nama);
         marker.setSnippet("Kategori: " + kat);
-        marker.setIcon(new BitmapDrawable(getResources(), createPinBitmap(color)));
+        marker.setIcon(new BitmapDrawable(getResources(), createPinBitmap(nama, color)));
         osmMap.getOverlays().add(marker);
     }
 
-    // ─── Canvas: gambar custom pin tearDrop ───────────────────────────────────
+    // ─── Canvas: lingkaran berwarna + ikon sampah ────────────────────────────
 
-    private Bitmap createPinBitmap(int color) {
-        int w = dp(36);
-        int h = dp(52);
-        Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+    private Bitmap createPinBitmap(String nama, int color) {
+        int size = dp(52);
+        int total = size + dp(10); // extra space for shadow tail
+        Bitmap bmp = Bitmap.createBitmap(total, total, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bmp);
 
-        float cx = w / 2f;
-        float r  = w * 0.42f;           // radius lingkaran kepala
+        float cx = total / 2f;
+        float cy = size / 2f;
+        float r  = size / 2f - dp(2);
 
-        Paint paintFill = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintFill.setColor(color);
-        paintFill.setStyle(Paint.Style.FILL);
+        // Shadow drop
+        Paint shadow = new Paint(Paint.ANTI_ALIAS_FLAG);
+        shadow.setColor(withAlpha(Color.BLACK, 40));
+        canvas.drawCircle(cx + dp(1.5f), cy + dp(2), r, shadow);
 
-        Paint paintStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintStroke.setColor(withAlpha(darken(color), 200));
-        paintStroke.setStyle(Paint.Style.STROKE);
-        paintStroke.setStrokeWidth(dp(1.5f));
+        // Filled circle (category color)
+        Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        fill.setColor(color);
+        canvas.drawCircle(cx, cy, r, fill);
 
-        Paint paintWhite = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintWhite.setColor(Color.WHITE);
-        paintWhite.setStyle(Paint.Style.FILL);
+        // White border ring
+        Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
+        stroke.setColor(Color.WHITE);
+        stroke.setStyle(Paint.Style.STROKE);
+        stroke.setStrokeWidth(dp(2.5f));
+        canvas.drawCircle(cx, cy, r - dp(1), stroke);
 
-        // Ekor / ujung pin (segitiga ke bawah)
+        // Tail / pointer
+        Paint tailPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        tailPaint.setColor(color);
         Path tail = new Path();
-        tail.moveTo(cx - r * 0.5f, r * 1.05f);
-        tail.lineTo(cx + r * 0.5f, r * 1.05f);
-        tail.lineTo(cx, h - dp(2));
+        float tailW = dp(7);
+        float tailTop = cy + r - dp(3);
+        float tailBot = cy + r + dp(8);
+        tail.moveTo(cx - tailW, tailTop);
+        tail.lineTo(cx + tailW, tailTop);
+        tail.lineTo(cx, tailBot);
         tail.close();
-        canvas.drawPath(tail, paintFill);
+        canvas.drawPath(tail, tailPaint);
 
-        // Kepala lingkaran
-        canvas.drawCircle(cx, r, r, paintFill);
-        canvas.drawCircle(cx, r, r, paintStroke);
-
-        // Titik putih di tengah
-        canvas.drawCircle(cx, r, r * 0.38f, paintWhite);
+        // Category icon (white tint)
+        if (isAdded() && getContext() != null) {
+            int iconRes = iconFor(nama);
+            Drawable d = ContextCompat.getDrawable(requireContext(), iconRes);
+            if (d != null) {
+                d = DrawableCompat.wrap(d).mutate();
+                DrawableCompat.setTint(d, Color.WHITE);
+                int iconSize = dp(26);
+                int left  = (int)(cx - iconSize / 2f);
+                int top   = (int)(cy - iconSize / 2f);
+                d.setBounds(left, top, left + iconSize, top + iconSize);
+                d.draw(canvas);
+            }
+        }
 
         return bmp;
     }
@@ -334,13 +405,96 @@ public class MapsFragment extends Fragment {
         int pct = totalReports == 0 ? 0 : Math.round((domCount * 100f) / totalReports);
 
         bindMetric(getView().findViewById(R.id.metricKelurahan),
-                R.drawable.ic_user_outline, String.valueOf(rtCount.size()), "RT");
+                R.drawable.ic_user_outline, String.valueOf(rtCount.size()), "RT Aktif");
         bindMetric(getView().findViewById(R.id.metricLaporan),
-                R.drawable.ic_document_outline, String.valueOf(totalReports), "Total Laporan");
+                R.drawable.ic_document_outline, String.valueOf(totalReports), "Total Scan");
         bindMetric(getView().findViewById(R.id.metricDominan),
                 R.drawable.ic_leaf, dominant, "Dominan");
         bindMetric(getView().findViewById(R.id.metricPersentase),
                 R.drawable.ic_pie_chart, pct + "%", "Persentase");
+
+        // Update category breakdown detail
+        buildCategoryBreakdown();
+    }
+
+    private void buildCategoryBreakdown() {
+        if (categoryBreakdownContainer == null || getContext() == null) return;
+        categoryBreakdownContainer.removeAllViews();
+
+        // Jika filter aktif: tampilkan hanya kategori itu
+        Map<String, Integer> counts;
+        if (activeFilter != null) {
+            counts = new HashMap<>();
+            int c = globalCategoryCount.getOrDefault(activeFilter, 0);
+            counts.put(activeFilter, c);
+        } else {
+            counts = globalCategoryCount;
+        }
+
+        // Sort by count descending
+        List<Map.Entry<String, Integer>> sorted = new ArrayList<>(counts.entrySet());
+        sorted.sort((a, b) -> b.getValue() - a.getValue());
+
+        for (Map.Entry<String, Integer> entry : sorted) {
+            String nama = entry.getKey();
+            int count = entry.getValue();
+            int color = colorForNama(nama);
+            int pct = totalReports == 0 ? 0 : Math.round((count * 100f) / totalReports);
+
+            LinearLayout row = new LinearLayout(getContext());
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            row.setPadding(0, 10, 0, 10);
+
+            // Color dot
+            android.widget.FrameLayout dot = new android.widget.FrameLayout(getContext());
+            LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dp(10), dp(10));
+            dotParams.setMarginEnd(dp(10));
+            dot.setLayoutParams(dotParams);
+            android.graphics.drawable.GradientDrawable dotBg = new android.graphics.drawable.GradientDrawable();
+            dotBg.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            dotBg.setColor(color);
+            dot.setBackground(dotBg);
+
+            // Nama
+            TextView tvNama = new TextView(getContext());
+            tvNama.setText(nama);
+            tvNama.setTextColor(android.graphics.Color.parseColor("#424242"));
+            tvNama.setTextSize(13f);
+            LinearLayout.LayoutParams namaParams = new LinearLayout.LayoutParams(0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+            tvNama.setLayoutParams(namaParams);
+
+            // Count
+            TextView tvCount = new TextView(getContext());
+            tvCount.setText(count + " item  " + pct + "%");
+            tvCount.setTextColor(color);
+            tvCount.setTextSize(12f);
+            tvCount.setTypeface(null, Typeface.BOLD);
+
+            row.addView(dot);
+            row.addView(tvNama);
+            row.addView(tvCount);
+            categoryBreakdownContainer.addView(row);
+
+            // Divider
+            View divider = new View(getContext());
+            LinearLayout.LayoutParams divParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 1);
+            divider.setLayoutParams(divParams);
+            divider.setBackgroundColor(android.graphics.Color.parseColor("#EEEEEE"));
+            categoryBreakdownContainer.addView(divider);
+        }
+
+        if (sorted.isEmpty()) {
+            TextView empty = new TextView(getContext());
+            empty.setText("Belum ada data sampah");
+            empty.setTextColor(android.graphics.Color.parseColor("#9E9E9E"));
+            empty.setTextSize(13f);
+            empty.setGravity(android.view.Gravity.CENTER);
+            empty.setPadding(0, dp(16), 0, dp(16));
+            categoryBreakdownContainer.addView(empty);
+        }
     }
 
     private void bindMetric(View metric, int iconRes, String value, String label) {
@@ -358,21 +512,57 @@ public class MapsFragment extends Fragment {
     private void buildLegend() {
         if (legendRow == null || getContext() == null) return;
         legendRow.removeAllViews();
+        legendItemViews.clear();
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        for (String cat : CATEGORIES) {
-            View item        = inflater.inflate(R.layout.item_legend_category, legendRow, false);
-            FrameLayout circle = item.findViewById(R.id.legendCircle);
-            ImageView icon     = item.findViewById(R.id.ivLegendIcon);
-            TextView label     = item.findViewById(R.id.tvLegendLabel);
+
+        for (int i = 0; i < CATEGORIES.length; i++) {
+            final String cat = CATEGORIES[i];
+            final int idx = i;
+
+            View item      = inflater.inflate(R.layout.item_legend_category, legendRow, false);
+            FrameLayout circle   = item.findViewById(R.id.legendCircle);
+            ImageView icon       = item.findViewById(R.id.ivLegendIcon);
+            TextView label       = item.findViewById(R.id.tvLegendLabel);
+            TextView tvPercent   = item.findViewById(R.id.tvLegendPercent);
+
             int color = colorForNama(cat);
-            if (circle != null) circle.setBackgroundTintList(
-                    ColorStateList.valueOf(softColor(color)));
+            if (circle != null) circle.setBackgroundTintList(ColorStateList.valueOf(softColor(color)));
             if (icon != null) {
                 icon.setImageResource(iconFor(cat));
                 icon.setImageTintList(ColorStateList.valueOf(color));
             }
             if (label != null) label.setText(cat);
+
+            // Tampilkan persentase jika data sudah ada
+            if (tvPercent != null && totalReports > 0) {
+                int count = globalCategoryCount.getOrDefault(cat, 0);
+                int pct = Math.round((count * 100f) / totalReports);
+                tvPercent.setText(pct + "%");
+                tvPercent.setTextColor(color);
+                tvPercent.setVisibility(View.VISIBLE);
+            } else if (tvPercent != null) {
+                tvPercent.setVisibility(View.GONE);
+            }
+
+            legendItemViews.add(item);
             legendRow.addView(item);
+
+            // Click: toggle filter peta ke kategori ini
+            item.setOnClickListener(v -> {
+                if (cat.equals(activeFilter)) {
+                    // Klik lagi → reset
+                    activeFilter = null;
+                    if (filterBadgeRow != null) filterBadgeRow.setVisibility(View.GONE);
+                    refreshLegendSelection(-1);
+                } else {
+                    activeFilter = cat;
+                    if (tvFilterBadge != null) tvFilterBadge.setText("Filter aktif: " + cat);
+                    if (filterBadgeRow != null) filterBadgeRow.setVisibility(View.VISIBLE);
+                    refreshLegendSelection(idx);
+                }
+                refreshMapMarkers();
+                buildCategoryBreakdown();
+            });
         }
     }
 

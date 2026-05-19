@@ -27,15 +27,30 @@
             android:focusable="true"
             app:tint="#FFFFFF" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Riwayat Scan"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Riwayat Scan"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Semua pengguna"
+                android:textColor="#C8E6C9"
+                android:textSize="11sp"
+                android:visibility="gone" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvJumlahRiwayat"

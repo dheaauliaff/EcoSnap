@@ -29,10 +29,17 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
 
     private final List<ScanHistory> items;
     private final Context context;
+    /** Jika true, tampilkan info user (firebase_id) — untuk mode admin */
+    private final boolean showUser;
 
     public RiwayatScanAdapter(Context context, List<ScanHistory> items) {
-        this.context = context;
-        this.items = items;
+        this(context, items, false);
+    }
+
+    public RiwayatScanAdapter(Context context, List<ScanHistory> items, boolean showUser) {
+        this.context  = context;
+        this.items    = items;
+        this.showUser = showUser;
     }
 
     @NonNull
@@ -50,10 +57,13 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
         // Nama Sampah
         h.tvNamaSampah.setText(safe(item.getJenisSampah()));
 
-        // Kategori
+        // Kategori badge
         String kategori = safe(item.getKategori());
         h.tvKategori.setText(kategori);
-        h.tvKategori.getBackground().setTint(getKategoriColor(kategori));
+        android.graphics.drawable.Drawable bgKat = h.tvKategori.getBackground();
+        if (bgKat != null) {
+            bgKat.setTint(getKategoriColor(kategori));
+        }
         h.tvKategori.setTextColor(getKategoriTextColor(kategori));
 
         // Wilayah
@@ -75,6 +85,19 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
             h.tvConfidence.setText(String.format(Locale.US, "%.0f%%", conf));
         } else {
             h.tvConfidence.setText("-");
+        }
+
+        // User info — tampilkan firebase_id (disingkat) saat mode admin
+        if (h.tvUserInfo != null) {
+            if (showUser && item.getUserId() != null && !item.getUserId().isEmpty()) {
+                // Tampilkan 8 karakter pertama uid sebagai identitas singkat
+                String uid = item.getUserId();
+                String uidShort = uid.length() > 8 ? uid.substring(0, 8) + "..." : uid;
+                h.tvUserInfo.setText("👤 UID: " + uidShort);
+                h.tvUserInfo.setVisibility(View.VISIBLE);
+            } else {
+                h.tvUserInfo.setVisibility(View.GONE);
+            }
         }
 
         // Image dari Cloudinary
@@ -109,7 +132,7 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivThumbnail;
-        TextView tvNamaSampah, tvKategori, tvWilayah, tvTanggal, tvConfidence;
+        TextView tvNamaSampah, tvKategori, tvWilayah, tvTanggal, tvConfidence, tvUserInfo;
 
         ViewHolder(@NonNull View v) {
             super(v);
@@ -119,6 +142,7 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
             tvWilayah     = v.findViewById(R.id.tvWilayah);
             tvTanggal     = v.findViewById(R.id.tvTanggal);
             tvConfidence  = v.findViewById(R.id.tvConfidence);
+            tvUserInfo    = v.findViewById(R.id.tvUserInfo);
         }
     }
 
@@ -133,7 +157,6 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
         try {
             SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
             input.setTimeZone(TimeZone.getTimeZone("UTC"));
-            // Handle fractional seconds and timezone suffix
             String clean = isoDate;
             if (clean.contains(".")) {
                 clean = clean.substring(0, clean.indexOf('.'));

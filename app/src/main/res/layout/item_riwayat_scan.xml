@@ -101,6 +101,18 @@
                 android:textColor="#9E9E9E"
                 android:textSize="11sp" />
         </LinearLayout>
+
+        <!-- User info (admin mode only) -->
+        <TextView
+            android:id="@+id/tvUserInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:text="👤 UID: ..."
+            android:textColor="#BDBDBD"
+            android:textSize="10sp"
+            android:visibility="gone" />
+
     </LinearLayout>
 
     <!-- Confidence -->

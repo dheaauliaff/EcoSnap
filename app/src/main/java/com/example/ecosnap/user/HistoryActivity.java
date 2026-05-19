@@ -33,10 +33,14 @@ public class HistoryActivity extends AppCompatActivity {
     private LinearLayout layoutEmpty;
     private ProgressBar progressBar;
     private TextView tvJumlahRiwayat;
+    private TextView tvSubtitle;
     private ImageView btnBack;
 
     private List<ScanHistory> scanList = new ArrayList<>();
     private RiwayatScanAdapter adapter;
+
+    // Mode: true = lihat semua user (admin view), false = hanya user sendiri
+    private boolean isAdminView = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,15 +51,24 @@ public class HistoryActivity extends AppCompatActivity {
         layoutEmpty     = findViewById(R.id.layoutEmpty);
         progressBar     = findViewById(R.id.progressBar);
         tvJumlahRiwayat = findViewById(R.id.tvJumlahRiwayat);
+        tvSubtitle      = findViewById(R.id.tvSubtitle);
         btnBack         = findViewById(R.id.btnBack);
+
+        // Cek apakah ada flag admin view dari Intent
+        isAdminView = getIntent().getBooleanExtra("admin_view", false);
+
+        if (tvSubtitle != null) {
+            tvSubtitle.setVisibility(isAdminView ? View.VISIBLE : View.GONE);
+            tvSubtitle.setText("Semua pengguna");
+        }
 
         // Back button
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
 
-        // Setup RecyclerView
-        adapter = new RiwayatScanAdapter(this, scanList);
+        // Setup RecyclerView — pass showUser=true jika admin
+        adapter = new RiwayatScanAdapter(this, scanList, isAdminView);
         rvRiwayat.setLayoutManager(new LinearLayoutManager(this));
         rvRiwayat.setAdapter(adapter);
 
@@ -63,43 +76,69 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private void loadRiwayat() {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            showEmpty();
-            return;
-        }
-
         showLoading();
-
-        String uid = currentUser.getUid();
         ApiService api = RetrofitClient.getClient().create(ApiService.class);
 
-        api.getScanByUserOrdered("eq." + uid).enqueue(new Callback<List<ScanHistory>>() {
-            @Override
-            public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
-                hideLoading();
-
-                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                    scanList.clear();
-                    scanList.addAll(response.body());
-                    adapter.notifyDataSetChanged();
-
-                    tvJumlahRiwayat.setText(scanList.size() + " scan");
-                    showList();
-                } else {
-                    showEmpty();
+        if (isAdminView) {
+            // Admin: tampilkan semua scan
+            api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
+                @Override
+                public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
+                    hideLoading();
+                    if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                        scanList.clear();
+                        scanList.addAll(response.body());
+                        adapter.notifyDataSetChanged();
+                        tvJumlahRiwayat.setText(scanList.size() + " scan");
+                        showList();
+                    } else {
+                        showEmpty();
+                    }
                 }
+
+                @Override
+                public void onFailure(Call<List<ScanHistory>> call, Throwable t) {
+                    hideLoading();
+                    showEmpty();
+                    Toast.makeText(HistoryActivity.this,
+                            "Gagal memuat riwayat: " + t.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            // User: hanya scan milik sendiri
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                showEmpty();
+                return;
             }
 
-            @Override
-            public void onFailure(Call<List<ScanHistory>> call, Throwable t) {
-                hideLoading();
-                showEmpty();
-                Toast.makeText(HistoryActivity.this,
-                        "Gagal memuat riwayat: " + t.getMessage(),
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+            String uid = currentUser.getUid();
+            api.getScanByUserOrdered("eq." + uid).enqueue(new Callback<List<ScanHistory>>() {
+                @Override
+                public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
+                    hideLoading();
+                    if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                        scanList.clear();
+                        scanList.addAll(response.body());
+                        adapter.notifyDataSetChanged();
+                        tvJumlahRiwayat.setText(scanList.size() + " scan");
+                        showList();
+                    } else {
+                        showEmpty();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<ScanHistory>> call, Throwable t) {
+                    hideLoading();
+                    showEmpty();
+                    Toast.makeText(HistoryActivity.this,
+                            "Gagal memuat riwayat: " + t.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void showLoading() {

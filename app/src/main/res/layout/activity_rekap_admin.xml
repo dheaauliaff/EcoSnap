@@ -225,262 +225,190 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:background="@drawable/bg_premium_card"
-                android:elevation="4dp"
-                android:outlineAmbientShadowColor="#0F000000"
-                android:outlineSpotShadowColor="#0A000000"
-                android:orientation="vertical"
-                android:padding="20dp">
+                android:orientation="vertical">
+
+                <!-- Summary Card (gaya admin) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card_green_dark"
+                    android:orientation="vertical"
+                    android:padding="20dp"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="TOTAL RT AKTIF"
+                                android:textColor="#A5D6A7"
+                                android:textSize="11sp"
+                                android:letterSpacing="0.1"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvRankTotalRtAktif"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textColor="#FFFFFF"
+                                android:textSize="36sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="RT berkontribusi"
+                                android:textColor="#A5D6A7"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="end">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="TOTAL SCAN"
+                                android:textColor="#A5D6A7"
+                                android:textSize="11sp"
+                                android:letterSpacing="0.1"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvRankTotalScan"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textColor="#FFFFFF"
+                                android:textSize="36sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Dominan info -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#22FFFFFF"
+                        android:layout_marginTop="16dp"
+                        android:padding="12dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🏅 "
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tvRankDominan"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sampah paling banyak: -"
+                            android:textColor="#E8F5E9"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Label -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Peringkat Lengkap"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#1B5E20"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ketuk RT untuk melihat detail sampah"
+                    android:textSize="12sp"
+                    android:textColor="#9E9E9E"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Dynamic ranking list -->
+                <LinearLayout
+                    android:id="@+id/layoutRankingList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp" />
+
+            </LinearLayout>
+
+            <!-- 4️⃣ RIWAYAT SCAN SEMUA USER (dengan gambar) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🏆"
-                        android:textSize="20sp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_history_outline"
+                        app:tint="#1B5E20"
+                        android:layout_marginEnd="8dp"/>
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="10dp"
-                        android:text="Ranking RT"
+                        android:text="Riwayat Scan Terbaru"
                         android:textColor="#1B5E20"
                         android:textSize="16sp"
                         android:textStyle="bold" />
-                </LinearLayout>
 
-                <!-- PODIUM TOP 3 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
-                    android:orientation="horizontal"
-                    android:gravity="bottom"
-                    android:baselineAligned="false">
-
-                    <!-- RANK 2 -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:orientation="vertical"
-                        android:gravity="center">
-
-                        <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/ic_scan"
-                            app:tint="#2196F3"
-                            android:layout_marginBottom="8dp"/>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:background="@drawable/bg_podium_rank2"
-                            android:gravity="center"
-                            android:text="2"
-                            android:textColor="#FFFFFF"
-                            android:textSize="20sp"
-                            android:textStyle="bold"
-                            android:elevation="2dp"
-                            android:outlineAmbientShadowColor="#0F000000"
-                            android:outlineSpotShadowColor="#0A000000"/>
-
-                        <TextView
-                            android:id="@+id/tvRank2RT"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:text="RT 02"
-                            android:textColor="#212121"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/tvRank2Total"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="280"
-                            android:textColor="#757575"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <!-- RANK 1 -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1.2"
-                        android:layout_marginHorizontal="6dp"
-                        android:orientation="vertical"
-                        android:gravity="center">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_scan"
-                            app:tint="#4CAF50"
-                            android:layout_marginBottom="8dp"/>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="72dp"
-                            android:background="@drawable/bg_podium_rank1"
-                            android:gravity="center"
-                            android:text="1"
-                            android:textColor="#FFFFFF"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:elevation="4dp"
-                            android:outlineAmbientShadowColor="#0F000000"
-                            android:outlineSpotShadowColor="#0A000000"/>
-
-                        <TextView
-                            android:id="@+id/tvRank1RT"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:text="RT 01"
-                            android:textColor="#212121"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/tvRank1Total"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="320"
-                            android:textColor="#4CAF50"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <!-- RANK 3 -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="6dp"
-                        android:orientation="vertical"
-                        android:gravity="center">
-
-                        <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/ic_scan"
-                            app:tint="#FF9800"
-                            android:layout_marginBottom="8dp"/>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_podium_rank3"
-                            android:gravity="center"
-                            android:text="3"
-                            android:textColor="#FFFFFF"
-                            android:textSize="20sp"
-                            android:textStyle="bold"
-                            android:elevation="2dp"
-                            android:outlineAmbientShadowColor="#0F000000"
-                            android:outlineSpotShadowColor="#0A000000"/>
-
-                        <TextView
-                            android:id="@+id/tvRank3RT"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:text="RT 03"
-                            android:textColor="#212121"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/tvRank3Total"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="210"
-                            android:textColor="#757575"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="32dp"
-                    android:layout_marginBottom="8dp"
-                    android:background="#EEEEEE" />
-
-                <!-- LIST RANK 4-8 -->
-                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="4." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank4RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 04" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank4Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="150" android:textColor="#757575" android:textSize="14sp"/>
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="5." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank5RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 05" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank5Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="120" android:textColor="#757575" android:textSize="14sp"/>
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="6." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank6RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 06" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank6Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="100" android:textColor="#757575" android:textSize="14sp"/>
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="7." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank7RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 07" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank7Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="80" android:textColor="#757575" android:textSize="14sp"/>
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="36dp" android:layout_height="wrap_content" android:text="8." android:textColor="#757575" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank8RT" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="RT 08" android:textColor="#212121" android:textSize="14sp"/>
-                    <TextView android:id="@+id/tvRank8Total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="60" android:textColor="#757575" android:textSize="14sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="16dp"
-                    android:background="@drawable/bg_button_outline"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:gravity="center"
-                    android:orientation="horizontal">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Lihat Semua Ranking"
-                        android:textColor="#2E7D32"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_marginStart="6dp"
-                        android:src="@drawable/ic_back"
-                        android:rotation="180"
-                        app:tint="#2E7D32"/>
+                        android:text="(Semua User)"
+                        android:textColor="#757575"
+                        android:textSize="12sp" />
                 </LinearLayout>
+
+                <!-- Loading indicator -->
+                <ProgressBar
+                    android:id="@+id/pbRiwayat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminateTint="#4CAF50"
+                    android:visibility="gone" />
+
+                <!-- Riwayat scan container (filled programmatically) -->
+                <LinearLayout
+                    android:id="@+id/layoutRiwayatAll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="24dp" />
 
             </LinearLayout>
 

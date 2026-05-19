@@ -292,6 +292,42 @@
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Filter badge saat kategori aktif -->
+        <LinearLayout
+            android:id="@+id/filterBadgeRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvFilterBadge"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Filter aktif: Organik"
+                android:textColor="#2E7D32"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnResetFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_maps_chip"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:padding="8dp"
+                android:text="Reset ✕"
+                android:textColor="#F44336"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Legenda Kategori -->
         <LinearLayout
             android:id="@+id/legendCard"
             android:layout_width="match_parent"
@@ -310,6 +346,14 @@
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Ketuk ikon untuk filter peta &amp; lihat persentase"
+                android:textColor="#9E9E9E"
+                android:textSize="12sp" />
+
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -325,6 +369,50 @@
             </HorizontalScrollView>
         </LinearLayout>
 
+        <!-- Detail Breakdown Per Jenis Sampah -->
+        <LinearLayout
+            android:id="@+id/categoryBreakdownCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_maps_card"
+            android:elevation="5dp"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_pie_chart"
+                    app:tint="#2E7D32"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Detail Sampah Ditemukan"
+                    android:textColor="#111111"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Container diisi programmatically -->
+            <LinearLayout
+                android:id="@+id/categoryBreakdownContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+
+        <!-- Top 3 RT -->
         <LinearLayout
             android:id="@+id/topKelurahanCard"
             android:layout_width="match_parent"
@@ -345,7 +433,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Top 3 RT"
+                    android:text="🏆 Top RT Terbanyak Scan"
                     android:textColor="#111111"
                     android:textSize="16sp"
                     android:textStyle="bold" />

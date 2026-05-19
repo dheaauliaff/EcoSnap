@@ -5,18 +5,22 @@
     android:layout_height="wrap_content"
     android:layout_marginEnd="12dp"
     android:gravity="center"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    android:padding="4dp">
 
     <FrameLayout
         android:id="@+id/legendCircle"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
         android:background="@drawable/bg_maps_icon_circle">
 
         <ImageView
             android:id="@+id/ivLegendIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_leaf"
             app:tint="#4CAF50" />
@@ -32,4 +36,18 @@
         android:text="Organik"
         android:textColor="#333333"
         android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tvLegendPercent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:text="0%"
+        android:textColor="#2E7D32"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
 </LinearLayout>

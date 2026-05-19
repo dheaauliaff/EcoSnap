@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.auth.LoginActivity;
@@ -38,18 +39,22 @@ import retrofit2.Response;
 
 public class DashboardAdminActivity extends AppCompatActivity {
 
-    // Hapus semua drawer — ganti bottomNav
     BottomNavigationView bottomNav;
     FirebaseAuth mAuth;
 
-    TextView tvNamaAdmin, tvWilayahAdmin, tvTotalSampah, tvTotalOrganik,
-            tvTotalAnorganik, tvTotalBukanSampah, tvTotalRecycle;
+    TextView tvNamaAdmin, tvWilayahAdmin,
+            tvTotalSampah, tvTotalOrganik, tvTotalAnorganik,
+            tvTotalBukanSampah, tvTotalRecycle, tvTotalRtAktif;
     Chip btnMinggu, btnBulan, btnTahun;
     LinearLayout layoutRanking;
     BarChart barChart;
+    AppCompatButton btnLihatPeta;
 
     String rwId = "";
     String periodAktif = "minggu";
+
+    // RT tracking
+    final Map<String, Integer> rtCount = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +63,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        // Init semua views
+        // Bind views
         tvNamaAdmin = findViewById(R.id.tvNamaAdmin);
         tvWilayahAdmin = findViewById(R.id.tvWilayahAdmin);
         tvTotalSampah = findViewById(R.id.tvTotalSampah);
@@ -66,38 +71,35 @@ public class DashboardAdminActivity extends AppCompatActivity {
         tvTotalAnorganik = findViewById(R.id.tvTotalAnorganik);
         tvTotalBukanSampah = findViewById(R.id.tvTotalBukanSampah);
         tvTotalRecycle = findViewById(R.id.tvTotalRecycle);
+        tvTotalRtAktif = findViewById(R.id.tvTotalRtAktif);
         btnMinggu = findViewById(R.id.btnMinggu);
         btnBulan = findViewById(R.id.btnBulan);
         btnTahun = findViewById(R.id.btnTahun);
         layoutRanking = findViewById(R.id.layoutRanking);
         barChart = findViewById(R.id.barChart);
         bottomNav = findViewById(R.id.bottomNav);
+        btnLihatPeta = findViewById(R.id.btnLihatPeta);
 
-        // Load data admin dari Supabase
+        // CTA → Maps
+        if (btnLihatPeta != null) {
+            btnLihatPeta.setOnClickListener(v -> {
+                startActivity(new Intent(this, AdminMapsActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            });
+        }
+
         loadDataAdmin();
 
-        // Filter periode statistik
-        btnMinggu.setOnClickListener(v -> {
-            periodAktif = "minggu";
-            loadStatistik();
-        });
+        // Period filters
+        if (btnMinggu != null) btnMinggu.setOnClickListener(v -> { periodAktif = "minggu"; loadStatistik(); });
+        if (btnBulan  != null) btnBulan.setOnClickListener(v  -> { periodAktif = "bulan";  loadStatistik(); });
+        if (btnTahun  != null) btnTahun.setOnClickListener(v  -> { periodAktif = "tahun";  loadStatistik(); });
 
-        btnBulan.setOnClickListener(v -> {
-            periodAktif = "bulan";
-            loadStatistik();
-        });
-
-        btnTahun.setOnClickListener(v -> {
-            periodAktif = "tahun";
-            loadStatistik();
-        });
-
-        // Setup bottom navigation admin
+        // Bottom nav
         bottomNav.setSelectedItemId(R.id.nav_admin_dashboard);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_admin_dashboard) {
-                // Sudah di dashboard
                 return true;
             } else if (id == R.id.nav_admin_rekap) {
                 startActivity(new Intent(this, RekapAdminActivity.class));
@@ -119,7 +121,6 @@ public class DashboardAdminActivity extends AppCompatActivity {
             return false;
         });
 
-        // Handle tombol back
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -129,45 +130,35 @@ public class DashboardAdminActivity extends AppCompatActivity {
     }
 
     private void loadDataAdmin() {
+        if (mAuth.getCurrentUser() == null) return;
         String uid = mAuth.getCurrentUser().getUid();
-        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
-        Call<List<User>> call = apiService.getUserByFirebaseUid("eq." + uid);
+        ApiService api = RetrofitClient.getClient().create(ApiService.class);
 
-        call.enqueue(new Callback<List<User>>() {
+        api.getUserByFirebaseUid("eq." + uid).enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-                if (response.isSuccessful() && response.body() != null
-                        && !response.body().isEmpty()) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     User admin = response.body().get(0);
-
-                    // Tampilkan nama dan wilayah admin
-                    tvNamaAdmin.setText(admin.getNama());
-                    tvWilayahAdmin.setText(admin.getWilayah());
-                    rwId = admin.getRwId();
-
-                    // Load statistik setelah dapat rwId
+                    if (tvNamaAdmin != null) tvNamaAdmin.setText(admin.getNama());
+                    if (tvWilayahAdmin != null) tvWilayahAdmin.setText(admin.getWilayah());
+                    rwId = admin.getRwId() != null ? admin.getRwId() : "";
                     loadStatistik();
                 }
             }
-
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
-                Toast.makeText(DashboardAdminActivity.this,
-                        "Gagal load data", Toast.LENGTH_SHORT).show();
+                Toast.makeText(DashboardAdminActivity.this, "Gagal load data", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void loadStatistik() {
         if (rwId == null || rwId.isEmpty()) return;
+        ApiService api = RetrofitClient.getClient().create(ApiService.class);
 
-        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
-        Call<List<ScanHistory>> call = apiService.getScanByRw("eq." + rwId);
-
-        call.enqueue(new Callback<List<ScanHistory>>() {
+        api.getScanByRw("eq." + rwId).enqueue(new Callback<List<ScanHistory>>() {
             @Override
-            public void onResponse(Call<List<ScanHistory>> call,
-                                   Response<List<ScanHistory>> response) {
+            public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<ScanHistory> allData = response.body();
                     List<ScanHistory> filtered = filterByPeriod(allData);
@@ -176,57 +167,56 @@ public class DashboardAdminActivity extends AppCompatActivity {
                     buatRanking(filtered);
                 }
             }
-
             @Override
             public void onFailure(Call<List<ScanHistory>> call, Throwable t) {
-                Toast.makeText(DashboardAdminActivity.this,
-                        "Gagal load statistik", Toast.LENGTH_SHORT).show();
+                Toast.makeText(DashboardAdminActivity.this, "Gagal load statistik", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // Filter data berdasarkan periode yang dipilih
     private List<ScanHistory> filterByPeriod(List<ScanHistory> data) {
-        // TODO: implementasi filter berdasarkan tanggal
-        // Untuk sekarang return semua data
+        // TODO: filter by date based on periodAktif
         return data;
     }
 
     private void hitungStatistik(List<ScanHistory> data) {
+        rtCount.clear();
         int total = data.size();
         int organik = 0, anorganik = 0, bukanSampah = 0, recycle = 0;
 
         for (ScanHistory s : data) {
             if (s.getKategori() != null) {
-                String kategori = s.getKategori().toLowerCase().replace(" ", "_");
-                switch (kategori) {
-                    case "organik": organik++; break;
-                    case "anorganik": anorganik++; break;
-                    case "bukan_sampah": bukanSampah++; break;
-                    case "recycle": recycle++; break;
+                String kat = s.getKategori().toLowerCase().replace(" ", "_");
+                switch (kat) {
+                    case "organik":       organik++;      break;
+                    case "anorganik":     anorganik++;    break;
+                    case "bukan_sampah":  bukanSampah++;  break;
+                    case "recycle":       recycle++;      break;
                 }
+            }
+            if (s.getRtId() != null && !s.getRtId().isEmpty()) {
+                rtCount.put(s.getRtId(), rtCount.getOrDefault(s.getRtId(), 0) + 1);
             }
         }
 
-        tvTotalSampah.setText(String.valueOf(total));
-        tvTotalOrganik.setText(String.valueOf(organik));
-        tvTotalAnorganik.setText(String.valueOf(anorganik));
-        tvTotalBukanSampah.setText(String.valueOf(bukanSampah));
-        tvTotalRecycle.setText(String.valueOf(recycle));
+        if (tvTotalSampah    != null) tvTotalSampah.setText(String.valueOf(total));
+        if (tvTotalOrganik   != null) tvTotalOrganik.setText(String.valueOf(organik));
+        if (tvTotalAnorganik != null) tvTotalAnorganik.setText(String.valueOf(anorganik));
+        if (tvTotalBukanSampah != null) tvTotalBukanSampah.setText(String.valueOf(bukanSampah));
+        if (tvTotalRecycle   != null) tvTotalRecycle.setText(String.valueOf(recycle));
+        if (tvTotalRtAktif   != null) tvTotalRtAktif.setText(String.valueOf(rtCount.size()));
     }
 
     private void buatGrafik(List<ScanHistory> data) {
+        if (barChart == null) return;
         Map<String, Integer> countMap = new HashMap<>();
         String[] labels = {"Organik", "Kardus", "Kaca", "Logam", "Kertas", "Plastik"};
-
         for (String label : labels) countMap.put(label.toLowerCase(), 0);
 
         for (ScanHistory s : data) {
             if (s.getJenisSampah() != null) {
                 String jenis = s.getJenisSampah().toLowerCase();
-                if (countMap.containsKey(jenis)) {
-                    countMap.put(jenis, countMap.get(jenis) + 1);
-                }
+                if (countMap.containsKey(jenis)) countMap.put(jenis, countMap.get(jenis) + 1);
             }
         }
 
@@ -237,14 +227,14 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
         BarDataSet dataSet = new BarDataSet(entries, "Jenis Sampah");
         dataSet.setColors(
-                Color.parseColor("#2E7D32"),
-                Color.parseColor("#388E3C"),
-                Color.parseColor("#43A047"),
                 Color.parseColor("#4CAF50"),
-                Color.parseColor("#66BB6A"),
-                Color.parseColor("#81C784")
+                Color.parseColor("#2196F3"),
+                Color.parseColor("#00BCD4"),
+                Color.parseColor("#9C27B0"),
+                Color.parseColor("#FFC107"),
+                Color.parseColor("#FF9800")
         );
-        dataSet.setValueTextColor(Color.parseColor("#1B5E20"));
+        dataSet.setValueTextColor(Color.parseColor("#333333"));
         dataSet.setValueTextSize(10f);
 
         BarData barData = new BarData(dataSet);
@@ -260,25 +250,25 @@ public class DashboardAdminActivity extends AppCompatActivity {
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1f);
         xAxis.setTextSize(10f);
-        xAxis.setTextColor(Color.parseColor("#1B5E20"));
+        xAxis.setTextColor(Color.parseColor("#333333"));
 
-        barChart.getAxisLeft().setTextColor(Color.parseColor("#1B5E20"));
+        barChart.getAxisLeft().setTextColor(Color.parseColor("#333333"));
         barChart.getAxisRight().setEnabled(false);
         barChart.animateY(800);
         barChart.invalidate();
     }
 
     private void buatRanking(List<ScanHistory> data) {
-        Map<String, Integer> rtCount = new HashMap<>();
+        if (layoutRanking == null) return;
+        Map<String, Integer> rtScanCount = new HashMap<>();
 
         for (ScanHistory s : data) {
             if (s.getWilayah() != null) {
-                rtCount.put(s.getWilayah(),
-                        rtCount.getOrDefault(s.getWilayah(), 0) + 1);
+                rtScanCount.put(s.getWilayah(), rtScanCount.getOrDefault(s.getWilayah(), 0) + 1);
             }
         }
 
-        List<Map.Entry<String, Integer>> sorted = new ArrayList<>(rtCount.entrySet());
+        List<Map.Entry<String, Integer>> sorted = new ArrayList<>(rtScanCount.entrySet());
         sorted.sort((a, b) -> b.getValue() - a.getValue());
 
         layoutRanking.removeAllViews();
@@ -286,19 +276,19 @@ public class DashboardAdminActivity extends AppCompatActivity {
         if (sorted.isEmpty()) {
             TextView empty = new TextView(this);
             empty.setText("Belum ada data");
-            empty.setTextColor(Color.parseColor("#81C784"));
+            empty.setTextColor(Color.parseColor("#9E9E9E"));
             layoutRanking.addView(empty);
             return;
         }
 
         String[] medals = {"🥇", "🥈", "🥉"};
-
         for (int i = 0; i < sorted.size(); i++) {
             Map.Entry<String, Integer> entry = sorted.get(i);
 
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setPadding(0, 12, 0, 12);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
             TextView tvMedal = new TextView(this);
             tvMedal.setText(i < 3 ? medals[i] : (i + 1) + ".");
@@ -307,7 +297,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
             TextView tvNama = new TextView(this);
             tvNama.setText(entry.getKey());
-            tvNama.setTextColor(Color.parseColor("#1B5E20"));
+            tvNama.setTextColor(Color.parseColor("#212121"));
             tvNama.setTextSize(14);
             tvNama.setLayoutParams(new LinearLayout.LayoutParams(
                     0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
@@ -328,7 +318,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT, 1);
                 divider.setLayoutParams(params);
-                divider.setBackgroundColor(Color.parseColor("#E8F5E9"));
+                divider.setBackgroundColor(Color.parseColor("#EEEEEE"));
                 layoutRanking.addView(divider);
             }
         }

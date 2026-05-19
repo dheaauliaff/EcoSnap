@@ -27,14 +27,14 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.ecosnap.user.HistoryActivity;
 
 public class ProfilAdminActivity extends AppCompatActivity {
 
     TextView tvAvatarInisial, tvNamaProfil, tvRoleProfil;
-    // Ganti tvInfoEmail jadi tvInfoNomorHp
     TextView tvInfoNama, tvInfoNomorHp, tvInfoWilayah, tvInfoRole, tvInfoWilayahHeader;
     LinearLayout layoutDaftarRT;
-    AppCompatButton btnEditProfil, btnLogout;
+    AppCompatButton btnEditProfil, btnLogout, btnLihatRiwayat;
     FirebaseAuth mAuth;
 
     @Override
@@ -55,7 +55,8 @@ public class ProfilAdminActivity extends AppCompatActivity {
         tvInfoWilayahHeader = findViewById(R.id.tvInfoWilayahHeader);
         layoutDaftarRT = findViewById(R.id.layoutDaftarRT);
         btnEditProfil = findViewById(R.id.btnEditProfil);
-        btnLogout = findViewById(R.id.btnLogout);
+        btnLogout     = findViewById(R.id.btnLogout);
+        btnLihatRiwayat = findViewById(R.id.btnLihatRiwayat);
 
         // Setup bottom navigation admin
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
@@ -86,15 +87,28 @@ public class ProfilAdminActivity extends AppCompatActivity {
 
         loadDataProfil();
 
-        btnEditProfil.setOnClickListener(v ->
-                Toast.makeText(this, "Fitur edit profil coming soon!",
-                        Toast.LENGTH_SHORT).show());
+        if (btnEditProfil != null) {
+            btnEditProfil.setOnClickListener(v ->
+                    Toast.makeText(this, "Fitur edit profil coming soon!",
+                            Toast.LENGTH_SHORT).show());
+        }
 
-        btnLogout.setOnClickListener(v -> {
-            mAuth.signOut();
-            startActivity(new Intent(this, LoginActivity.class));
-            finishAffinity();
-        });
+        // Tombol lihat riwayat scan semua user
+        if (btnLihatRiwayat != null) {
+            btnLihatRiwayat.setOnClickListener(v -> {
+                Intent intent = new Intent(this, HistoryActivity.class);
+                intent.putExtra("admin_view", true);
+                startActivity(intent);
+            });
+        }
+
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> {
+                mAuth.signOut();
+                startActivity(new Intent(this, LoginActivity.class));
+                finishAffinity();
+            });
+        }
     }
 
     private void loadDataProfil() {
