@@ -251,7 +251,7 @@
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
-                        android:text="Nice! Kamu sudah berkontribusi mengurangi 7.2 kg sampah bulan ini 🌱"
+                        android:text="Terima kasih sudah berkontribusi untuk lingkungan 🌱"
                         android:textColor="#2E7D32"
                         android:textSize="13sp" />
                 </LinearLayout>
