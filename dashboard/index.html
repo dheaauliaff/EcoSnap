@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoSnap Dashboard — Monitoring Sampah Real-Time</title>
+  <meta name="description" content="Dashboard monitoring sampah real-time EcoSnap. Lihat statistik, peta persebaran, dan analisis data sampah per wilayah di Cimahi." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet CSS (Map) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet Heat (Heatmap) -->
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <style>
+    :root {
+      --green-900: #1B5E20;
+      --green-700: #2E7D32;
+      --green-600: #388E3C;
+      --green-500: #4CAF50;
+      --green-200: #A5D6A7;
+      --green-100: #C8E6C9;
+      --green-50:  #F1F8F2;
+      --surface:   #FFFFFF;
+      --bg:        #F8FAF8;
+      --border:    #E4EDE5;
+      --border-2:  #CDE0CE;
+      --text-1: #111814;
+      --text-2: #3D5C40;
+      --text-3: #7A9B7C;
+      --shadow-xs: 0 1px 2px rgba(0,0,0,.04);
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07);
+      --shadow-md: 0 4px 14px rgba(0,0,0,.08);
+      --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
+      --c-organik:#16a34a; --c-plastik:#ea580c; --c-kertas:#ca8a04;
+      --c-kaca:#0891b2; --c-kardus:#2563eb; --c-logam:#7c3aed;
+      --sidebar-w: 240px; --sidebar-collapsed: 60px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-1);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+    /* SIDEBAR */
+    .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--green-900);display:flex;flex-direction:column;z-index:100;overflow:hidden;transition:width .22s cubic-bezier(.4,0,.2,1)}
+    .sidebar.collapsed{width:var(--sidebar-collapsed)}
+    .sidebar.collapsed .logo-text,.sidebar.collapsed .nav-label-text,.sidebar.collapsed .nav-section-label,.sidebar.collapsed .sync-text,.sidebar.collapsed .last-sync{display:none}
+    .sidebar.collapsed .nav-item{justify-content:center;padding:10px 0}
+    .sidebar.collapsed .sidebar-logo{justify-content:center;padding:18px 0 14px}
+    .sidebar.collapsed .sidebar-footer{padding:12px 0;display:flex;flex-direction:column;align-items:center}
+    .sidebar-logo{padding:18px 20px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08);position:relative}
+    .sidebar-toggle{position:absolute;right:-10px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;background:var(--green-500);border:2px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:9px;box-shadow:var(--shadow-sm);z-index:10;transition:all .22s;line-height:1}
+    .sidebar.collapsed .sidebar-toggle{transform:translateY(-50%) scaleX(-1)}
+    .logo-icon{width:34px;height:34px;background:rgba(255,255,255,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid rgba(255,255,255,.15);flex-shrink:0}
+    .logo-text{overflow:hidden}
+    .logo-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#fff;white-space:nowrap;letter-spacing:-.2px}
+    .logo-sub{font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;font-weight:500;white-space:nowrap}
+    .sidebar-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;overflow-x:hidden}
+    .nav-section-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.28);font-weight:600;padding:12px 10px 4px;white-space:nowrap}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);cursor:pointer;transition:background .15s,color .15s;color:rgba(255,255,255,.60);font-size:13px;font-weight:500;border:none;background:none;width:100%;text-align:left;text-decoration:none;white-space:nowrap;overflow:hidden}
+    .nav-item:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.90)}
+    .nav-item.active{background:rgba(255,255,255,.14);color:#fff;font-weight:600}
+    .nav-item.active .nav-icon{background:rgba(255,255,255,.18)}
+    .nav-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;background:rgba(255,255,255,.06);flex-shrink:0}
+    .sidebar-footer{padding:12px 16px 16px;border-top:1px solid rgba(255,255,255,.08)}
+    .sync-status{display:flex;align-items:center;gap:7px;font-size:11px;color:rgba(255,255,255,.45)}
+    .sync-text{white-space:nowrap;overflow:hidden;font-size:11px}
+    .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green-500);box-shadow:0 0 0 2px rgba(76,175,80,.25);animation:pulse-dot 2s infinite;flex-shrink:0}
+    .sync-dot.offline{background:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,.25)}
+    @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+    .last-sync{font-size:10px;color:rgba(255,255,255,.25);margin-top:2px;white-space:nowrap}
+
+    /* MAIN */
+    .main{margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column;width:calc(100vw - var(--sidebar-w));max-width:calc(100vw - var(--sidebar-w));overflow-x:hidden;transition:margin-left .22s cubic-bezier(.4,0,.2,1),width .22s cubic-bezier(.4,0,.2,1),max-width .22s cubic-bezier(.4,0,.2,1)}
+    .sidebar.collapsed ~ .main{margin-left:var(--sidebar-collapsed);width:calc(100vw - var(--sidebar-collapsed));max-width:calc(100vw - var(--sidebar-collapsed))}
+
+    /* TOPBAR */
+    .topbar{position:sticky;top:0;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;z-index:50;gap:12px}
+    .topbar-left{min-width:0;flex:1;overflow:hidden}
+    .topbar-left h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text-1);letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .topbar-left .topbar-sub{font-size:11px;color:var(--text-3);white-space:nowrap}
+    .topbar-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+    .btn-refresh{display:flex;align-items:center;gap:5px;background:var(--green-900);color:#fff;border:none;border-radius:var(--r-sm);padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;font-family:'Inter',sans-serif;white-space:nowrap}
+    .btn-refresh:hover{background:var(--green-700)}
+    .btn-refresh:active{transform:scale(.97)}
+    .btn-refresh svg{flex-shrink:0}
+    .btn-refresh.loading svg{animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .filter-chip{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 10px;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;transition:border-color .15s;flex-shrink:0}
+    .filter-chip:hover{border-color:var(--green-500)}
+    .filter-chip select{border:none;outline:none;background:transparent;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;font-family:'Inter',sans-serif;max-width:90px}
+
+    /* CONTENT */
+    .content{padding:24px 28px;flex:1;min-width:0;overflow-x:hidden}
+    .section{display:none}
+    .section.active{display:block}
+
+    /* KPI */
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
+    .kpi-card{background:var(--surface);border-radius:var(--r-md);padding:20px 22px;border:1px solid var(--border);position:relative;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+    .kpi-card:hover{border-color:var(--border-2);box-shadow:var(--shadow-sm)}
+    .kpi-card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--kpi-color,var(--green-500));border-radius:0 2px 2px 0}
+    .kpi-card.green{--kpi-color:var(--green-500)}
+    .kpi-card.orange{--kpi-color:#f97316}
+    .kpi-card.blue{--kpi-color:#3b82f6}
+    .kpi-card.purple{--kpi-color:#8b5cf6}
+    .kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);font-weight:600;margin-bottom:8px}
+    .kpi-value{font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:800;color:var(--text-1);letter-spacing:-1.5px;line-height:1;margin-bottom:8px}
+    .kpi-change{font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:4px}
+    .kpi-icon{position:absolute;right:16px;top:16px;font-size:28px;opacity:.08}
+    .kpi-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+    .kpi-trend.up{background:#dcfce7;color:#15803d}
+    .kpi-trend.neutral{background:#f3f4f6;color:#6b7280}
+
+    /* CARDS */
+    .chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:16px}
+    .chart-grid.three-col{grid-template-columns:minmax(0,60%) minmax(0,40%)}
+    .card{background:var(--surface);border-radius:var(--r-md);border:1px solid var(--border);overflow:hidden;transition:border-color .15s}
+    .card:hover{border-color:var(--border-2)}
+    .card-header{padding:16px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--text-1);letter-spacing:-.1px}
+    .card-subtitle{font-size:11px;color:var(--text-3);margin-top:2px}
+    .card-badge{background:var(--green-50);color:var(--green-700);font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;border:1px solid var(--green-100);align-self:flex-start}
+    .card-body{padding:14px 20px 18px}
+    .card-body.no-padding{padding:0}
+
+    /* DONUT */
+    .donut-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .donut-chart-box{width:150px;height:150px;flex-shrink:0;position:relative}
+    .donut-center-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+    .donut-center-value{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:var(--text-1);line-height:1}
+    .donut-center-text{font-size:10px;color:var(--text-3);margin-top:3px}
+    .legend-list{flex:1;display:flex;flex-direction:column;gap:8px}
+    .legend-item{display:flex;align-items:center;gap:8px}
+    .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .legend-name{flex:1;font-size:12px;color:var(--text-2);font-weight:500}
+    .legend-value{font-size:12px;font-weight:700;color:var(--text-1)}
+    .legend-pct{font-size:11px;color:var(--text-3);width:32px;text-align:right}
+
+    /* CHARTS + MAP */
+    .chart-canvas-wrap{position:relative;height:210px}
+    #map{height:460px;width:100%;border-radius:0 0 var(--r-md) var(--r-md)}
+    .map-controls{display:flex;gap:6px;flex-wrap:wrap}
+    .map-btn{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .15s}
+    .map-btn.active,.map-btn:hover{background:var(--green-900);color:#fff;border-color:var(--green-900)}
+
+    /* TABLES */
+    .rank-table,.scan-table{width:100%;border-collapse:collapse}
+    .rank-table th,.scan-table th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);font-weight:600;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap}
+    .rank-table td,.scan-table td{padding:11px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+    .rank-table tr:last-child td,.scan-table tr:last-child td{border-bottom:none}
+    .rank-table tr:hover td,.scan-table tr:hover td{background:var(--green-50)}
+    .scan-table th{padding:10px 20px;position:sticky;top:0;z-index:2}
+    .scan-table td{padding:11px 20px}
+    .rank-medal{font-size:18px}
+    .rank-name{font-weight:600;color:var(--text-1);font-size:13px}
+    .rank-sub{font-size:11px;color:var(--text-3);margin-top:1px}
+    .rank-count{font-weight:700;color:var(--green-700);font-size:15px}
+    .rank-bar-wrap{display:flex;align-items:center;gap:8px}
+    .rank-bar{flex:1;height:4px;background:var(--green-100);border-radius:2px;overflow:hidden;min-width:60px}
+    .rank-bar-fill{height:100%;background:var(--green-500);border-radius:2px;transition:width .5s ease}
+    .kategori-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+    .thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;background:var(--green-100);border:1px solid var(--border)}
+    .thumb-placeholder{width:40px;height:40px;border-radius:8px;background:var(--green-50);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px}
+    .confidence-bar-wrap{display:flex;align-items:center;gap:6px}
+    .confidence-bar{width:56px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+    .confidence-fill{height:100%;border-radius:2px;background:var(--green-500)}
+
+    /* SKELETON + EMPTY */
+    .skeleton{background:linear-gradient(90deg,#f0f4f0 25%,#e4ede4 50%,#f0f4f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .skeleton-text{height:12px;margin:5px 0}
+    .skeleton-val{height:30px;width:70px}
+    .empty-state{text-align:center;padding:40px 20px;color:var(--text-3)}
+    .empty-icon{font-size:40px;margin-bottom:10px}
+    .empty-title{font-size:14px;font-weight:600;color:var(--text-2)}
+    .empty-sub{font-size:12px;margin-top:4px}
+
+    /* MAP POPUP */
+    .leaflet-popup-content-wrapper{border-radius:var(--r-sm) !important;box-shadow:var(--shadow-md) !important;border:1px solid var(--border) !important}
+    .leaflet-popup-content{margin:14px 18px !important}
+    .popup-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:8px}
+    .popup-row{display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:3px;gap:12px}
+    .popup-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:var(--green-50);color:var(--green-700);border:1px solid var(--green-100);margin-top:8px}
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--green-200);border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--green-500)}
+
+    /* TIMELINE */
+    .timeline{display:flex;flex-direction:column}
+    .timeline-item{display:flex;gap:12px;padding:0 0 16px;position:relative}
+    .timeline-item:not(:last-child)::after{content:'';position:absolute;left:15px;top:32px;bottom:0;width:1px;background:var(--border)}
+    .timeline-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--green-50);border:1px solid var(--border);z-index:1}
+    .timeline-content{flex:1;padding-top:4px}
+    .timeline-title{font-size:13px;font-weight:600;color:var(--text-1)}
+    .timeline-time{font-size:11px;color:var(--text-3);margin-top:1px}
+    .timeline-detail{font-size:11px;color:var(--text-2);margin-top:4px}
+
+    /* CAT GRID */
+    .cat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .cat-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;transition:border-color .15s}
+    .cat-card:hover{border-color:var(--cat-color)}
+    .cat-icon{font-size:20px;margin-bottom:8px}
+    .cat-name{font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:4px}
+    .cat-count{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;color:var(--cat-color)}
+    .cat-pct{font-size:11px;color:var(--text-3)}
+
+    /* STAT ROWS */
+    .stat-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .stat-row:last-child{margin-bottom:0}
+    .stat-row-left{display:flex;align-items:center;gap:7px;width:100px;flex-shrink:0}
+    .stat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .stat-name{font-size:12px;color:var(--text-2);font-weight:500}
+    .stat-prog{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+    .stat-prog-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+    .stat-cnt{width:38px;text-align:right;font-size:12px;font-weight:700;color:var(--text-1)}
+    .stat-pct{width:32px;text-align:right;font-size:11px;color:var(--text-3)}
+
+    /* RESPONSIVE */
+    /* RESPONSIVE & LAYOUT POLISH */
+    .mobile-brand {
+      display: none;
+    }
+    
+    .table-pagination {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 1024px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .chart-grid, .chart-grid.three-col {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none !important;
+      }
+      .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        height: auto !important;
+        padding: 16px !important;
+        gap: 12px !important;
+      }
+      .topbar-left {
+        width: 100%;
+      }
+      .mobile-brand {
+        display: flex !important;
+      }
+      .topbar-right {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .topbar-right .filter-chip {
+        flex: 1;
+      }
+      .topbar-right .filter-chip select {
+        max-width: none;
+        width: 100%;
+      }
+      .content {
+        padding: 16px;
+      }
+      #map {
+        height: 320px !important;
+      }
+      .bottom-nav {
+        display: flex !important;
+      }
+      .cat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      /* Card Header Stacking for filters & actions */
+      .card-header {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding: 16px 16px 0 !important;
+      }
+      .card-header > div:last-child {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .card-header > div:last-child .filter-chip {
+        flex: 1;
+      }
+      .card-header > div:last-child .filter-chip input,
+      .card-header > div:last-child .filter-chip select {
+        width: 100%;
+        max-width: none;
+      }
+      
+      /* Map Controls segmented controls */
+      .map-controls {
+        width: 100%;
+        display: flex;
+        gap: 4px;
+      }
+      .map-controls .map-btn {
+        flex: 1;
+        text-align: center;
+        padding: 6px 0;
+      }
+
+      /* Responsive Tables - hide columns on mobile */
+      .scan-table th:nth-child(3), .scan-table td:nth-child(3), /* Kategori */
+      .scan-table th:nth-child(4), .scan-table td:nth-child(4), /* Wilayah */
+      .scan-table th:nth-child(5), .scan-table td:nth-child(5), /* RT */
+      .scan-table th:nth-child(7), .scan-table td:nth-child(7) { /* Waktu */
+        display: none !important;
+      }
+      .scan-table th, .scan-table td {
+        padding: 10px 12px !important;
+      }
+      .scan-table .confidence-bar {
+        display: none !important;
+      }
+      
+      /* Hide porsi column in rank table on mobile */
+      .rank-table th:nth-child(4), .rank-table td:nth-child(4),
+      .rank-table th:nth-child(5), .rank-table td:nth-child(5) {
+        display: none !important;
+      }
+      .rank-table th, .rank-table td {
+        padding: 10px 12px !important;
+      }
+      
+      /* Pagination Stacking */
+      .table-pagination {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+        padding: 14px 16px;
+      }
+      
+      /* Donut Chart Responsive */
+      .donut-wrap {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+      .legend-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        width: 100%;
+      }
+      .mobile-subtext {
+        display: block !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .kpi-value {
+        font-size: 20px !important;
+      }
+      .kpi-card {
+        padding: 12px 14px !important;
+      }
+      .kpi-label {
+        font-size: 9.5px;
+      }
+      .cat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .cat-card {
+        padding: 12px;
+      }
+      .cat-count {
+        font-size: 20px;
+      }
+    }
+
+    /* BOTTOM NAV (MOBILE) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0;
+      width: 100%;
+      height: calc(64px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(228, 237, 229, 0.8);
+      display: none;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 150;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+      padding: 0 4px;
+    }
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--text-3);
+      font-size: 10px;
+      font-weight: 500;
+      flex: 1;
+      height: 100%;
+      cursor: pointer;
+      gap: 4px;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+      position: relative;
+    }
+    .bottom-nav-item.active {
+      color: var(--green-700);
+      font-weight: 700;
+    }
+    .bottom-nav-icon {
+      font-size: 20px;
+      transition: transform 0.2s ease;
+    }
+    .bottom-nav-item.active .bottom-nav-icon {
+      transform: scale(1.18);
+    }
+
+    /* CURSOR FOR CLICKABLE ROWS */
+    .scan-table tbody tr {
+      cursor: pointer;
+    }
+
+    /* MODAL DETAIL SCAN */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(17, 24, 20, 0.4);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      background: var(--surface);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border-2);
+      width: 90%;
+      max-width: 820px;
+      max-height: 90vh;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .modal-overlay.show .modal-card {
+      transform: scale(1);
+    }
+    .modal-close {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0,0,0,0.1);
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: all 0.15s;
+      z-index: 110;
+    }
+    .modal-close:hover {
+      background: #ffffff;
+      transform: scale(1.05);
+      color: #000;
+    }
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 45% 55%;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .modal-image-side {
+      background: #f1f5f1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      min-height: 320px;
+      border-right: 1px solid var(--border);
+    }
+    .modal-image-side img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .modal-image-side img:hover {
+      transform: scale(1.03);
+    }
+    .modal-info-side {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
+    .modal-header {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .modal-header h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-1);
+      letter-spacing: -0.5px;
+    }
+    .modal-details-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+    .detail-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-3);
+    }
+    .detail-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-1);
+      text-align: right;
+    }
+
+    @media (max-width: 768px) {
+      .modal-grid {
+        grid-template-columns: 1fr;
+      }
+      .modal-image-side {
+        min-height: 240px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .modal-card {
+        max-height: 95vh;
+      }
+      .modal-info-side {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🌿</div>
+    <div class="logo-text">
+      <div class="logo-name">EcoSnap</div>
+      <div class="logo-sub">Dashboard Admin</div>
+    </div>
+    <div class="sidebar-toggle" onclick="toggleSidebar()" title="Kecilkan/Perbesar sidebar">◀</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Menu Utama</div>
+
+    <button class="nav-item active" onclick="showSection('overview')" id="nav-overview">
+      <div class="nav-icon">📊</div>
+      <span>Overview</span>
+    </button>
+    <button class="nav-item" onclick="showSection('statistik')" id="nav-statistik">
+      <div class="nav-icon">📈</div>
+      <span>Statistik</span>
+    </button>
+    <button class="nav-item" onclick="showSection('peta')" id="nav-peta">
+      <div class="nav-icon">🗺️</div>
+      <span>Peta Sebaran</span>
+    </button>
+
+    <div class="nav-section-label">Data</div>
+    <button class="nav-item" onclick="showSection('riwayat')" id="nav-riwayat">
+      <div class="nav-icon">🗂️</div>
+      <span>Riwayat Scan</span>
+    </button>
+    <button class="nav-item" onclick="showSection('ranking')" id="nav-ranking">
+      <div class="nav-icon">🏆</div>
+      <span>Ranking Wilayah</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sync-status">
+      <div class="sync-dot" id="syncDot"></div>
+      <span class="sync-text" id="syncLabel">Terhubung ke Supabase</span>
+    </div>
+    <div class="last-sync" id="lastSync">Memuat data…</div>
+  </div>
+</aside>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<main class="main">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="mobile-brand" style="display:none; align-items:center; gap:6px; margin-bottom:4px;">
+        <span style="font-size:14px;">🌿</span>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:12px; color:var(--green-700); letter-spacing:-0.2px; text-transform:uppercase;">EcoSnap</span>
+      </div>
+      <h1 id="pageTitle">Overview Dashboard</h1>
+      <div class="topbar-sub" id="pageSubtitle">Monitoring real-time data sampah EcoSnap</div>
+    </div>
+    <div class="topbar-right">
+      <div class="filter-chip">
+        <span>📍</span>
+        <select id="filterRt" onchange="applyFilter()">
+          <option value="">Semua RT</option>
+        </select>
+      </div>
+      <button class="btn-refresh" id="btnRefresh" onclick="loadData()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0018.49 15"/>
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ CONTENT ══════════ -->
+  <div class="content">
+
+    <!-- ───────────── OVERVIEW ───────────── -->
+    <div class="section active" id="section-overview">
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card green animate-up">
+          <div class="kpi-label">Total Scan</div>
+          <div class="kpi-value" id="kpiTotal"><span class="skeleton skeleton-val"></span></div>
+          <div class="kpi-change"><span class="kpi-trend neutral" id="kpiTotalTrend">memuat…</span></div>
+          <div class="kpi-icon">♻️</div>
+        </div>
+        <div class="kpi-card orange animate-up delay-1">
+          <div class="kpi-label">RT Aktif</div>
+          <div class="kpi-value" id="kpiRt"><span class="skeleton skeleton-val"></span></div>
+          <div class="kpi-change"><span class="kpi-trend neutral" id="kpiRtTrend">memuat…</span></div>
+          <div class="kpi-icon">🏘️</div>
+        </div>
+        <div class="kpi-card blue animate-up delay-2">
+          <div class="kpi-label">Rata-rata Scan / RT</div>
+          <div class="kpi-value" id="kpiAvgRt"><span class="skeleton skeleton-val"></span></div>
+          <div class="kpi-change"><span class="kpi-trend neutral" id="kpiAvgRtSub">memuat…</span></div>
+          <div class="kpi-icon">📈</div>
+        </div>
+        <div class="kpi-card purple animate-up delay-3">
+          <div class="kpi-label">Sampah Dominan</div>
+          <div class="kpi-value" style="font-size:20px;letter-spacing:0" id="kpiDominan"><span class="skeleton skeleton-val"></span></div>
+          <div class="kpi-change"><span class="kpi-trend neutral" id="kpiDominanPct">memuat…</span></div>
+          <div class="kpi-icon">📦</div>
+        </div>
+      </div>
+
+      <!-- Charts Row 1 -->
+      <div class="chart-grid three-col animate-up delay-2" style="margin-bottom:20px">
+        <!-- Trend harian -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Tren Scan Harian</div>
+              <div class="card-subtitle">7 hari terakhir berdasarkan created_at</div>
+            </div>
+            <span class="card-badge" id="trendPeriod">7 Hari</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-canvas-wrap">
+              <canvas id="chartTrend"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Donut kategori -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Komposisi Sampah</div>
+              <div class="card-subtitle">Per jenis kategori</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="donut-wrap">
+              <div class="donut-chart-box">
+                <canvas id="chartDonut"></canvas>
+                <div class="donut-center-label">
+                  <div class="donut-center-value" id="donutCenter">-</div>
+                  <div class="donut-center-text">Total</div>
+                </div>
+              </div>
+              <div class="legend-list" id="donutLegend"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row 2 -->
+      <div class="chart-grid animate-up delay-3">
+        <!-- Per RT Bar Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Scan per RT</div>
+              <div class="card-subtitle">Total item sampah per wilayah RT</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-canvas-wrap">
+              <canvas id="chartRt"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aktivitas Terbaru -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Aktivitas Terbaru</div>
+              <div class="card-subtitle">Scan paling baru masuk</div>
+            </div>
+          </div>
+          <div class="card-body" style="max-height:280px;overflow-y:auto">
+            <div class="timeline" id="recentTimeline">
+              <div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Memuat…</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /overview -->
+
+    <!-- ───────────── STATISTIK ───────────── -->
+    <div class="section" id="section-statistik">
+      <div class="chart-grid animate-up" style="margin-bottom:20px">
+        <!-- Category breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Detail Kategori Sampah</div>
+              <div class="card-subtitle">Jumlah dan persentase per jenis</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="catStats"></div>
+          </div>
+        </div>
+
+        <!-- Horizontal bar chart per kategori -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Perbandingan Kategori</div>
+              <div class="card-subtitle">Visualisasi bar chart horizontal</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-canvas-wrap">
+              <canvas id="chartHBar"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Cards Grid -->
+      <div class="card animate-up delay-1">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Ringkasan per Kategori</div>
+            <div class="card-subtitle">Kartu detail setiap jenis sampah</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="cat-grid" id="catGrid"></div>
+        </div>
+      </div>
+
+      <!-- Monthly trend -->
+      <div class="card animate-up delay-2" style="margin-top:20px">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Tren Bulanan</div>
+            <div class="card-subtitle">Total scan per bulan (6 bulan terakhir)</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-canvas-wrap" style="height:220px">
+            <canvas id="chartMonthly"></canvas>
+          </div>
+        </div>
+      </div>
+    </div><!-- /statistik -->
+
+    <!-- ───────────── PETA ───────────── -->
+    <div class="section" id="section-peta">
+      <div class="card animate-up" style="margin-bottom:20px">
+        <div class="card-header" style="padding-bottom:16px">
+          <div>
+            <div class="card-title">Peta Sebaran Titik Scan</div>
+            <div class="card-subtitle">Lokasi GPS setiap laporan sampah — klik titik untuk detail</div>
+          </div>
+          <div class="map-controls">
+            <button class="map-btn active" id="btnPin" onclick="setMapMode('pin')">📍 Titik</button>
+            <button class="map-btn" id="btnHeat" onclick="setMapMode('heat')">🔥 Heatmap</button>
+            <button class="map-btn" id="btnCluster" onclick="setMapMode('cluster')">🫧 Cluster</button>
+          </div>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <!-- Summary bawah peta -->
+      <div class="chart-grid animate-up delay-1">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Agregat per RT</div>
+              <div class="card-subtitle">Total scan dan dominan sampah</div>
+            </div>
+          </div>
+          <div class="card-body no-padding">
+            <div style="overflow-x:auto;max-height:300px;overflow-y:auto">
+              <table class="rank-table" id="rtTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>RT</th>
+                    <th>Total Scan</th>
+                    <th>Dominan</th>
+                    <th>Porsi</th>
+                  </tr>
+                </thead>
+                <tbody id="rtTableBody">
+                  <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Memuat…</div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Distribusi per RT</div>
+              <div class="card-subtitle">Pie chart lokasi scan per RT</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-canvas-wrap" style="height:260px">
+              <canvas id="chartRtPie"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /peta -->
+
+    <!-- ───────────── RIWAYAT SCAN ───────────── -->
+    <div class="section" id="section-riwayat">
+      <div class="card animate-up">
+        <div class="card-header" style="padding-bottom:16px">
+          <div>
+            <div class="card-title">Semua Riwayat Scan</div>
+            <div class="card-subtitle" id="riwayatCount">Memuat data…</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="filter-chip">
+              <span>🔍</span>
+              <input type="text" id="searchInput" placeholder="Cari wilayah / jenis…"
+                style="border:none;outline:none;background:transparent;font-size:13px;width:160px;font-family:'Inter',sans-serif;color:var(--text-1)"
+                oninput="renderTable()" />
+            </div>
+            <div class="filter-chip">
+              <span>📁</span>
+              <select id="filterKategori" onchange="renderTable()" style="border:none;outline:none;background:transparent;font-size:13px;font-family:'Inter',sans-serif;color:var(--text-2)">
+                <option value="">Semua Kategori</option>
+                <option>Organik</option>
+                <option>Plastik</option>
+                <option>Kertas</option>
+                <option>Kaca</option>
+                <option>Kardus</option>
+                <option>Logam</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="card-body no-padding">
+          <div style="overflow-x:auto;max-height:600px;overflow-y:auto">
+            <table class="scan-table">
+              <thead>
+                <tr>
+                  <th>Foto</th>
+                  <th onclick="sortTable('nama_sampah')" style="cursor:pointer">Jenis ↕</th>
+                  <th onclick="sortTable('kategori')" style="cursor:pointer">Kategori ↕</th>
+                  <th onclick="sortTable('wilayah')" style="cursor:pointer">Wilayah ↕</th>
+                  <th>RT</th>
+                  <th onclick="sortTable('confidence')" style="cursor:pointer">Akurasi ↕</th>
+                  <th onclick="sortTable('created_at')" style="cursor:pointer">Waktu ↕</th>
+                </tr>
+              </thead>
+              <tbody id="scanTableBody">
+                <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Memuat…</div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-pagination">
+            <span style="font-size:13px;color:var(--text-2)" id="paginationInfo">-</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="map-btn" onclick="prevPage()" id="btnPrev">← Prev</button>
+              <span id="pageNum" style="font-size:13px;font-weight:600;color:var(--text-1);padding:6px 12px">1</span>
+              <button class="map-btn" onclick="nextPage()" id="btnNext">Next →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /riwayat -->
+
+    <!-- ───────────── RANKING ───────────── -->
+    <div class="section" id="section-ranking">
+      <div class="kpi-grid animate-up" style="margin-bottom:20px">
+        <div class="kpi-card green">
+          <div class="kpi-label">RT Terbanyak Scan</div>
+          <div class="kpi-value" style="font-size:20px;letter-spacing:0" id="rankTopRt">-</div>
+          <div class="kpi-change"><span class="kpi-trend up" id="rankTopRtCount">-</span></div>
+          <div class="kpi-icon">🥇</div>
+        </div>
+        <div class="kpi-card orange">
+          <div class="kpi-label">RT Akurasi Tertinggi</div>
+          <div class="kpi-value" style="font-size:20px;letter-spacing:0" id="rankTopRtConf">-</div>
+          <div class="kpi-change"><span class="kpi-trend up" id="rankTopRtConfVal">-</span></div>
+          <div class="kpi-icon">🏅</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">RT Paling Aktif</div>
+          <div class="kpi-value" style="font-size:20px;letter-spacing:0" id="rankActiveRt">-</div>
+          <div class="kpi-change"><span class="kpi-trend neutral" id="rankActiveRtSub">-</span></div>
+          <div class="kpi-icon">⚡</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-label">Total RT Aktif</div>
+          <div class="kpi-value" id="rankTotalRt">-</div>
+          <div class="kpi-change"><span class="kpi-trend neutral">RT berpartisipasi</span></div>
+          <div class="kpi-icon">📍</div>
+        </div>
+      </div>
+
+      <div class="chart-grid animate-up delay-1">
+        <!-- Ranking RT -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Ranking RT — Jumlah Scan</div>
+              <div class="card-subtitle">Urutan RT berdasarkan total scan terbanyak</div>
+            </div>
+            <span class="card-badge">Top 10</span>
+          </div>
+          <div class="card-body no-padding">
+            <table class="rank-table">
+              <thead>
+                <tr>
+                  <th style="width:50px">#</th>
+                  <th>RT / Wilayah</th>
+                  <th>Total Scan</th>
+                  <th>Porsi</th>
+                </tr>
+              </thead>
+              <tbody id="rankingRtBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Ranking RT + chart -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Ranking RT — Grafik Scan</div>
+              <div class="card-subtitle">Visualisasi grafik total scan per RT</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-canvas-wrap" style="height:260px">
+              <canvas id="chartRankRt"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /ranking -->
+
+</main>
+
+<!-- BOTTOM NAV FOR MOBILE -->
+<nav class="bottom-nav">
+  <button class="bottom-nav-item active" onclick="showSection('overview')" id="bottom-nav-overview">
+    <div class="bottom-nav-icon">📊</div>
+    <span class="bottom-nav-label">Overview</span>
+  </button>
+  <button class="bottom-nav-item" onclick="showSection('statistik')" id="bottom-nav-statistik">
+    <div class="bottom-nav-icon">📈</div>
+    <span class="bottom-nav-label">Statistik</span>
+  </button>
+  <button class="bottom-nav-item" onclick="showSection('peta')" id="bottom-nav-peta">
+    <div class="bottom-nav-icon">🗺️</div>
+    <span class="bottom-nav-label">Peta</span>
+  </button>
+  <button class="bottom-nav-item" onclick="showSection('riwayat')" id="bottom-nav-riwayat">
+    <div class="bottom-nav-icon">🗂️</div>
+    <span class="bottom-nav-label">Riwayat</span>
+  </button>
+  <button class="bottom-nav-item" onclick="showSection('ranking')" id="bottom-nav-ranking">
+    <div class="bottom-nav-icon">🏆</div>
+    <span class="bottom-nav-label">Ranking</span>
+  </button>
+</nav>
+
+<!-- MODAL DETAIL SCAN -->
+<div class="modal-overlay" id="detailModal" onclick="closeDetailModal(event)">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeDetailModal()">×</button>
+    <div class="modal-grid">
+      <div class="modal-image-side">
+        <img id="modalImg" src="" alt="Detail Foto Sampah" onerror="this.src='https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&q=80&w=600'" />
+      </div>
+      <div class="modal-info-side">
+        <div class="modal-header">
+          <span class="kategori-pill" id="modalKategori" style="padding:4px 10px; font-size:12px; font-weight:600; border-radius:20px;">Kategori</span>
+          <h2 id="modalJenis">Nama Sampah</h2>
+        </div>
+        <div class="modal-details-list">
+          <div class="detail-row">
+            <span class="detail-label">📍 Wilayah</span>
+            <span class="detail-val" id="modalWilayah">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">🏘️ RT</span>
+            <span class="detail-val" id="modalRt">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">🎯 Akurasi AI</span>
+            <span class="detail-val" id="modalAkurasi">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">📅 Waktu Scan</span>
+            <span class="detail-val" id="modalWaktu">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">🌐 Koordinat GPS</span>
+            <span class="detail-val" id="modalGps">-</span>
+          </div>
+        </div>
+        <div style="margin-top:auto; padding-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+          <a id="modalMapLink" href="#" target="_blank" class="btn-refresh" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+            🗺️ Buka di Google Maps
+          </a>
+          <button class="filter-chip" onclick="closeDetailModal()" style="height:34px; line-height:22px; font-weight:600;">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   CONFIG SUPABASE
+════════════════════════════════════════════ */
+const SUPABASE_URL = 'https://xluhvldbiavkxklxyxkv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdWh2bGRiaWF2a3hrbHh5eGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMzQxNzksImV4cCI6MjA5MTcxMDE3OX0.m2bpOYQxZIE0GlMtI-QTaYjupCDNeAUp5_cMbUHcR3M';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+let allData      = [];    // raw dari Supabase
+let filteredData = [];    // setelah filter RW/RT
+let currentPage  = 1;
+const PAGE_SIZE  = 20;
+let sortKey      = 'created_at';
+let sortDir      = 'desc';
+let mapMode      = 'pin';
+let leafletMap, heatLayer, pinGroup;
+let chartTrend, chartDonut, chartRt, chartHBar, chartMonthly, chartRtPie, chartRankRt;
+let currentSection = 'overview';
+
+const CAT_COLORS = {
+  'Organik': '#4CAF50',
+  'Plastik': '#FF9800',
+  'Kertas':  '#FFC107',
+  'Kaca':    '#00BCD4',
+  'Kardus':  '#2196F3',
+  'Logam':   '#9C27B0',
+};
+const CAT_ICONS = {
+  'Organik': '🌿', 'Plastik': '🧴', 'Kertas': '📄',
+  'Kaca': '🫙', 'Kardus': '📦', 'Logam': '🔩',
+};
+
+/* ════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════ */
+const SECTION_TITLES = {
+  overview:  ['Overview Dashboard',     'Monitoring real-time data sampah EcoSnap'],
+  statistik: ['Statistik Sampah',       'Analisis komposisi dan tren data'],
+  peta:      ['Peta Sebaran',           'Visualisasi lokasi GPS titik scan'],
+  riwayat:   ['Riwayat Scan',           'Semua data scan dengan filter dan pencarian'],
+  ranking:   ['Ranking Wilayah',        'Peringkat RT berdasarkan aktivitas scan'],
+};
+
+function showSection(name) {
+  currentSection = name;
+  
+  // Reset scroll position to top of page
+  window.scrollTo(0, 0);
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
+
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  
+  // Update desktop sidebar active class
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-' + name).classList.add('active');
+  
+  // Update mobile bottom nav active class
+  document.querySelectorAll('.bottom-nav-item').forEach(n => n.classList.remove('active'));
+  const bNav = document.getElementById('bottom-nav-' + name);
+  if (bNav) bNav.classList.add('active');
+
+  const [title, sub] = SECTION_TITLES[name] || ['EcoSnap', ''];
+  document.getElementById('pageTitle').textContent = title;
+  document.getElementById('pageSubtitle').textContent = sub;
+
+  if (name === 'peta') setTimeout(initMap, 50);
+}
+
+/* ════════════════════════════════════════════
+   MODAL DETAIL SCAN HANDLERS
+════════════════════════════════════════════ */
+function showDetail(id, createdAt) {
+  const item = allData.find(x => x.id === id || (x.created_at && x.created_at === createdAt));
+  if (!item) return;
+
+  const color = CAT_COLORS[item.nama_sampah] || '#9E9E9E';
+  const icon  = CAT_ICONS[item.nama_sampah] || '♻️';
+  const conf  = item.confidence != null ? parseConf(item.confidence) : null;
+  const time  = item.created_at ? new Date(item.created_at).toLocaleString('id-ID', {
+    day: '2-digit', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  }) : '-';
+
+  // Set modal values
+  const imgEl = document.getElementById('modalImg');
+  imgEl.src = item.image_url || 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&q=80&w=600';
+  
+  const katEl = document.getElementById('modalKategori');
+  katEl.textContent = `${icon} ${item.kategori || item.nama_sampah || 'Sampah'}`;
+  katEl.style.background = `${color}22`;
+  katEl.style.color = color;
+
+  document.getElementById('modalJenis').textContent = item.nama_sampah || '-';
+  document.getElementById('modalWilayah').textContent = item.wilayah || '-';
+  document.getElementById('modalRt').textContent = item.rt_id ? `RT ${item.rt_id}` : '-';
+  document.getElementById('modalAkurasi').textContent = conf != null ? `${conf.toFixed(1)}%` : '-';
+  document.getElementById('modalWaktu').textContent = time;
+  
+  const hasGps = item.latitude && item.longitude;
+  document.getElementById('modalGps').textContent = hasGps ? `${item.latitude.toFixed(6)}, ${item.longitude.toFixed(6)}` : '-';
+  
+  const mapLink = document.getElementById('modalMapLink');
+  if (hasGps) {
+    mapLink.href = `https://www.google.com/maps/search/?api=1&query=${item.latitude},${item.longitude}`;
+    mapLink.style.display = 'inline-flex';
+  } else {
+    mapLink.style.display = 'none';
+  }
+
+  // Show modal
+  const modal = document.getElementById('detailModal');
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden'; // Prevent body scroll when modal is open
+}
+
+function closeDetailModal(event) {
+  if (event && event.target !== document.getElementById('detailModal') && !event.target.classList.contains('modal-close')) {
+    return;
+  }
+  const modal = document.getElementById('detailModal');
+  modal.classList.remove('show');
+  document.body.style.overflow = ''; // Restore body scroll
+}
+
+/* ════════════════════════════════════════════
+   LOAD DATA FROM SUPABASE
+════════════════════════════════════════════ */
+async function loadData() {
+  const btn = document.getElementById('btnRefresh');
+  btn.classList.add('loading');
+  document.getElementById('syncDot').classList.remove('offline');
+
+  try {
+    const { data, error } = await sb
+      .from('scan_history')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    allData = data || [];
+    buildFilters();
+    applyFilter();
+
+    const now = new Date();
+    document.getElementById('lastSync').textContent =
+      'Update: ' + now.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    document.getElementById('syncLabel') && (document.getElementById('syncLabel').textContent = 'Terhubung ke Supabase');
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('syncDot').classList.add('offline');
+    document.getElementById('lastSync').textContent = 'Gagal terhubung';
+    document.getElementById('syncLabel') && (document.getElementById('syncLabel').textContent = 'Koneksi gagal');
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+/* ════════════════════════════════════════════
+   BUILD FILTERS (RW / RT dropdown)
+════════════════════════════════════════════ */
+function buildFilters() {
+  const rtSel = document.getElementById('filterRt');
+  const rtSet = new Set();
+
+  allData.forEach(d => {
+    if (d.rt_id) rtSet.add(d.rt_id);
+  });
+
+  rtSel.innerHTML = '<option value="">Semua RT</option>';
+  [...rtSet].sort().forEach(rt => {
+    rtSel.innerHTML += `<option>${rt}</option>`;
+  });
+}
+
+function applyFilter() {
+  const rt = document.getElementById('filterRt').value;
+  filteredData = allData.filter(d =>
+    (!rt || d.rt_id === rt)
+  );
+  currentPage = 1;
+  renderAll();
+}
+
+/* ════════════════════════════════════════════
+   RENDER ALL
+════════════════════════════════════════════ */
+function renderAll() {
+  renderKPI();
+  renderDonut();
+  renderTrendChart();
+  renderRtBarChart();
+  renderRecentTimeline();
+  renderCatStats();
+  renderCatGrid();
+  renderMonthlyChart();
+  renderHBarChart();
+  renderTable();
+  renderRanking();
+  renderRtTable();
+  renderRtPieChart();
+  renderRankRtChart();
+  updateMapPins();
+}
+
+/* ════════════════════════════════════════════
+   KPI
+════════════════════════════════════════════ */
+function renderKPI() {
+  const d = filteredData;
+  const total = d.length;
+
+  // Count unique RT
+  const rtSet = new Set(d.map(x => x.rt_id).filter(Boolean));
+
+  // Dominant
+  const catMap = {};
+  d.forEach(x => { if(x.nama_sampah) catMap[x.nama_sampah] = (catMap[x.nama_sampah]||0)+1; });
+  const dom = Object.entries(catMap).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('kpiTotal').textContent = total.toLocaleString('id-ID');
+  document.getElementById('kpiTotalTrend').textContent = `${total} item terekap`;
+  document.getElementById('kpiTotalTrend').className = 'kpi-trend up';
+
+  document.getElementById('kpiRt').textContent = rtSet.size;
+  document.getElementById('kpiRtTrend').textContent = `${rtSet.size} RT melaporkan`;
+
+  // Average scans per RT
+  const avgRt = rtSet.size > 0 ? (total / rtSet.size).toFixed(1) : 0;
+  document.getElementById('kpiAvgRt').textContent = avgRt;
+  document.getElementById('kpiAvgRtSub').textContent = `Rata-rata dari ${rtSet.size} RT`;
+
+  if (dom) {
+    const pct = total > 0 ? Math.round(dom[1]*100/total) : 0;
+    document.getElementById('kpiDominan').textContent = (CAT_ICONS[dom[0]]||'') + ' ' + dom[0];
+    document.getElementById('kpiDominanPct').textContent = `${pct}% dari total`;
+    document.getElementById('kpiDominanPct').className = 'kpi-trend up';
+  }
+
+  // Ranking KPI
+  const rtArr = [...Object.entries(groupBy(d, 'rt_id'))].sort((a,b)=>b[1]-a[1]);
+
+  if (rtArr[0]) {
+    document.getElementById('rankTopRt').textContent = 'RT ' + rtArr[0][0];
+    document.getElementById('rankTopRtCount').textContent = rtArr[0][1] + ' scan';
+  }
+
+  // RT with highest average confidence
+  const rtConfMap = {};
+  const rtConfCount = {};
+  d.forEach(x => {
+    if (x.rt_id && x.confidence != null) {
+      const conf = parseConf(x.confidence);
+      if (conf != null) {
+        rtConfMap[x.rt_id] = (rtConfMap[x.rt_id] || 0) + conf;
+        rtConfCount[x.rt_id] = (rtConfCount[x.rt_id] || 0) + 1;
+      }
+    }
+  });
+  let topRtConf = '-';
+  let topRtConfVal = 0;
+  Object.entries(rtConfMap).forEach(([rt, sum]) => {
+    const avg = sum / rtConfCount[rt];
+    if (avg > topRtConfVal) {
+      topRtConfVal = avg;
+      topRtConf = 'RT ' + rt;
+    }
+  });
+  document.getElementById('rankTopRtConf').textContent = topRtConf;
+  document.getElementById('rankTopRtConfVal').textContent = topRtConfVal > 0 ? `${topRtConfVal.toFixed(1)}% rata-rata` : '-';
+
+  document.getElementById('rankActiveRt').textContent = rtArr[0] ? 'RT ' + rtArr[0][0] : '-';
+  document.getElementById('rankActiveRtSub').textContent = rtArr[0] ? rtArr[0][1] + ' scan' : '-';
+  document.getElementById('rankTotalRt').textContent = rtSet.size;
+}
+
+/* ════════════════════════════════════════════
+   DONUT CHART
+════════════════════════════════════════════ */
+function renderDonut() {
+  const catMap = {};
+  filteredData.forEach(d => { if(d.nama_sampah) catMap[d.nama_sampah] = (catMap[d.nama_sampah]||0)+1; });
+  const labels = Object.keys(CAT_COLORS);
+  const values = labels.map(l => catMap[l]||0);
+  const colors = labels.map(l => CAT_COLORS[l]);
+  const total  = values.reduce((a,b)=>a+b,0);
+
+  document.getElementById('donutCenter').textContent = total.toLocaleString('id-ID');
+
+  // Legend
+  const legEl = document.getElementById('donutLegend');
+  legEl.innerHTML = '';
+  labels.forEach((l,i) => {
+    const pct = total>0 ? Math.round(values[i]*100/total) : 0;
+    legEl.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${colors[i]}"></div>
+        <div class="legend-name">${l}</div>
+        <div class="legend-value">${values[i]}</div>
+        <div class="legend-pct">${pct}%</div>
+      </div>`;
+  });
+
+  const ctx = document.getElementById('chartDonut').getContext('2d');
+  if (chartDonut) chartDonut.destroy();
+  chartDonut = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 3, borderColor: '#fff', hoverBorderColor: '#fff' }] },
+    options: {
+      cutout: '68%',
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${total>0?Math.round(ctx.raw*100/total):0}%)` }
+      }},
+      animation: { animateRotate: true, duration: 800 }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════
+   TREND HARIAN
+════════════════════════════════════════════ */
+function renderTrendChart() {
+  const days = 7;
+  const labels = [], counts = [];
+  for (let i = days-1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    labels.push(d.toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short'}));
+    counts.push(filteredData.filter(x => x.created_at && x.created_at.slice(0,10)===key).length);
+  }
+
+  const ctx = document.getElementById('chartTrend').getContext('2d');
+  if (chartTrend) chartTrend.destroy();
+  chartTrend = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Jumlah Scan',
+        data: counts,
+        borderColor: '#2E7D32',
+        backgroundColor: 'rgba(76,175,80,.12)',
+        fill: true,
+        tension: .4,
+        pointBackgroundColor: '#4CAF50',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#7A9B7C' } },
+        y: { grid: { color: '#E0EEE1' }, ticks: { font: { size: 11 }, color: '#7A9B7C', stepSize: 1 }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════
+   RT BAR CHART
+════════════════════════════════════════════ */
+function renderRtBarChart() {
+  const rtMap = groupBy(filteredData, 'rt_id');
+  const rtArr = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const labels = rtArr.map(([k])=> `RT ${k}` || 'N/A');
+  const values = rtArr.map(([,v])=>v);
+  const colors = labels.map((_,i)=>`hsl(${130+i*12},55%,${42+i*3}%)`);
+
+  const ctx = document.getElementById('chartRt').getContext('2d');
+  if (chartRt) chartRt.destroy();
+  chartRt = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Jumlah Scan', data: values, backgroundColor: colors, borderRadius: 8, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#7A9B7C' } },
+        y: { grid: { color: '#E0EEE1' }, ticks: { font: { size: 11 }, color: '#7A9B7C' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════
+   HORIZONTAL BAR CHART (Kategori)
+════════════════════════════════════════════ */
+function renderHBarChart() {
+  const catMap = {};
+  filteredData.forEach(d => { if(d.nama_sampah) catMap[d.nama_sampah]=(catMap[d.nama_sampah]||0)+1; });
+  const labels = Object.keys(CAT_COLORS);
+  const values = labels.map(l=>catMap[l]||0);
+  const colors = labels.map(l=>CAT_COLORS[l]);
+
+  const ctx = document.getElementById('chartHBar').getContext('2d');
+  if (chartHBar) chartHBar.destroy();
+  chartHBar = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Jumlah', data: values, backgroundColor: colors, borderRadius: 6, borderSkipped: false }] },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#E0EEE1' }, ticks: { font:{size:11}, color:'#7A9B7C' }, beginAtZero: true },
+        y: { grid: { display: false }, ticks: { font:{size:12}, color:'#4A6B4C' } }
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════
+   MONTHLY CHART
+════════════════════════════════════════════ */
+function renderMonthlyChart() {
+  const months = 6;
+  const labels = [], counts = [];
+  for (let i=months-1;i>=0;i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth()-i);
+    const key = d.toISOString().slice(0,7);
+    labels.push(d.toLocaleDateString('id-ID',{month:'long',year:'numeric'}));
+    counts.push(filteredData.filter(x=>x.created_at&&x.created_at.slice(0,7)===key).length);
+  }
+
+  const ctx = document.getElementById('chartMonthly').getContext('2d');
+  if (chartMonthly) chartMonthly.destroy();
+  chartMonthly = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Total Scan',
+        data: counts,
+        backgroundColor: 'rgba(46,125,50,.75)',
+        borderColor: '#1B5E20',
+        borderWidth: 1.5,
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid:{display:false}, ticks:{font:{size:11},color:'#7A9B7C'} },
+        y: { grid:{color:'#E0EEE1'}, ticks:{font:{size:11},color:'#7A9B7C'}, beginAtZero:true }
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════
+   RT PIE CHART
+════════════════════════════════════════════ */
+function renderRtPieChart() {
+  const rtMap = groupBy(filteredData,'rt_id');
+  const arr = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const labels = arr.map(([k])=> `RT ${k}` || 'N/A');
+  const values = arr.map(([,v])=>v);
+  const colors = labels.map((_,i)=>`hsl(${120+i*20},50%,${45+i*4}%)`);
+
+  const ctx = document.getElementById('chartRtPie').getContext('2d');
+  if (chartRtPie) chartRtPie.destroy();
+  chartRtPie = new Chart(ctx, {
+    type: 'pie',
+    data: { labels, datasets:[{data:values, backgroundColor:colors, borderWidth:3, borderColor:'#fff'}] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ position: window.innerWidth < 640 ? 'bottom' : 'right', labels:{font:{size:11},color:'#4A6B4C',boxWidth:12,padding:10} } }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════
+   RANK RT CHART
+════════════════════════════════════════════ */
+function renderRankRtChart() {
+  const rtMap = groupBy(filteredData,'rt_id');
+  const arr = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const labels = arr.map(([k])=> `RT ${k}` || 'N/A');
+  const values = arr.map(([,v])=>v);
+  const colors = labels.map((_,i)=>`hsl(${125+i*10},55%,${42+i*3}%)`);
+
+  const ctx = document.getElementById('chartRankRt').getContext('2d');
+  if (chartRankRt) chartRankRt.destroy();
+  chartRankRt = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets:[{label:'Total Scan',data:values,backgroundColor:colors,borderRadius:8,borderSkipped:false}] },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'#E0EEE1'},ticks:{font:{size:11},color:'#7A9B7C'},beginAtZero:true},
+        y:{grid:{display:false},ticks:{font:{size:12},color:'#4A6B4C'}}
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════
+   RECENT TIMELINE
+════════════════════════════════════════════ */
+function renderRecentTimeline() {
+  const el = document.getElementById('recentTimeline');
+  const recent = filteredData.slice(0,8);
+  if (!recent.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Belum ada data</div></div>`;
+    return;
+  }
+  el.innerHTML = recent.map(d => {
+    const icon = CAT_ICONS[d.nama_sampah] || '♻️';
+    const color = CAT_COLORS[d.nama_sampah] || '#4CAF50';
+    const time = d.created_at ? new Date(d.created_at).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '-';
+    return `
+      <div class="timeline-item">
+        <div class="timeline-icon" style="background:${color}22;border-color:${color}55">${icon}</div>
+        <div class="timeline-content">
+          <div class="timeline-title">${d.nama_sampah||'Unknown'}</div>
+          <div class="timeline-time">${time}</div>
+          <div class="timeline-detail">${d.wilayah||'-'} · RT ${d.rt_id||'-'}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   CAT STATS (progress bars)
+════════════════════════════════════════════ */
+function renderCatStats() {
+  const catMap = {};
+  filteredData.forEach(d => { if(d.nama_sampah) catMap[d.nama_sampah]=(catMap[d.nama_sampah]||0)+1; });
+  const total = filteredData.length;
+  const el = document.getElementById('catStats');
+  el.innerHTML = Object.keys(CAT_COLORS).map(nama => {
+    const cnt = catMap[nama]||0;
+    const pct = total>0?Math.round(cnt*100/total):0;
+    const color = CAT_COLORS[nama];
+    return `
+      <div class="stat-row">
+        <div class="stat-row-left">
+          <div class="stat-dot" style="background:${color}"></div>
+          <div class="stat-name">${nama}</div>
+        </div>
+        <div class="stat-prog">
+          <div class="stat-prog-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <div class="stat-cnt">${cnt}</div>
+        <div class="stat-pct">${pct}%</div>
+      </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   CAT GRID CARDS
+════════════════════════════════════════════ */
+function renderCatGrid() {
+  const catMap = {};
+  filteredData.forEach(d => { if(d.nama_sampah) catMap[d.nama_sampah]=(catMap[d.nama_sampah]||0)+1; });
+  const total = filteredData.length;
+  const el = document.getElementById('catGrid');
+  el.innerHTML = Object.keys(CAT_COLORS).map(nama => {
+    const cnt = catMap[nama]||0;
+    const pct = total>0?Math.round(cnt*100/total):0;
+    const color = CAT_COLORS[nama];
+    const icon  = CAT_ICONS[nama]||'♻️';
+    return `
+      <div class="cat-card" style="--cat-color:${color}">
+        <div class="cat-icon">${icon}</div>
+        <div class="cat-name">${nama}</div>
+        <div class="cat-count">${cnt.toLocaleString('id-ID')}</div>
+        <div class="cat-pct">${pct}% dari total</div>
+      </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   HELPERS — CONFIDENCE
+════════════════════════════════════════════ */
+// Supabase menyimpan confidence sebagai persen (mis. 64.10 = 64.10%)
+// Jika nilai <= 1.0 dianggap format desimal lalu dikali 100
+function parseConf(val) {
+  if (val == null) return null;
+  const v = parseFloat(val);
+  if (isNaN(v)) return null;
+  return v <= 1.0 ? Math.round(v * 100 * 10) / 10 : Math.round(v * 10) / 10;
+}
+
+/* ════════════════════════════════════════════
+   SCAN TABLE
+════════════════════════════════════════════ */
+function sortTable(key) {
+  if (sortKey === key) sortDir = sortDir==='asc'?'desc':'asc';
+  else { sortKey=key; sortDir='desc'; }
+  renderTable();
+}
+
+function renderTable() {
+  const search   = document.getElementById('searchInput').value.toLowerCase();
+  const kategori = document.getElementById('filterKategori').value;
+
+  let data = filteredData.filter(d => {
+    const matchSearch = !search ||
+      (d.wilayah||'').toLowerCase().includes(search) ||
+      (d.nama_sampah||'').toLowerCase().includes(search) ||
+      (d.rt_id||'').toLowerCase().includes(search) ||
+      (d.rw_id||'').toLowerCase().includes(search);
+    const matchKat = !kategori || d.nama_sampah===kategori;
+    return matchSearch && matchKat;
+  });
+
+  // Sort
+  data = [...data].sort((a,b) => {
+    let av = a[sortKey]||'', bv = b[sortKey]||'';
+    if (typeof av==='number') return sortDir==='asc'?av-bv:bv-av;
+    return sortDir==='asc'?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));
+  });
+
+  const total = data.length;
+  const pages = Math.max(1, Math.ceil(total/PAGE_SIZE));
+  if (currentPage > pages) currentPage = 1;
+  const start = (currentPage-1)*PAGE_SIZE;
+  const pageData = data.slice(start, start+PAGE_SIZE);
+
+  document.getElementById('riwayatCount').textContent = `${total.toLocaleString('id-ID')} data ditemukan`;
+  document.getElementById('paginationInfo').textContent = `Menampilkan ${start+1}–${Math.min(start+PAGE_SIZE,total)} dari ${total}`;
+  document.getElementById('pageNum').textContent = `${currentPage} / ${pages}`;
+  document.getElementById('btnPrev').disabled = currentPage<=1;
+  document.getElementById('btnNext').disabled = currentPage>=pages;
+
+  const tbody = document.getElementById('scanTableBody');
+  if (!pageData.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Tidak ada data</div><div class="empty-sub">Coba ubah filter pencarian</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = pageData.map(d => {
+    const color = CAT_COLORS[d.nama_sampah]||'#9E9E9E';
+    const icon  = CAT_ICONS[d.nama_sampah]||'♻️';
+    const conf  = d.confidence!=null ? parseConf(d.confidence) : null;
+    const time  = d.created_at ? new Date(d.created_at).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+
+    const thumb = d.image_url
+      ? `<img src="${d.image_url}" class="thumb" alt="foto" onerror="this.style.display='none';this.nextSibling.style.display='flex'" /><div class="thumb-placeholder" style="display:none">${icon}</div>`
+      : `<div class="thumb-placeholder">${icon}</div>`;
+
+    return `<tr onclick="showDetail('${d.id || ''}', '${d.created_at || ''}')">
+      <td>${thumb}</td>
+      <td>
+        <b style="color:var(--text-1)">${d.nama_sampah||'-'}</b>
+        <div class="mobile-subtext" style="display:none;font-size:11px;color:var(--text-3);margin-top:2px">
+          RT ${d.rt_id||'-'} · ${time}
+        </div>
+      </td>
+      <td><span class="kategori-pill" style="background:${color}22;color:${color}">${icon} ${d.kategori||d.nama_sampah||'-'}</span></td>
+      <td style="color:var(--text-2)">${d.wilayah||'-'}</td>
+      <td style="font-size:12px;color:var(--text-3)">RT ${d.rt_id||'-'}</td>
+      <td>${conf!=null?`<div class="confidence-bar-wrap"><div class="confidence-bar"><div class="confidence-fill" style="width:${Math.min(conf,100)}%"></div></div><span style="font-size:12px;font-weight:600;color:var(--text-1)">${conf.toFixed(1)}%</span></div>`:'-'}</td>
+      <td style="font-size:12px;color:var(--text-3);white-space:nowrap">${time}</td>
+    </tr>`;
+  }).join('');
+}
+
+function prevPage() { if(currentPage>1){currentPage--;renderTable();} }
+function nextPage() {
+  const search=document.getElementById('searchInput').value.toLowerCase();
+  const kategori=document.getElementById('filterKategori').value;
+  const total=filteredData.filter(d=>
+    (!search||(d.wilayah||'').toLowerCase().includes(search)||(d.nama_sampah||'').toLowerCase().includes(search)) &&
+    (!kategori||d.nama_sampah===kategori)
+  ).length;
+  const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  if(currentPage<pages){currentPage++;renderTable();}
+}
+
+/* ════════════════════════════════════════════
+   RANKING
+════════════════════════════════════════════ */
+function renderRanking() {
+  const medals = ['🥇','🥈','🥉'];
+  const rtMap  = groupBy(filteredData,'rt_id');
+  const rtArr  = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxRT  = rtArr[0]?.[1]||1;
+
+  const tbody = document.getElementById('rankingRtBody');
+  if (!rtArr.length) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Belum ada data</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rtArr.map(([rt,cnt],i)=>{
+    const pct = Math.round(cnt*100/maxRT);
+    // dominant per RT
+    const rtItems = filteredData.filter(d=>d.rt_id===rt&&d.nama_sampah);
+    const dominMap = {};
+    rtItems.forEach(d=>dominMap[d.nama_sampah]=(dominMap[d.nama_sampah]||0)+1);
+    const dom = Object.entries(dominMap).sort((a,b)=>b[1]-a[1])[0];
+    return `
+      <tr>
+        <td><span class="rank-medal">${i<3?medals[i]:(i+1)+'.'}</span></td>
+        <td>
+          <div class="rank-name">${rt}</div>
+          <div class="rank-sub">Dominan: ${dom?`${CAT_ICONS[dom[0]]||''} ${dom[0]}`:'-'}</div>
+        </td>
+        <td><span class="rank-count">${cnt.toLocaleString('id-ID')}</span></td>
+        <td style="min-width:120px">
+          <div class="rank-bar-wrap">
+            <div class="rank-bar"><div class="rank-bar-fill" style="width:${pct}%"></div></div>
+            <span style="font-size:11px;color:var(--text-muted)">${pct}%</span>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   RT TABLE (bawah peta)
+════════════════════════════════════════════ */
+function renderRtTable() {
+  // group by rt_id
+  const grouped = {};
+  filteredData.forEach(d => {
+    if (!d.rt_id) return;
+    const key = `${d.rt_id}`;
+    if (!grouped[key]) grouped[key] = { rt:d.rt_id, items:[] };
+    grouped[key].items.push(d);
+  });
+  const arr = Object.values(grouped).sort((a,b)=>b.items.length-a.items.length);
+  const max = arr[0]?.items.length||1;
+
+  const tbody = document.getElementById('rtTableBody');
+  if (!arr.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Belum ada data</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = arr.map((g,i)=>{
+    const cnt = g.items.length;
+    const pct = Math.round(cnt*100/max);
+    const dominMap = {};
+    g.items.forEach(d=>{ if(d.nama_sampah) dominMap[d.nama_sampah]=(dominMap[d.nama_sampah]||0)+1; });
+    const dom = Object.entries(dominMap).sort((a,b)=>b[1]-a[1])[0];
+    return `<tr>
+      <td style="font-weight:700;color:var(--eco-dark)">${i+1}</td>
+      <td>
+        <div class="rank-name">RT ${g.rt}</div>
+      </td>
+      <td><span class="rank-count">${cnt}</span></td>
+      <td>${dom?`<span class="kategori-pill" style="background:${CAT_COLORS[dom[0]]||'#eee'}22;color:${CAT_COLORS[dom[0]]||'#555'}">${CAT_ICONS[dom[0]]||''} ${dom[0]}</span>`:'-'}</td>
+      <td style="min-width:100px">
+        <div class="rank-bar-wrap">
+          <div class="rank-bar"><div class="rank-bar-fill" style="width:${pct}%"></div></div>
+          <span style="font-size:11px;color:var(--text-muted)">${pct}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   MAP
+════════════════════════════════════════════ */
+let mapInited = false;
+
+function initMap() {
+  if (mapInited) {
+    if (leafletMap) {
+      setTimeout(() => {
+        leafletMap.invalidateSize();
+      }, 50);
+    }
+    updateMapPins();
+    return;
+  }
+  mapInited = true;
+
+  leafletMap = L.map('map', {
+    center: [-6.8843, 107.5397], // Cimahi
+    zoom: 13,
+    zoomControl: true,
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 20
+  }).addTo(leafletMap);
+
+  pinGroup = L.layerGroup().addTo(leafletMap);
+  updateMapPins();
+}
+
+function updateMapPins() {
+  if (!mapInited || !leafletMap) return;
+
+  // Remove old layers
+  if (heatLayer) { leafletMap.removeLayer(heatLayer); heatLayer=null; }
+  if (pinGroup)  { pinGroup.clearLayers(); }
+
+  const withCoords = filteredData.filter(d=>d.latitude&&d.longitude);
+  if (!withCoords.length) return;
+
+  if (mapMode==='heat') {
+    const pts = withCoords.map(d=>[d.latitude,d.longitude,1]);
+    heatLayer = L.heatLayer(pts,{radius:25,blur:20,maxZoom:17,gradient:{0.2:'#A5D6A7',0.5:'#4CAF50',1:'#1B5E20'}});
+    heatLayer.addTo(leafletMap);
+
+  } else if (mapMode==='pin') {
+    withCoords.forEach(d => {
+      const color = CAT_COLORS[d.nama_sampah]||'#4CAF50';
+      const icon  = CAT_ICONS[d.nama_sampah]||'♻️';
+      const markerIcon = L.divIcon({
+        className:'',
+        html:`<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${color};border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25)">
+               <span style="display:block;transform:rotate(45deg);text-align:center;font-size:14px;line-height:26px">${icon}</span>
+              </div>`,
+        iconSize:[32,32],
+        iconAnchor:[16,32],
+        popupAnchor:[0,-36]
+      });
+      const time = d.created_at ? new Date(d.created_at).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '-';
+      const conf = d.confidence!=null ? (parseConf(d.confidence).toFixed(1)+'%') : '-';
+      const popup = `
+        <div class="popup-title">${icon} ${d.nama_sampah||'Sampah'}</div>
+        <div class="popup-row"><span>Wilayah</span><b>${d.wilayah||'-'}</b></div>
+        <div class="popup-row"><span>RT</span><b>RT ${d.rt_id||'-'}</b></div>
+        <div class="popup-row"><span>Akurasi</span><b>${conf}</b></div>
+        <div class="popup-row"><span>Waktu</span><b>${time}</b></div>
+        ${d.image_url?`<img src="${d.image_url}" style="width:100%;border-radius:8px;margin-top:8px;object-fit:cover;max-height:120px" onerror="this.style.display='none'" />`:''}
+        <div><span class="popup-badge">${d.kategori||d.nama_sampah||'Sampah'}</span></div>`;
+      L.marker([d.latitude,d.longitude],{icon:markerIcon}).bindPopup(popup,{maxWidth:220}).addTo(pinGroup);
+    });
+
+  } else if (mapMode==='cluster') {
+    // Group by RT and show circle marker per RT
+    const rtGroups = {};
+    withCoords.forEach(d=>{
+      const key=d.rt_id||'Unknown';
+      if(!rtGroups[key]) rtGroups[key]={items:[],lat:0,lng:0};
+      rtGroups[key].items.push(d);
+      rtGroups[key].lat+=d.latitude;
+      rtGroups[key].lng+=d.longitude;
+    });
+    Object.entries(rtGroups).forEach(([rt,g])=>{
+      const n=g.items.length;
+      const lat=g.lat/n, lng=g.lng/n;
+      const r=Math.min(14+Math.sqrt(n)*3,50);
+      const dominMap={};
+      g.items.forEach(d=>{ if(d.nama_sampah) dominMap[d.nama_sampah]=(dominMap[d.nama_sampah]||0)+1; });
+      const dom=Object.entries(dominMap).sort((a,b)=>b[1]-a[1])[0];
+      const color=dom?CAT_COLORS[dom[0]]:'#4CAF50';
+      L.circleMarker([lat,lng],{radius:r,fillColor:color,color:'#fff',weight:2,fillOpacity:.75})
+        .bindPopup(`<div class="popup-title">RT ${rt}</div><div class="popup-row"><span>Total Scan</span><b>${n}</b></div><div class="popup-row"><span>Dominan</span><b>${dom?`${CAT_ICONS[dom[0]]||''} ${dom[0]}`:'-'}</b></div><div><span class="popup-badge">Cluster ${n} scan</span></div>`)
+        .addTo(pinGroup);
+    });
+  }
+}
+
+function setMapMode(mode) {
+  mapMode = mode;
+  document.querySelectorAll('.map-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btn'+mode.charAt(0).toUpperCase()+mode.slice(1)).classList.add('active');
+  updateMapPins();
+}
+
+/* ════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════ */
+function groupBy(arr, key) {
+  const out = {};
+  arr.forEach(d => {
+    const k = d[key]||'';
+    if (!k) return;
+    out[k] = (out[k]||0) + 1;
+  });
+  return out;
+}
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('collapsed');
+  // Trigger resize agar chart menyesuaikan
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+    if (mapInited && leafletMap) leafletMap.invalidateSize();
+  }, 280);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  setInterval(loadData, 60000);
+});
+</script>
+</body>
+</html>
