@@ -23,6 +23,7 @@ import com.example.ecosnap.network.RetrofitClient;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,8 @@ public class StatistikFragment extends Fragment {
     private LinearLayout layoutRankingList;
 
     private List<ScanHistory> allScanList = new ArrayList<>();
+    private String activeRtFilter = "Semua RT";
+    private TextView tvFilterRt;
 
     @Nullable
     @Override
@@ -51,6 +54,10 @@ public class StatistikFragment extends Fragment {
         // Sembunyikan bottom navigation admin (di dalam fragment user sudah ada bottom nav sendiri)
         View bottomNav = view.findViewById(R.id.bottomNav);
         if (bottomNav != null) bottomNav.setVisibility(View.GONE);
+
+        // Sembunyikan riwayat section karena tidak diisi di fragment user
+        View riwayatSection = view.findViewById(R.id.layoutRiwayatSection);
+        if (riwayatSection != null) riwayatSection.setVisibility(View.GONE);
 
         tvTotalSemua  = view.findViewById(R.id.tvTotalSemua);
         tvTotalTengah = view.findViewById(R.id.tvTotalTengah);
@@ -67,6 +74,36 @@ public class StatistikFragment extends Fragment {
         tvRankTotalScan    = view.findViewById(R.id.tvRankTotalScan);
         tvRankDominan      = view.findViewById(R.id.tvRankDominan);
         layoutRankingList  = view.findViewById(R.id.layoutRankingList);
+
+        tvFilterRt = view.findViewById(R.id.tvFilterRt);
+        View btnFilterRt = view.findViewById(R.id.btnFilterRt);
+
+        if (btnFilterRt != null) {
+            btnFilterRt.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                androidx.appcompat.widget.PopupMenu popup = new androidx.appcompat.widget.PopupMenu(getContext(), btnFilterRt);
+                popup.getMenu().add("Semua RT");
+
+                List<String> rts = new ArrayList<>();
+                for (ScanHistory s : allScanList) {
+                    if (s.getRtId() != null && !s.getRtId().isEmpty() && !rts.contains(s.getRtId())) {
+                        rts.add(s.getRtId());
+                    }
+                }
+                Collections.sort(rts);
+                for (String r : rts) {
+                    popup.getMenu().add(r);
+                }
+
+                popup.setOnMenuItemClickListener(item -> {
+                    activeRtFilter = item.getTitle().toString();
+                    if (tvFilterRt != null) tvFilterRt.setText(activeRtFilter);
+                    applyRtFilter();
+                    return true;
+                });
+                popup.show();
+            });
+        }
 
         return view;
     }
@@ -87,7 +124,7 @@ public class StatistikFragment extends Fragment {
                 if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
                     allScanList = response.body();
-                    processAndDisplay(allScanList);
+                    applyRtFilter();
                 } else {
                     showError("Gagal memuat statistik (server)");
                 }
@@ -98,6 +135,18 @@ public class StatistikFragment extends Fragment {
                 if (isAdded()) showError("Gagal terhubung ke server");
             }
         });
+    }
+
+    private void applyRtFilter() {
+        List<ScanHistory> filteredList = new ArrayList<>();
+        for (ScanHistory s : allScanList) {
+            if ("Semua RT".equals(activeRtFilter)) {
+                filteredList.add(s);
+            } else if (s.getRtId() != null && activeRtFilter.equalsIgnoreCase(s.getRtId())) {
+                filteredList.add(s);
+            }
+        }
+        processAndDisplay(filteredList);
     }
 
     // ─── Proses dan tampilkan ke UI ───────────────────────────────────────────

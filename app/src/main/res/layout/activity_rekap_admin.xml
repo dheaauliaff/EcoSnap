@@ -394,6 +394,7 @@
 
             <!-- 4️⃣ RIWAYAT SCAN SEMUA USER (dengan gambar) -->
             <LinearLayout
+                android:id="@+id/layoutRiwayatSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
