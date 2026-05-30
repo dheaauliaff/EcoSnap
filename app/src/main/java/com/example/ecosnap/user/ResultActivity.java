@@ -82,6 +82,44 @@ public class ResultActivity extends AppCompatActivity {
         }
         // CATATAN: Upload TIDAK dipanggil otomatis di sini
         // agar tidak terjadi double-upload. User harus tekan tombol Simpan.
+
+        View btnInfoSaran = findViewById(R.id.btnInfoSaran);
+        if (btnInfoSaran != null) {
+            btnInfoSaran.setOnClickListener(v -> showInfoDialog());
+        }
+    }
+
+    private void showInfoDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_info_penanganan, null);
+        TextView tvDialogSaran = dialogView.findViewById(R.id.tvDialogSaran);
+        TextView tvDialogFunfact = dialogView.findViewById(R.id.tvDialogFunfact);
+
+        if (tvDialogSaran != null && tvSaran != null) {
+            tvDialogSaran.setText(tvSaran.getText());
+        }
+        if (tvDialogFunfact != null && tvFunfact != null) {
+            tvDialogFunfact.setText(tvFunfact.getText());
+        }
+
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        View btnDialogClose = dialogView.findViewById(R.id.btnDialogClose);
+        if (btnDialogClose != null) {
+            btnDialogClose.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        View btnDialogOke = dialogView.findViewById(R.id.btnDialogOke);
+        if (btnDialogOke != null) {
+            btnDialogOke.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        dialog.show();
     }
 
     private void loadIntentData() {

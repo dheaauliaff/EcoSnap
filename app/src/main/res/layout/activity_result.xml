@@ -195,112 +195,56 @@
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
-
-            <!-- SARAN -->
+            <!-- INFO POPUP BUTTON -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:background="@drawable/bg_premium_card"
-                android:elevation="4dp"
-                android:outlineAmbientShadowColor="#0F000000"
-                android:outlineSpotShadowColor="#0A000000"
-                android:padding="20dp"
-                android:orientation="horizontal"
-                android:gravity="top">
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:orientation="vertical">
 
-                <FrameLayout
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@drawable/bg_green_circle"
-                    android:backgroundTint="#E8F5E9">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnInfoSaran"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="#E8F5E9"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+                    
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_organik"
+                        android:src="@drawable/ic_info_outline"
                         app:tint="#2E7D32" />
-                </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Saran Penanganan"
-                        android:textColor="#1B5E20"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvSaran"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Pisahkan sampah sesuai kategorinya. Sampah organik bisa dibuat kompos, plastik didaur ulang, dan lainnya dibuang pada tempat yang sesuai."
-                        android:textColor="#666666"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="4dp" />
-                </LinearLayout>
+                    android:layout_marginTop="8dp"
+                    android:text="Info &amp; Saran Penanganan"
+                    android:textColor="#2E7D32"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- FUNFACT -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <!-- Hidden TextViews to preserve original variable binding compatibility -->
+            <TextView
+                android:id="@+id/tvSaran"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_premium_card"
-                android:elevation="4dp"
-                android:outlineAmbientShadowColor="#0F000000"
-                android:outlineSpotShadowColor="#0A000000"
-                android:padding="20dp"
-                android:orientation="horizontal"
-                android:gravity="top">
+                android:visibility="gone" />
 
-                <FrameLayout
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@drawable/bg_green_circle"
-                    android:backgroundTint="#FFF8E1">
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_idea"
-                        app:tint="#FF8F00" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Fun Fact"
-                        android:textColor="#1B5E20"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvFunfact"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Tahukah kamu? 1 botol plastik membutuhkan waktu hingga 450 tahun untuk terurai di alam!"
-                        android:textColor="#666666"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="4dp" />
-                </LinearLayout>
-            </LinearLayout>
+            <TextView
+                android:id="@+id/tvFunfact"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
 
         </LinearLayout>
     </ScrollView>
