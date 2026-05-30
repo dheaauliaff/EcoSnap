@@ -60,7 +60,7 @@ import retrofit2.Response;
 
 public class AdminMapsActivity extends AppCompatActivity {
 
-    private static final String[] CATEGORIES = {"Organik", "Plastik", "Kertas", "Kaca", "Kardus", "Logam"};
+    private static final String[] CATEGORIES = {"Organik", "Plastik", "Kertas", "Kaca", "Kardus", "Logam", "Bukan Sampah"};
     private static final double ZONE_RADIUS_METERS = 80.0;
 
     // Views
@@ -466,7 +466,7 @@ public class AdminMapsActivity extends AppCompatActivity {
         bindMetric(findViewById(R.id.metricLaporan),
                 R.drawable.ic_document_outline, String.valueOf(totalReports), "Total Scan");
         bindMetric(findViewById(R.id.metricDominan),
-                R.drawable.ic_leaf, dominant, "Dominan");
+                iconFor(dominant), dominant, "Dominan");
         bindMetric(findViewById(R.id.metricPersentase),
                 R.drawable.ic_pie_chart, pct + "%", "Persentase");
     }
@@ -673,13 +673,14 @@ public class AdminMapsActivity extends AppCompatActivity {
     private int colorForNama(String nama) {
         if (nama == null) return Color.parseColor("#9E9E9E");
         switch (nama.toLowerCase()) {
-            case "organik":  return Color.parseColor("#4CAF50");
-            case "plastik":  return Color.parseColor("#FF9800");
-            case "kertas":   return Color.parseColor("#FFC107");
-            case "kaca":     return Color.parseColor("#00BCD4");
-            case "kardus":   return Color.parseColor("#2196F3");
-            case "logam":    return Color.parseColor("#9C27B0");
-            default:         return Color.parseColor("#F44336");
+            case "organik":      return Color.parseColor("#4CAF50");
+            case "plastik":      return Color.parseColor("#FF9800");
+            case "kertas":       return Color.parseColor("#FFC107");
+            case "kaca":         return Color.parseColor("#00BCD4");
+            case "kardus":       return Color.parseColor("#2196F3");
+            case "logam":        return Color.parseColor("#9C27B0");
+            case "bukan sampah": return Color.parseColor("#FF5252"); // merah terang bukan sampah
+            default:             return Color.parseColor("#F44336");
         }
     }
 
@@ -713,13 +714,15 @@ public class AdminMapsActivity extends AppCompatActivity {
     }
 
     private int iconFor(String cat) {
-        switch (cat) {
-            case "Kardus":  return R.drawable.ic_box_outline;
-            case "Kaca":    return R.drawable.ic_bottle_outline;
-            case "Logam":   return R.drawable.ic_can_outline;
-            case "Kertas":  return R.drawable.ic_document_outline;
-            case "Plastik": return R.drawable.ic_plastic_bottle_outline;
-            default:        return R.drawable.ic_leaf;
+        if (cat == null) return R.drawable.ic_leaf;
+        switch (cat.toLowerCase()) {
+            case "kardus":       return R.drawable.ic_box_outline;
+            case "kaca":         return R.drawable.ic_bottle_outline;
+            case "logam":        return R.drawable.ic_can_outline;
+            case "kertas":       return R.drawable.ic_document_outline;
+            case "plastik":      return R.drawable.ic_plastic_bottle_outline;
+            case "bukan sampah": return R.drawable.ic_bukan_sampah;
+            default:             return R.drawable.ic_leaf;
         }
     }
 
