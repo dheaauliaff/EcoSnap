@@ -89,7 +89,7 @@ public class AdminMapsActivity extends AppCompatActivity {
 
     // Active filter (null = no filter = show all)
     String activeFilter = null;
-    String activeRwFilter = "Semua RW";
+    String activeRtFilter = "Semua RT";
     List<ScanHistory> displayedScans = new ArrayList<>();
 
     // Legend views for toggling selection state
@@ -161,36 +161,37 @@ public class AdminMapsActivity extends AppCompatActivity {
         if (btnFilterArea != null) {
             btnFilterArea.setOnClickListener(v -> {
                 PopupMenu popup = new PopupMenu(this, btnFilterArea);
-                popup.getMenu().add("Semua RW");
+                popup.getMenu().add("Semua RT");
 
-                // Standard RWs
-                List<String> standardRwLabels = new ArrayList<>();
-                standardRwLabels.add("RW 01");
-                standardRwLabels.add("RW 02");
-                standardRwLabels.add("RW 03");
-                standardRwLabels.add("RW 04");
-                standardRwLabels.add("RW 05");
+                // Standard RTs
+                List<String> standardRtLabels = new ArrayList<>();
+                standardRtLabels.add("RT 01");
+                standardRtLabels.add("RT 02");
+                standardRtLabels.add("RT 03");
+                standardRtLabels.add("RT 04");
+                standardRtLabels.add("RT 05");
 
-                // Add standard RWs to popup
-                for (String label : standardRwLabels) {
+                // Add standard RTs to popup
+                for (String label : standardRtLabels) {
                     popup.getMenu().add(label);
                 }
 
-                // Add any other dynamic RW IDs found in the data, formatted nicely
+                // Add any other dynamic RT IDs found in the data (for admin's RW)
                 for (ScanHistory s : allScans) {
-                    String rawRw = s.getRwId();
-                    if (rawRw != null && !rawRw.isEmpty()) {
-                        String formatted = formatRwId(rawRw);
-                        // Check if the formatted label is not already in standard list
-                        boolean exists = false;
-                        for (int i = 0; i < popup.getMenu().size(); i++) {
-                            if (popup.getMenu().getItem(i).getTitle().toString().equalsIgnoreCase(formatted)) {
-                                exists = true;
-                                break;
+                    if (isMatchingRw(s.getRwId(), rwId)) {
+                        String rawRt = s.getRtId();
+                        if (rawRt != null && !rawRt.isEmpty()) {
+                            String formatted = formatRtId(rawRt);
+                            boolean exists = false;
+                            for (int i = 0; i < popup.getMenu().size(); i++) {
+                                if (popup.getMenu().getItem(i).getTitle().toString().equalsIgnoreCase(formatted)) {
+                                    exists = true;
+                                    break;
+                                }
                             }
-                        }
-                        if (!exists) {
-                            popup.getMenu().add(formatted);
+                            if (!exists) {
+                                popup.getMenu().add(formatted);
+                            }
                         }
                     }
                 }
@@ -199,15 +200,15 @@ public class AdminMapsActivity extends AppCompatActivity {
                     String selectedLabel = item.getTitle().toString();
                     if (tvWilayahAdmin != null) tvWilayahAdmin.setText(selectedLabel);
                     
-                    if (selectedLabel.equals("Semua RW")) {
-                        activeRwFilter = "Semua RW";
+                    if (selectedLabel.equals("Semua RT")) {
+                        activeRtFilter = "Semua RT";
                     } else {
                         // Map label back to raw ID or use fallback
-                        activeRwFilter = parseRwLabel(selectedLabel);
+                        activeRtFilter = parseRtLabel(selectedLabel);
                     }
                     
                     applyFilters();
-                    Toast.makeText(this, "Area dipilih: " + selectedLabel, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "RT dipilih: " + selectedLabel, Toast.LENGTH_SHORT).show();
                     return true;
                 });
                 popup.show();
@@ -294,12 +295,14 @@ public class AdminMapsActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     User admin = response.body().get(0);
                     rwId = admin.getRwId() != null ? admin.getRwId() : "";
-                    if (admin.getWilayah() != null && !admin.getWilayah().isEmpty()) {
-                        activeRwFilter = admin.getWilayah();
-                    } else {
-                        activeRwFilter = "Semua RW";
+                    
+                    TextView tvPetaSubtitle = findViewById(R.id.tvPetaSubtitle);
+                    if (tvPetaSubtitle != null && admin.getWilayah() != null) {
+                        tvPetaSubtitle.setText("Pantau kondisi sampah di wilayah " + admin.getWilayah() + " secara real-time");
                     }
-                    if (tvWilayahAdmin != null) tvWilayahAdmin.setText(activeRwFilter);
+                    
+                    activeRtFilter = "Semua RT";
+                    if (tvWilayahAdmin != null) tvWilayahAdmin.setText(activeRtFilter);
                     loadDataSebaran();
                 }
             }
@@ -336,8 +339,10 @@ public class AdminMapsActivity extends AppCompatActivity {
     private void applyFilters() {
         displayedScans.clear();
         for (ScanHistory s : allScans) {
-            if ("Semua RW".equals(activeRwFilter) || isMatchingRw(s.getRwId(), activeRwFilter)) {
-                displayedScans.add(s);
+            if (isMatchingRw(s.getRwId(), rwId)) {
+                if ("Semua RT".equals(activeRtFilter) || isMatchingRt(s.getRtId(), activeRtFilter)) {
+                    displayedScans.add(s);
+                }
             }
         }
 
@@ -798,6 +803,42 @@ public class AdminMapsActivity extends AppCompatActivity {
     private String normalizeRw(String rw) {
         if (rw == null) return "";
         String clean = rw.replace("RW", "").replace("rw", "").trim();
+        try {
+            int num = Integer.parseInt(clean);
+            return String.valueOf(num);
+        } catch (NumberFormatException e) {
+            return clean.toLowerCase();
+        }
+    }
+
+    private String formatRtId(String rtId) {
+        if (rtId == null) return "";
+        if (rtId.equals("001") || rtId.equals("01")) return "RT 01";
+        if (rtId.equals("002") || rtId.equals("02")) return "RT 02";
+        if (rtId.equals("003") || rtId.equals("03")) return "RT 03";
+        if (rtId.equals("004") || rtId.equals("04")) return "RT 04";
+        if (rtId.equals("005") || rtId.equals("05")) return "RT 05";
+        return rtId;
+    }
+
+    private String parseRtLabel(String label) {
+        if (label == null) return "";
+        if (label.equals("RT 01")) return "001";
+        if (label.equals("RT 02")) return "002";
+        if (label.equals("RT 03")) return "003";
+        if (label.equals("RT 04")) return "004";
+        if (label.equals("RT 05")) return "005";
+        return label;
+    }
+
+    private boolean isMatchingRt(String scanRtId, String filterRtId) {
+        if (scanRtId == null || filterRtId == null) return false;
+        return normalizeRt(scanRtId).equals(normalizeRt(filterRtId));
+    }
+
+    private String normalizeRt(String rt) {
+        if (rt == null) return "";
+        String clean = rt.replace("RT", "").replace("rt", "").trim();
         try {
             int num = Integer.parseInt(clean);
             return String.valueOf(num);
