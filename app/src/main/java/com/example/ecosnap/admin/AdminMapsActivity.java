@@ -467,8 +467,6 @@ public class AdminMapsActivity extends AppCompatActivity {
                 R.drawable.ic_document_outline, String.valueOf(totalReports), "Total Scan");
         bindMetric(findViewById(R.id.metricDominan),
                 iconFor(dominant), dominant, "Dominan");
-        bindMetric(findViewById(R.id.metricPersentase),
-                R.drawable.ic_pie_chart, pct + "%", "Persentase");
     }
 
     private void buildCategoryBreakdown() {

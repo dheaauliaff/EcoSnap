@@ -504,8 +504,6 @@ public class MapsFragment extends Fragment {
                 R.drawable.ic_document_outline, String.valueOf(totalReports), "Total Scan");
         bindMetric(getView().findViewById(R.id.metricDominan),
                 iconFor(dominant), dominant, "Dominan");
-        bindMetric(getView().findViewById(R.id.metricPersentase),
-                R.drawable.ic_pie_chart, pct + "%", "Persentase");
 
         // Update category breakdown detail
         buildCategoryBreakdown();
