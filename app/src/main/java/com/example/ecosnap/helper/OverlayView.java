@@ -139,8 +139,8 @@ public class OverlayView extends View {
 
     private DrawSummary drawDetections(Canvas canvas, int width, int height, boolean scannerMode) {
         DrawSummary summary = new DrawSummary();
-        float hudBottom = scannerMode ? dp(82) : 0f;
         RectF hudRect = scannerMode ? getHudRect(width) : new RectF();
+        float hudBottom = scannerMode ? hudRect.bottom : 0f;
         Map<String, Integer> classCounts = new HashMap<>();
         List<RectF> occupiedLabels = new ArrayList<>();
 
@@ -236,7 +236,7 @@ public class OverlayView extends View {
 
     private void drawStatusChips(Canvas canvas, DrawSummary summary, int width, int height) {
         float x = dp(16);
-        float y = height - dp(52);
+        float y = height - dp(148);
         x = drawChip(canvas, x, y, "Tracking ON", Color.rgb(46, 125, 50));
         if (summary.hasLocked) {
             x = drawChip(canvas, x, y, "LOCKED", Color.rgb(76, 175, 80));
@@ -258,7 +258,9 @@ public class OverlayView extends View {
         textPaint.setFakeBoldText(true);
         textPaint.setTextSize(dp(11));
         float chipWidth = Math.min(width - dp(32), textPaint.measureText(summary.objectSummary) + dp(24));
-        RectF chip = new RectF(dp(16), dp(98), dp(16) + chipWidth, dp(126));
+        RectF hudRect = getHudRect(width);
+        float summaryChipTop = hudRect.bottom + dp(8);
+        RectF chip = new RectF(dp(16), summaryChipTop, dp(16) + chipWidth, summaryChipTop + dp(28));
         bgPaint.setColor(Color.argb(150, 15, 18, 24));
         canvas.drawRoundRect(chip, dp(14), dp(14), bgPaint);
         textPaint.setColor(Color.WHITE);
@@ -305,12 +307,14 @@ public class OverlayView extends View {
     }
 
     private RectF getHudRect(int width) {
-        float left = dp(16);
-        float top = dp(16);
-        float right = Math.min(width - dp(16), left + dp(220));
-        float bottom = top + dp(74);
+        // Beri jarak dari atas yang cukup (112dp) agar tidak tertutup status bar + header
+        float left   = dp(16);
+        float top    = dp(112);   // ← digeser dari 56 ke 112 agar di bawah status bar + header
+        float right  = Math.min(width - dp(16), left + dp(220));
+        float bottom = top + dp(60);
         return new RectF(left, top, right, bottom);
     }
+
 
     private RectF constrainRect(RectF rect, int width, int height) {
         return new RectF(
@@ -322,13 +326,10 @@ public class OverlayView extends View {
     }
 
     private RectF shrinkDisplayRect(RectF rect) {
-        float shrink = 0.91f;
-        float centerX = rect.centerX();
-        float centerY = rect.centerY();
-        float halfWidth = rect.width() * shrink / 2f;
-        float halfHeight = rect.height() * shrink / 2f;
-        return new RectF(centerX - halfWidth, centerY - halfHeight, centerX + halfWidth, centerY + halfHeight);
+        // Tidak perlu shrink — biarkan bbox mengikuti deteksi model secara tepat
+        return new RectF(rect);
     }
+
 
     private RectF chooseLabelRect(RectF box, float labelWidth, float labelHeight, int width, int height,
                                   float hudBottom, RectF hudRect, List<RectF> occupiedLabels) {
@@ -445,17 +446,25 @@ public class OverlayView extends View {
             return new RectF(sourceRect);
         }
 
-        float scale = Math.max((float) viewWidth / sourceWidth, (float) viewHeight / sourceHeight);
-        float dx = (viewWidth - sourceWidth * scale) / 2f;
+        // Gunakan Math.min (fit) agar sesuai dengan PreviewView scaleType="fillCenter"
+        // PreviewView fillCenter = gambar di-scale sepenuhnya muat di layar (letterbox),
+        // bukan di-crop. Math.max akan membuat bbox overshooting.
+        float scaleX = (float) viewWidth  / sourceWidth;
+        float scaleY = (float) viewHeight / sourceHeight;
+        float scale  = Math.min(scaleX, scaleY); // ← FIX: min bukan max
+
+        // Offset tengah (letterbox bars)
+        float dx = (viewWidth  - sourceWidth  * scale) / 2f;
         float dy = (viewHeight - sourceHeight * scale) / 2f;
 
         return new RectF(
-                sourceRect.left * scale + dx,
-                sourceRect.top * scale + dy,
+                sourceRect.left  * scale + dx,
+                sourceRect.top   * scale + dy,
                 sourceRect.right * scale + dx,
-                sourceRect.bottom * scale + dy
+                sourceRect.bottom* scale + dy
         );
     }
+
 
     private static class DrawSummary {
         int detected = 0;
