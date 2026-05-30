@@ -46,6 +46,7 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -78,11 +79,16 @@ public class MapsFragment extends Fragment {
     // Data
     private int totalReports = 0;
     private List<ScanHistory> allScans = new ArrayList<>();
+    private final List<ScanHistory> displayedScans = new ArrayList<>();
     private final Map<String, Integer> globalCategoryCount = new HashMap<>();
     private final Map<String, Integer> rtCount = new HashMap<>();
 
     // Filter state
     private String activeFilter = null;
+    private String activePeriodFilter = "Bulan Ini";
+    private String activeRtFilter = "Semua RT";
+    private TextView tvFilterPeriod;
+    private TextView tvFilterArea;
     private final List<View> legendItemViews = new ArrayList<>();
 
     @Nullable
@@ -101,6 +107,8 @@ public class MapsFragment extends Fragment {
         filterBadgeRow             = view.findViewById(R.id.filterBadgeRow);
         tvFilterBadge              = view.findViewById(R.id.tvFilterBadge);
         btnResetFilter             = view.findViewById(R.id.btnResetFilter);
+        tvFilterPeriod             = view.findViewById(R.id.tvFilterPeriod);
+        tvFilterArea               = view.findViewById(R.id.tvFilterArea);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
@@ -118,6 +126,53 @@ public class MapsFragment extends Fragment {
         buildLegend();
         buildTopRegions(new ArrayList<>());
         animatePage(view);
+
+        // Dropdown listeners
+        View btnFilterPeriod = view.findViewById(R.id.btnFilterPeriod);
+        View btnFilterArea = view.findViewById(R.id.btnFilterArea);
+
+        if (btnFilterPeriod != null) {
+            btnFilterPeriod.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                androidx.appcompat.widget.PopupMenu popup = new androidx.appcompat.widget.PopupMenu(getContext(), btnFilterPeriod);
+                popup.getMenu().add("Bulan Ini");
+                popup.getMenu().add("Semua Waktu");
+                popup.setOnMenuItemClickListener(item -> {
+                    activePeriodFilter = item.getTitle().toString();
+                    if (tvFilterPeriod != null) tvFilterPeriod.setText(activePeriodFilter);
+                    applyFilters();
+                    return true;
+                });
+                popup.show();
+            });
+        }
+
+        if (btnFilterArea != null) {
+            btnFilterArea.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                androidx.appcompat.widget.PopupMenu popup = new androidx.appcompat.widget.PopupMenu(getContext(), btnFilterArea);
+                popup.getMenu().add("Semua RT");
+
+                List<String> rts = new ArrayList<>();
+                for (ScanHistory s : allScans) {
+                    if (s.getRtId() != null && !s.getRtId().isEmpty() && !rts.contains(s.getRtId())) {
+                        rts.add(s.getRtId());
+                    }
+                }
+                Collections.sort(rts);
+                for (String r : rts) {
+                    popup.getMenu().add(r);
+                }
+
+                popup.setOnMenuItemClickListener(item -> {
+                    activeRtFilter = item.getTitle().toString();
+                    if (tvFilterArea != null) tvFilterArea.setText(activeRtFilter);
+                    applyFilters();
+                    return true;
+                });
+                popup.show();
+            });
+        }
 
         // Reset filter
         if (btnResetFilter != null) {
@@ -220,11 +275,36 @@ public class MapsFragment extends Fragment {
 
     private void processData(List<ScanHistory> list) {
         allScans = list;
-        totalReports = list.size();
+        applyFilters();
+    }
+
+    private void applyFilters() {
+        displayedScans.clear();
+        String currentMonthStr = getCurrentYearMonth();
+
+        for (ScanHistory s : allScans) {
+            // 1. Period filter
+            boolean matchesPeriod = true;
+            if ("Bulan Ini".equals(activePeriodFilter)) {
+                matchesPeriod = s.getCreatedAt() != null && s.getCreatedAt().startsWith(currentMonthStr);
+            }
+
+            // 2. RT filter
+            boolean matchesRt = true;
+            if (!"Semua RT".equals(activeRtFilter)) {
+                matchesRt = s.getRtId() != null && activeRtFilter.equalsIgnoreCase(s.getRtId());
+            }
+
+            if (matchesPeriod && matchesRt) {
+                displayedScans.add(s);
+            }
+        }
+
+        totalReports = displayedScans.size();
         globalCategoryCount.clear();
         rtCount.clear();
 
-        for (ScanHistory s : list) {
+        for (ScanHistory s : displayedScans) {
             String nama = s.getJenisSampah();
             String rt   = s.getRtId();
             if (nama != null) globalCategoryCount.put(nama,
@@ -236,7 +316,12 @@ public class MapsFragment extends Fragment {
         refreshMapMarkers();
         updateStatCards();
         buildTopRegions(sortedRtList());
-        buildLegend(); // rebuild with percentages
+        buildLegend();
+    }
+
+    private String getCurrentYearMonth() {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM", java.util.Locale.US);
+        return sdf.format(new java.util.Date());
     }
 
     // ─── Map Markers with optional filter ─────────────────────────────────────
@@ -245,9 +330,9 @@ public class MapsFragment extends Fragment {
         if (osmMap == null || !isAdded()) return;
         osmMap.getOverlays().removeIf(o -> (o instanceof Marker) || (o instanceof Polygon));
 
-        List<ScanHistory> toShow = (activeFilter == null) ? allScans : new ArrayList<>();
+        List<ScanHistory> toShow = (activeFilter == null) ? displayedScans : new ArrayList<>();
         if (activeFilter != null) {
-            for (ScanHistory s : allScans) {
+            for (ScanHistory s : displayedScans) {
                 if (activeFilter.equalsIgnoreCase(s.getJenisSampah())) toShow.add(s);
             }
         }
