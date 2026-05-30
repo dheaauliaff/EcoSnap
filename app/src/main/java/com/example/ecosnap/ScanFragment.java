@@ -11,7 +11,6 @@ import android.graphics.RectF;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +35,7 @@ import androidx.fragment.app.Fragment;
 import com.example.ecosnap.helper.OverlayView;
 import com.example.ecosnap.helper.TFLiteHelper;
 import com.example.ecosnap.user.ResultActivity;
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
@@ -57,7 +56,7 @@ public class ScanFragment extends Fragment {
     private TFLiteHelper tflite;
     private OverlayView overlayView;
     private PreviewView viewFinder;
-    private MaterialButton btnCapture, btnGallery;
+    private FloatingActionButton btnCapture, btnGallery, btnReset;
     private ProgressBar progressScan;
 
     private Bitmap currentBitmap = null;
@@ -69,6 +68,7 @@ public class ScanFragment extends Fragment {
     private int frameCount = 0;
     private int fps = 0;
 
+    // ── Permission launcher ──
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -78,46 +78,89 @@ public class ScanFragment extends Fragment {
                 }
             });
 
+    // ── Multi-select gallery launcher ──
     private final ActivityResultLauncher<Intent> galleryLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    processImageUri(result.getData().getData());
+                    List<Uri> uris = new ArrayList<>();
+
+                    // Multi-select: ambil dari clipData
+                    if (result.getData().getClipData() != null) {
+                        int count = result.getData().getClipData().getItemCount();
+                        for (int i = 0; i < count; i++) {
+                            uris.add(result.getData().getClipData().getItemAt(i).getUri());
+                        }
+                    } else if (result.getData().getData() != null) {
+                        // Fallback single select
+                        uris.add(result.getData().getData());
+                    }
+
+                    if (!uris.isEmpty()) {
+                        // Proses foto pertama untuk deteksi, sisanya dikirim ke ResultActivity
+                        processImageUri(uris.get(0), uris);
+                    }
                 }
             });
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_scan, container, false);
 
-        tvHasil = view.findViewById(R.id.tvHasil);
-        overlayView = view.findViewById(R.id.overlayView);
-        viewFinder = view.findViewById(R.id.viewFinder);
-        btnCapture = view.findViewById(R.id.btnCapture);
-        btnGallery = view.findViewById(R.id.btnGallery);
-        progressScan = view.findViewById(R.id.progressScan);
+        tvHasil       = view.findViewById(R.id.tvHasil);
+        overlayView   = view.findViewById(R.id.overlayView);
+        viewFinder    = view.findViewById(R.id.viewFinder);
+        btnCapture    = view.findViewById(R.id.btnCapture);
+        btnGallery    = view.findViewById(R.id.btnGallery);
+        btnReset      = view.findViewById(R.id.btnReset);
+        progressScan  = view.findViewById(R.id.progressScan);
 
-        tflite = new TFLiteHelper(requireContext());
+        tflite           = new TFLiteHelper(requireContext());
         analysisExecutor = Executors.newSingleThreadExecutor();
 
+        // ── Tombol Capture: bounding box sudah tampil → baru proses ──
         if (btnCapture != null) {
             btnCapture.setOnClickListener(v -> {
-                if (!latestDetections.isEmpty()) {
-                    openResult(latestDetections);
+                if (latestDetections.isEmpty()) {
+                    Toast.makeText(getContext(),
+                            "Arahkan kamera ke sampah terlebih dahulu",
+                            Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getContext(), "Tidak ada objek terdeteksi untuk disimpan", Toast.LENGTH_SHORT).show();
+                    openResult(latestDetections);
                 }
             });
         }
-        if (btnGallery != null) btnGallery.setOnClickListener(v -> openGalleryIntent());
+
+        // ── Tombol Galeri: multi-select ──
+        if (btnGallery != null) {
+            btnGallery.setOnClickListener(v -> openGalleryMultiIntent());
+        }
+
+        // ── Tombol Reset: bersihkan cache scan saat ini ──
+        if (btnReset != null) {
+            btnReset.setOnClickListener(v -> resetScanState());
+        }
 
         checkPermissions();
-
         return view;
     }
 
+    // ─── Reset state scan (clear cache) ──────────────────────────────────────
+
+    private void resetScanState() {
+        latestDetections.clear();
+        currentBitmap = null;
+        if (overlayView != null) overlayView.updateBoxes(new ArrayList<>());
+        if (tvHasil != null) tvHasil.setText("Arahkan kamera ke sampah");
+        Toast.makeText(getContext(), "Cache scan direset ✓", Toast.LENGTH_SHORT).show();
+    }
+
+    // ─── Camera setup ─────────────────────────────────────────────────────────
+
     private void checkPermissions() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
             startCamera();
         } else {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA);
@@ -125,7 +168,8 @@ public class ScanFragment extends Fragment {
     }
 
     private void startCamera() {
-        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext());
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
+                ProcessCameraProvider.getInstance(requireContext());
         cameraProviderFuture.addListener(() -> {
             try {
                 cameraProvider = cameraProviderFuture.get();
@@ -146,7 +190,6 @@ public class ScanFragment extends Fragment {
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build();
-
         imageAnalysis.setAnalyzer(analysisExecutor, this::processImageProxy);
 
         CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
@@ -159,11 +202,10 @@ public class ScanFragment extends Fragment {
         }
     }
 
+    // ─── Frame analysis — bounding box muncul dulu ───────────────────────────
+
     private void processImageProxy(ImageProxy image) {
-        if (tflite == null) {
-            image.close();
-            return;
-        }
+        if (tflite == null) { image.close(); return; }
 
         frameCount++;
         long now = System.currentTimeMillis();
@@ -176,28 +218,28 @@ public class ScanFragment extends Fragment {
         try {
             Bitmap bitmap = image.toBitmap();
             if (bitmap != null) {
-                // Apply rotation
                 int rotation = image.getImageInfo().getRotationDegrees();
                 if (rotation != 0) {
                     Matrix matrix = new Matrix();
                     matrix.postRotate(rotation);
-                    Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                    if (rotated != bitmap) {
-                        bitmap.recycle();
-                    }
+                    Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0,
+                            bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                    if (rotated != bitmap) bitmap.recycle();
                     bitmap = rotated;
                 }
 
                 final Bitmap finalBitmap = bitmap;
                 List<TFLiteHelper.Result> detections = tflite.detect(finalBitmap);
+                // Simpan deteksi & frame terbaru — bounding box tampil otomatis via overlayView
                 latestDetections = detections;
-                currentBitmap = finalBitmap;
+                currentBitmap    = finalBitmap;
 
                 if (isAdded()) {
                     requireActivity().runOnUiThread(() -> {
                         if (overlayView != null) {
-                            overlayView.setFrameInfo(finalBitmap.getWidth(), finalBitmap.getHeight(), fps);
-                            overlayView.updateBoxes(detections);
+                            overlayView.setFrameInfo(finalBitmap.getWidth(),
+                                    finalBitmap.getHeight(), fps);
+                            overlayView.updateBoxes(detections); // ← bounding box dulu
                         }
                         updateResultText(detections);
                     });
@@ -210,13 +252,17 @@ public class ScanFragment extends Fragment {
         }
     }
 
-    private void openGalleryIntent() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+    // ─── Gallery multi-select ─────────────────────────────────────────────────
+
+    private void openGalleryMultiIntent() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true); // ← multi-select
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
         galleryLauncher.launch(intent);
     }
 
-    private void processImageUri(@Nullable Uri uri) {
+    private void processImageUri(@Nullable Uri uri, List<Uri> allUris) {
         if (uri == null) return;
 
         showLoading(true);
@@ -229,9 +275,10 @@ public class ScanFragment extends Fragment {
                     if (isAdded()) requireActivity().runOnUiThread(() -> {
                         showLoading(false);
                         if (!detections.isEmpty()) {
-                            openResult(detections);
+                            openResultMulti(detections, allUris);
                         } else {
-                            Toast.makeText(getContext(), "Tidak ada sampah terdeteksi", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(),
+                                    "Tidak ada sampah terdeteksi", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -241,16 +288,62 @@ public class ScanFragment extends Fragment {
         });
     }
 
+    // ─── Open result ──────────────────────────────────────────────────────────
+
+    private void openResult(List<TFLiteHelper.Result> detections) {
+        openResultMulti(detections, null);
+    }
+
+    private void openResultMulti(List<TFLiteHelper.Result> detections, @Nullable List<Uri> extraUris) {
+        if (currentBitmap == null || detections.isEmpty() || !isAdded()) return;
+        try {
+            TFLiteHelper.Result dominant = findDominant(detections);
+            String nama       = dominant.label;
+            float  confidence = dominant.confidence;
+            String kategori   = mapCategory(nama);
+
+            File file = new File(requireContext().getCacheDir(), "scan.jpg");
+            try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                currentBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream);
+            }
+
+            Intent intent = new Intent(requireContext(), ResultActivity.class);
+            intent.putExtra("imagePath",   file.getAbsolutePath());
+            intent.putExtra("nama",        nama);
+            intent.putExtra("confidence",  confidence);
+            intent.putExtra("kategori",    kategori);
+            intent.putExtra("saran",       buildSaran(nama));
+            intent.putExtra("funfact",     buildFunfact(nama));
+            intent.putExtra("sourceWidth", currentBitmap.getWidth());
+            intent.putExtra("sourceHeight",currentBitmap.getHeight());
+            putFrozenDetections(intent, detections);
+
+            // Kirim URI extra untuk multi-photo jika ada
+            if (extraUris != null && extraUris.size() > 1) {
+                ArrayList<String> uriStrings = new ArrayList<>();
+                for (Uri u : extraUris) uriStrings.add(u.toString());
+                intent.putStringArrayListExtra("extraPhotoUris", uriStrings);
+            }
+
+            startActivity(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Gagal membuka hasil", e);
+        }
+    }
+
+    // ─── Helper methods ───────────────────────────────────────────────────────
+
     private Bitmap readBitmap(Uri uri) throws Exception {
         InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
         if (inputStream != null) inputStream.close();
-        
+
         int rotation = readRotation(uri);
         if (rotation != 0) {
             Matrix matrix = new Matrix();
             matrix.postRotate(rotation);
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0,
+                    bitmap.getWidth(), bitmap.getHeight(), matrix, true);
         }
         return bitmap;
     }
@@ -259,8 +352,9 @@ public class ScanFragment extends Fragment {
         try (InputStream inputStream = requireContext().getContentResolver().openInputStream(uri)) {
             if (inputStream == null) return 0;
             ExifInterface exif = new ExifInterface(inputStream);
-            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-            if (orientation == ExifInterface.ORIENTATION_ROTATE_90) return 90;
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL);
+            if (orientation == ExifInterface.ORIENTATION_ROTATE_90)  return 90;
             if (orientation == ExifInterface.ORIENTATION_ROTATE_180) return 180;
             if (orientation == ExifInterface.ORIENTATION_ROTATE_270) return 270;
         } catch (Exception ignored) {}
@@ -270,56 +364,28 @@ public class ScanFragment extends Fragment {
     private void updateResultText(List<TFLiteHelper.Result> detections) {
         if (tvHasil == null) return;
         if (detections.isEmpty()) {
-            tvHasil.setText("Posisikan sampah di dalam bingkai");
+            tvHasil.setText("Arahkan kamera ke sampah");
             return;
         }
         TFLiteHelper.Result dominant = findDominant(detections);
-        tvHasil.setText(String.format(Locale.US, "%s terdeteksi (%.0f%%)", dominant.label, dominant.confidence));
-    }
-
-    private void openResult(List<TFLiteHelper.Result> detections) {
-        if (currentBitmap == null || detections.isEmpty() || !isAdded()) return;
-        try {
-            TFLiteHelper.Result dominant = findDominant(detections);
-            String nama = dominant.label;
-            float confidence = dominant.confidence;
-            String kategori = mapCategory(nama);
-
-            File file = new File(requireContext().getCacheDir(), "scan.jpg");
-            try (FileOutputStream outputStream = new FileOutputStream(file)) {
-                currentBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream);
-            }
-
-            Intent intent = new Intent(requireContext(), ResultActivity.class);
-            intent.putExtra("imagePath", file.getAbsolutePath());
-            intent.putExtra("nama", nama);
-            intent.putExtra("confidence", confidence);
-            intent.putExtra("kategori", kategori);
-            intent.putExtra("saran", buildSaran(nama));
-            intent.putExtra("funfact", buildFunfact(nama));
-            intent.putExtra("sourceWidth", currentBitmap.getWidth());
-            intent.putExtra("sourceHeight", currentBitmap.getHeight());
-            putFrozenDetections(intent, detections);
-            startActivity(intent);
-        } catch (Exception e) {
-            Log.e(TAG, "Gagal membuka hasil", e);
-        }
+        tvHasil.setText(String.format(Locale.US, "✅ %s terdeteksi (%.0f%%)",
+                dominant.label, dominant.confidence));
     }
 
     private TFLiteHelper.Result findDominant(List<TFLiteHelper.Result> detections) {
         TFLiteHelper.Result dominant = detections.get(0);
         for (TFLiteHelper.Result result : detections) {
-            if (result.confidence > dominant.confidence) {
-                dominant = result;
-            }
+            if (result.confidence > dominant.confidence) dominant = result;
         }
         return dominant;
     }
 
     private String mapCategory(String label) {
-        if ("Organik".equalsIgnoreCase(label)) return "Organik";
-        if ("Kardus".equalsIgnoreCase(label) || "Kaca".equalsIgnoreCase(label) || "Logam".equalsIgnoreCase(label) || "Kertas".equalsIgnoreCase(label)) return "Recycle";
-        if ("Plastik".equalsIgnoreCase(label)) return "Anorganik";
+        if ("Organik".equalsIgnoreCase(label))  return "Organik";
+        if ("Kardus".equalsIgnoreCase(label) || "Kaca".equalsIgnoreCase(label)
+                || "Logam".equalsIgnoreCase(label) || "Kertas".equalsIgnoreCase(label))
+            return "Recycle";
+        if ("Plastik".equalsIgnoreCase(label))  return "Anorganik";
         if ("Bukan Sampah".equalsIgnoreCase(label)) return "Bukan Sampah";
         return "Anorganik";
     }
@@ -327,57 +393,63 @@ public class ScanFragment extends Fragment {
     private String buildSaran(String nama) {
         switch (nama.toLowerCase()) {
             case "organik": return "🌿 Kumpulkan sisa makanan, sayuran, dan buah ke wadah kompos. Sampah organik bisa diolah menjadi pupuk kompos yang menyuburkan tanaman. Hindari mencampurnya dengan plastik atau logam.";
-            case "kardus": return "📦 Lipat kardus hingga pipih, pastikan dalam keadaan kering dan bersih. Serahkan ke bank sampah atau pengepul untuk didaur ulang menjadi produk baru.";
-            case "kertas": return "📄 Pastikan kertas kering dan tidak terkontaminasi minyak sebelum dikumpulkan. Pisahkan berdasarkan jenis untuk memudahkan daur ulang. Gunakan kedua sisi kertas saat mencetak.";
-            case "kaca": return "🔍 Bilas wadah kaca bersih dan pisahkan dari sampah lain. Bungkus pecahan kaca dengan koran untuk menghindari cedera. Botol kaca bisa digunakan ulang sebagai wadah penyimpanan.";
+            case "kardus":  return "📦 Lipat kardus hingga pipih, pastikan dalam keadaan kering dan bersih. Serahkan ke bank sampah atau pengepul untuk didaur ulang menjadi produk baru.";
+            case "kertas":  return "📄 Pastikan kertas kering dan tidak terkontaminasi minyak sebelum dikumpulkan. Pisahkan berdasarkan jenis untuk memudahkan daur ulang. Gunakan kedua sisi kertas saat mencetak.";
+            case "kaca":    return "🔍 Bilas wadah kaca bersih dan pisahkan dari sampah lain. Bungkus pecahan kaca dengan koran untuk menghindari cedera. Botol kaca bisa digunakan ulang sebagai wadah penyimpanan.";
             case "plastik": return "♻️ Bersihkan dan remas botol plastik untuk menghemat ruang. Pisahkan berdasarkan jenis (PET, HDPE, PP). Kurangi plastik sekali pakai dan beralih ke alternatif reusable.";
-            case "logam": return "🔧 Kumpulkan kaleng dan logam dalam wadah terpisah. Bilas kaleng bekas sebelum dikumpulkan. Logam bernilai tinggi untuk didaur ulang, serahkan ke pengepul atau bank sampah.";
+            case "logam":   return "🔧 Kumpulkan kaleng dan logam dalam wadah terpisah. Bilas kaleng bekas sebelum dikumpulkan. Logam bernilai tinggi untuk didaur ulang, serahkan ke pengepul atau bank sampah.";
             case "bukan sampah": return "✅ Objek ini terdeteksi bukan sebagai sampah. Pastikan barang masih layak digunakan. Jika tidak diperlukan, pertimbangkan untuk mendonasikannya.";
-            default: return "Pisahkan sesuai kategori agar proses pengelolaan lebih mudah.";
+            default:        return "Pisahkan sesuai kategori agar proses pengelolaan lebih mudah.";
         }
     }
 
     private String buildFunfact(String nama) {
         switch (nama.toLowerCase()) {
             case "organik": return "🌱 Sampah organik menyumbang 60% total sampah di Indonesia! Jika dikelola jadi kompos, bisa mengurangi emisi gas metana di TPA. 1 ton kompos menyuburkan hingga 1 hektar lahan.";
-            case "kardus": return "📦 Mendaur ulang 1 ton kardus menghemat 17 pohon besar, 26.000 liter air, dan 4.000 kWh listrik. Kardus bisa didaur ulang 5-7 kali sebelum seratnya terlalu pendek.";
-            case "kertas": return "📄 Setiap orang menggunakan rata-rata 55 kg kertas per tahun. Mendaur ulang kertas menghemat 70% energi. Satu pohon besar menghasilkan sekitar 8.000 lembar kertas HVS.";
-            case "kaca": return "🔍 Kaca bisa didaur ulang 100% tanpa kehilangan kualitas! Botol kaca daur ulang bisa kembali jadi botol baru dalam 30 hari. Menghemat 30% energi dibanding dari bahan mentah.";
+            case "kardus":  return "📦 Mendaur ulang 1 ton kardus menghemat 17 pohon besar, 26.000 liter air, dan 4.000 kWh listrik. Kardus bisa didaur ulang 5-7 kali sebelum seratnya terlalu pendek.";
+            case "kertas":  return "📄 Setiap orang menggunakan rata-rata 55 kg kertas per tahun. Mendaur ulang kertas menghemat 70% energi. Satu pohon besar menghasilkan sekitar 8.000 lembar kertas HVS.";
+            case "kaca":    return "🔍 Kaca bisa didaur ulang 100% tanpa kehilangan kualitas! Botol kaca daur ulang bisa kembali jadi botol baru dalam 30 hari. Menghemat 30% energi dibanding dari bahan mentah.";
             case "plastik": return "⚠️ 1 botol plastik butuh 450 tahun untuk terurai! Setiap tahun 8 juta ton plastik berakhir di lautan. Indonesia penyumbang sampah plastik laut terbesar kedua di dunia.";
-            case "logam": return "🔧 Mendaur ulang aluminium menghemat 95% energi! Kaleng aluminium bisa kembali ke rak toko dalam 60 hari. 75% aluminium yang pernah diproduksi masih digunakan hari ini.";
+            case "logam":   return "🔧 Mendaur ulang aluminium menghemat 95% energi! Kaleng aluminium bisa kembali ke rak toko dalam 60 hari. 75% aluminium yang pernah diproduksi masih digunakan hari ini.";
             case "bukan sampah": return "💡 Memperpanjang umur barang adalah cara paling efektif mengurangi jejak karbon. Memperbaiki daripada membuang menghemat rata-rata 5 kg CO₂ per barang.";
-            default: return "Pemilahan kecil di rumah membantu pengelolaan sampah kota.";
+            default:        return "Pemilahan kecil di rumah membantu pengelolaan sampah kota.";
         }
     }
 
     private void showLoading(boolean isLoading) {
-        if (progressScan != null) progressScan.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        if (progressScan != null)
+            progressScan.setVisibility(isLoading ? View.VISIBLE : View.GONE);
     }
 
     private void putFrozenDetections(Intent intent, List<TFLiteHelper.Result> detections) {
         int count = detections.size();
-        float[] left = new float[count]; float[] top = new float[count]; float[] right = new float[count]; float[] bottom = new float[count]; float[] confidence = new float[count];
+        float[] left = new float[count], top = new float[count],
+                right = new float[count], bottom = new float[count],
+                confidence = new float[count];
         String[] labels = new String[count];
 
         for (int i = 0; i < count; i++) {
             TFLiteHelper.Result result = detections.get(i);
             RectF rect = result.rect;
-            left[i] = rect.left; top[i] = rect.top; right[i] = rect.right; bottom[i] = rect.bottom;
-            confidence[i] = result.confidence; labels[i] = result.label;
+            left[i] = rect.left; top[i] = rect.top;
+            right[i] = rect.right; bottom[i] = rect.bottom;
+            confidence[i] = result.confidence;
+            labels[i] = result.label;
         }
 
-        intent.putExtra("frozenDetectionCount", count); intent.putExtra("frozenLeft", left); intent.putExtra("frozenTop", top); intent.putExtra("frozenRight", right); intent.putExtra("frozenBottom", bottom);
-        intent.putExtra("frozenConfidence", confidence); intent.putExtra("frozenLabels", labels);
+        intent.putExtra("frozenDetectionCount", count);
+        intent.putExtra("frozenLeft",       left);
+        intent.putExtra("frozenTop",        top);
+        intent.putExtra("frozenRight",      right);
+        intent.putExtra("frozenBottom",     bottom);
+        intent.putExtra("frozenConfidence", confidence);
+        intent.putExtra("frozenLabels",     labels);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (analysisExecutor != null) {
-            analysisExecutor.shutdown();
-        }
-        if (tflite != null) {
-            tflite.close();
-        }
+        if (analysisExecutor != null) analysisExecutor.shutdown();
+        if (tflite != null) tflite.close();
     }
 }

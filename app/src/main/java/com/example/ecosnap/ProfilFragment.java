@@ -47,8 +47,12 @@ public class ProfilFragment extends Fragment {
 
         if (btnEditProfil != null) btnEditProfil.setOnClickListener(v -> {
             if (isAdded() && getActivity() != null) {
-                Intent i = new Intent(getActivity(), com.example.ecosnap.user.HistoryActivity.class);
-                startActivity(i);
+                Intent i = new Intent(getActivity(), com.example.ecosnap.user.EditProfilActivity.class);
+                // Kirim data existing sebagai pre-fill
+                i.putExtra("nama",     tvInfoNama    != null ? tvInfoNama.getText().toString()    : "");
+                i.putExtra("nomor_hp", tvInfoNomorHp != null ? tvInfoNomorHp.getText().toString() : "");
+                i.putExtra("rt_id",    tvInfoWilayah != null ? tvInfoWilayah.getText().toString() : "");
+                startActivityForResult(i, 1001);
             }
         });
 
@@ -63,6 +67,17 @@ public class ProfilFragment extends Fragment {
 
         return view;
     }
+
+    // Refresh profil setelah edit berhasil
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1001 && resultCode == android.app.Activity.RESULT_OK) {
+            loadProfil();   // reload data terbaru dari Supabase
+            loadStatistik();
+        }
+    }
+
 
     @Override
     public void onResume() {

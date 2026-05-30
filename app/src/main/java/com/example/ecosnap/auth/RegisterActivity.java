@@ -23,19 +23,10 @@ import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    // Ganti etEmail jadi etNomorHp
-    EditText etNama, etNomorHp, etPassword, etRT, etWilayahRW, etKodeRW;
+    EditText etNama, etNomorHp, etPassword, etPasswordConfirm, etRT;
     MaterialButton btnRegister;
     TextView tvLogin;
     FirebaseAuth mAuth;
-
-    // Kode RW = password untuk masuk ke RW tertentu
-    // Admin RW kasih kode ini ke ketua RT di wilayahnya
-    private static final Map<String, String> KODE_RW = new HashMap<String, String>() {{
-        put("RW01-2024", "RW 01");
-        put("RW02-2024", "RW 02");
-        put("RW03-2024", "RW 03");
-    }};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,15 +35,13 @@ public class RegisterActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        // Init semua field
-        etNama = findViewById(R.id.etNama);
-        etNomorHp = findViewById(R.id.etNomorHp); // ganti dari etEmail
-        etPassword = findViewById(R.id.etPassword);
-        etRT = findViewById(R.id.etRT);
-        etKodeRW = findViewById(R.id.etKodeRW);
-        btnRegister = findViewById(R.id.btnRegister);
-        tvLogin = findViewById(R.id.tvLogin);
-        etWilayahRW = findViewById(R.id.etWilayahRW);
+        etNama           = findViewById(R.id.etNama);
+        etNomorHp        = findViewById(R.id.etNomorHp);
+        etPassword       = findViewById(R.id.etPassword);
+        etPasswordConfirm = findViewById(R.id.etPasswordConfirm);
+        etRT             = findViewById(R.id.etRT);
+        btnRegister      = findViewById(R.id.btnRegister);
+        tvLogin          = findViewById(R.id.tvLogin);
 
         btnRegister.setOnClickListener(v -> prosesRegister());
 
@@ -63,16 +52,14 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void prosesRegister() {
-        String nama = etNama.getText().toString().trim();
-        String nomorHp = etNomorHp.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-        String rtId = etRT.getText().toString().trim();
-        String wilayahRW = etWilayahRW.getText().toString().trim(); // tambah ini
-        String kodeRW = etKodeRW.getText().toString().trim();
+        String nama            = etNama.getText().toString().trim();
+        String nomorHp         = etNomorHp.getText().toString().trim();
+        String password        = etPassword.getText().toString().trim();
+        String passwordConfirm = etPasswordConfirm.getText().toString().trim();
+        String rtId            = etRT.getText().toString().trim();
 
-        // Validasi semua field harus terisi
-        if (nama.isEmpty() || nomorHp.isEmpty() || password.isEmpty() ||
-                rtId.isEmpty() || wilayahRW.isEmpty() || kodeRW.isEmpty()) {
+        // Validasi field wajib
+        if (nama.isEmpty() || nomorHp.isEmpty() || password.isEmpty() || rtId.isEmpty()) {
             Toast.makeText(this, "Semua field harus diisi!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -87,52 +74,42 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        if (!KODE_RW.containsKey(kodeRW)) {
-            Toast.makeText(this, "Kode RW tidak valid! Hubungi admin RW kamu.",
-                    Toast.LENGTH_SHORT).show();
+        if (!password.equals(passwordConfirm)) {
+            Toast.makeText(this, "Konfirmasi password tidak cocok!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String rwId = KODE_RW.get(kodeRW);
-
-        // Wilayah = RT + RW yang diinput user
-        String wilayah = rtId + " - " + wilayahRW;
-
+        // Konversi nomor HP ke email fiktif untuk Firebase Auth
         String emailFiktif = nomorHp + "@ecosnap.com";
 
         mAuth.createUserWithEmailAndPassword(emailFiktif, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         if (mAuth.getCurrentUser() == null) {
-                            Toast.makeText(this, "User Firebase kosong",
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "User Firebase kosong", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         String uid = mAuth.getCurrentUser().getUid();
-                        simpanKeSupabase(uid, nama, nomorHp, wilayah, rwId, rtId);
+                        simpanKeSupabase(uid, nama, nomorHp, rtId);
                     } else {
                         String msg = task.getException() != null
-                                ? task.getException().getMessage()
-                                : "Unknown error";
-                        Toast.makeText(this, "Gagal daftar: " + msg,
-                                Toast.LENGTH_SHORT).show();
+                                ? task.getException().getMessage() : "Unknown error";
+                        Toast.makeText(this, "Gagal daftar: " + msg, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    private void simpanKeSupabase(String uid, String nama, String nomorHp,
-                                  String wilayah, String rwId, String rtId) {
+    private void simpanKeSupabase(String uid, String nama, String nomorHp, String rtId) {
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
 
-        // Data yang disimpan ke tabel user di Supabase
         Map<String, String> data = new HashMap<>();
-        data.put("firebase_uid", uid);       // UID dari Firebase
-        data.put("nama", nama);               // nama lengkap
-        data.put("nomor_hp", nomorHp);        // nomor HP asli — bukan email fiktif
-        data.put("role", "user");             // semua daftar lewat app = RT
-        data.put("wilayah", wilayah);         // contoh: "RT 02 - RW 01"
-        data.put("rw_id", rwId);              // contoh: "RW 01"
-        data.put("rt_id", rtId);              // contoh: "RT 02"
+        data.put("firebase_uid", uid);
+        data.put("nama", nama);
+        data.put("nomor_hp", nomorHp);
+        data.put("role", "user");
+        data.put("rt_id", rtId);
+        data.put("wilayah", rtId);         // contoh: "RT 02"
+        data.put("is_approved", "false");  // menunggu persetujuan admin
 
         Call<Void> call = apiService.insertUser(data);
         call.enqueue(new Callback<Void>() {
@@ -140,8 +117,8 @@ public class RegisterActivity extends AppCompatActivity {
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.code() == 201 || response.code() == 204) {
                     Toast.makeText(RegisterActivity.this,
-                            "Registrasi berhasil! Silakan login.",
-                            Toast.LENGTH_SHORT).show();
+                            "Pendaftaran berhasil! Menunggu persetujuan admin.",
+                            Toast.LENGTH_LONG).show();
                     startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                     finish();
                 } else {

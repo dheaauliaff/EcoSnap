@@ -149,84 +149,28 @@
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- RT & RW SEJAJAR -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal">
-
-                <!-- RT -->
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:hint="RT"
-                    app:boxBackgroundColor="#FFFFFF"
-                    app:boxCornerRadiusBottomEnd="20dp"
-                    app:boxCornerRadiusBottomStart="20dp"
-                    app:boxCornerRadiusTopEnd="20dp"
-                    app:boxCornerRadiusTopStart="20dp"
-                    app:boxStrokeColor="#E0E0E0"
-                    app:startIconDrawable="@android:drawable/ic_menu_mapmode"
-                    app:startIconTint="#2E7D32">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etRT"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:inputType="number" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- RW -->
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:hint="RW"
-                    app:boxBackgroundColor="#FFFFFF"
-                    app:boxCornerRadiusBottomEnd="20dp"
-                    app:boxCornerRadiusBottomStart="20dp"
-                    app:boxCornerRadiusTopEnd="20dp"
-                    app:boxCornerRadiusTopStart="20dp"
-                    app:boxStrokeColor="#E0E0E0"
-                    app:startIconDrawable="@android:drawable/ic_menu_mapmode"
-                    app:startIconTint="#2E7D32">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etWilayahRW"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:inputType="number" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-            </LinearLayout>
-
-            <!-- KODE RW -->
+            <!-- RT SAJA (RW dihapus — redundan) -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Kode RW"
-                app:helperText="Gunakan kode dari admin RW"
+                android:hint="Nomor RT"
+                app:helperText="Contoh: RT 02"
                 app:boxBackgroundColor="#FFFFFF"
                 app:boxCornerRadiusBottomEnd="20dp"
                 app:boxCornerRadiusBottomStart="20dp"
                 app:boxCornerRadiusTopEnd="20dp"
                 app:boxCornerRadiusTopStart="20dp"
                 app:boxStrokeColor="#E0E0E0"
-                app:startIconDrawable="@android:drawable/ic_dialog_info"
+                app:startIconDrawable="@android:drawable/ic_menu_mapmode"
                 app:startIconTint="#2E7D32">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etKodeRW"
+                    android:id="@+id/etRT"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp" />
+                    android:layout_height="56dp"
+                    android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- CHECKBOX -->

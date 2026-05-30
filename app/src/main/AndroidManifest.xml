@@ -67,11 +67,12 @@
 
         <!-- User -->
         <activity android:name=".user.DashboardUserActivity" android:exported="false" />
-        <activity android:name=".user.HistoryActivity" android:exported="false" />
-        <activity android:name=".user.MapsActivity" android:exported="false" />
-        <activity android:name=".RankingActivity" android:exported="false" />
-        <activity android:name=".user.ProfilUserActivity" android:exported="false" />
-        <activity android:name=".user.RekapActivity" android:exported="false" />
+        <activity android:name=".user.HistoryActivity"       android:exported="false" />
+        <activity android:name=".user.MapsActivity"          android:exported="false" />
+        <activity android:name=".RankingActivity"            android:exported="false" />
+        <activity android:name=".user.ProfilUserActivity"    android:exported="false" />
+        <activity android:name=".user.RekapActivity"         android:exported="false" />
+        <activity android:name=".user.EditProfilActivity"    android:exported="false" />
 
         <!-- Admin -->
         <activity android:name=".admin.DashboardAdminActivity" android:exported="false" />

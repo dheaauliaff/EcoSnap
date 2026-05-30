@@ -104,19 +104,23 @@ public class LoginActivity extends AppCompatActivity {
                     User user = response.body().get(0);
                     String role = user.getRole() != null ? user.getRole() : "user";
 
-                    if (role.equals("admin")) {
-                        Intent intent = new Intent(LoginActivity.this,
-                                DashboardAdminActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                    } else {
-                        Intent intent = new Intent(LoginActivity.this,
-                                MainDashboardActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
+                    // ── Cek approval sebelum masuk dashboard ──
+                    Boolean approved = user.getIsApproved();
+                    if (approved == null || !approved) {
+                        showApprovalPendingDialog();
+                        mAuth.signOut(); // paksa logout — jangan simpan sesi
+                        return;
                     }
+
+                    // Navigasi berdasarkan role
+                    Intent intent;
+                    if (role.equals("admin")) {
+                        intent = new Intent(LoginActivity.this, DashboardAdminActivity.class);
+                    } else {
+                        intent = new Intent(LoginActivity.this, MainDashboardActivity.class);
+                    }
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                     finish();
                 } else {
                     Toast.makeText(LoginActivity.this,
@@ -133,4 +137,14 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-}
+
+    private void showApprovalPendingDialog() {
+        new androidx.appcompat.app.AlertDialog.Builder(LoginActivity.this)
+                .setTitle("⏳ Menunggu Persetujuan")
+                .setMessage("Akun Anda sudah terdaftar, namun belum disetujui oleh Admin.\n\n"
+                        + "Silakan hubungi admin wilayah Anda untuk konfirmasi aktivasi akun.")
+                .setPositiveButton("Mengerti", null)
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .show();
+    }
+}

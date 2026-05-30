@@ -29,6 +29,9 @@ public class User {
     @SerializedName("rt_id")
     private String rtId;
 
+    @SerializedName("is_approved")
+    private Boolean isApproved;
+
     public String getId() { return id; }
     public String getFirebaseUid() { return firebaseUid; }
     public String getNama() { return nama; }
@@ -37,4 +40,5 @@ public class User {
     public String getWilayah() { return wilayah; }
     public String getRwId() { return rwId; }
     public String getRtId() { return rtId; }
+    public Boolean getIsApproved() { return isApproved; }
 }

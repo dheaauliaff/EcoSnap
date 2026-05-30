@@ -21,7 +21,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -87,7 +89,13 @@ public class HistoryActivity extends AppCompatActivity {
                     hideLoading();
                     if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                         scanList.clear();
-                        scanList.addAll(response.body());
+                        // Deduplikasi berbasis ID unik — cegah data ganda
+                        Set<String> seenIds = new HashSet<>();
+                        for (ScanHistory s : response.body()) {
+                            if (s.getId() != null && seenIds.add(s.getId())) {
+                                scanList.add(s);
+                            }
+                        }
                         adapter.notifyDataSetChanged();
                         tvJumlahRiwayat.setText(scanList.size() + " scan");
                         showList();
@@ -120,7 +128,13 @@ public class HistoryActivity extends AppCompatActivity {
                     hideLoading();
                     if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                         scanList.clear();
-                        scanList.addAll(response.body());
+                        // Deduplikasi berbasis ID unik — cegah data ganda
+                        Set<String> seenIds = new HashSet<>();
+                        for (ScanHistory s : response.body()) {
+                            if (s.getId() != null && seenIds.add(s.getId())) {
+                                scanList.add(s);
+                            }
+                        }
                         adapter.notifyDataSetChanged();
                         tvJumlahRiwayat.setText(scanList.size() + " scan");
                         showList();

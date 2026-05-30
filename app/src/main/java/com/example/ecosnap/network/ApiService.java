@@ -9,6 +9,7 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
@@ -22,7 +23,13 @@ public interface ApiService {
     @POST("user")
     Call<Void> insertUser(@Body Map<String, String> data);
 
-    // TAMBAHAN INI
+    // Update profil user via PATCH (filter by firebase_uid)
+    @PATCH("user")
+    Call<Void> updateUserPatch(
+            @Query("firebase_uid") String uidFilter,
+            @Body Map<String, String> updates
+    );
+
     @POST("scan_history")
     Call<Void> insertScan(@Body Map<String, Object> data);
 
@@ -53,11 +60,5 @@ public interface ApiService {
     Call<List<User>> getUserByRwId(
             @Query("rw_id") String rwId,
             @Query("role") String role
-    );
-
-    @GET("users")
-    Call<Void> updateUser(
-            @Query("firebase_uid") String firebaseUid,
-            @Body User user
     );
 }

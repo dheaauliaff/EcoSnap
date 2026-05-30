@@ -48,6 +48,7 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -276,25 +277,32 @@ public class MapsFragment extends Fragment {
         double lng  = scan.getLongitude();
         String nama = scan.getJenisSampah() != null ? scan.getJenisSampah() : "Sampah";
         String kat  = scan.getKategori()    != null ? scan.getKategori()    : "-";
+        String rt   = scan.getRtId()        != null ? scan.getRtId()        : "-";
+        String rw   = scan.getRwId()        != null ? scan.getRwId()        : "-";
         int    color = colorForNama(nama);
 
         // 1. Lingkaran zona semi-transparan
         Polygon zone = new Polygon(osmMap);
         zone.setPoints(circlePoints(lat, lng, ZONE_RADIUS_METERS));
-        zone.setFillColor(withAlpha(color, 45));     // sangat transparan
-        zone.setStrokeColor(withAlpha(color, 160));  // outline sedikit lebih solid
+        zone.setFillColor(withAlpha(color, 45));
+        zone.setStrokeColor(withAlpha(color, 160));
         zone.setStrokeWidth(2.5f);
         osmMap.getOverlays().add(zone);
 
-        // 2. Pin ikon kategori (lingkaran berwarna + ikon)
+        // 2. Pin ikon kategori dengan koordinat presisi 6 desimal di InfoWindow
         Marker marker = new Marker(osmMap);
         marker.setPosition(new GeoPoint(lat, lng));
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        marker.setTitle(nama);
-        marker.setSnippet("Kategori: " + kat);
-        marker.setIcon(new BitmapDrawable(getResources(), createPinBitmap(nama, color)));
+        marker.setTitle(nama + " — " + rt + " / " + rw);
+        // Koordinat ditampilkan dengan presisi 6 desimal
+        marker.setSnippet(String.format(Locale.US,
+                "Jenis: %s | Kategori: %s\nLat: %.6f | Lng: %.6f\nWilayah: %s / %s",
+                nama, kat, lat, lng, rt, rw));
+        marker.setIcon(new android.graphics.drawable.BitmapDrawable(
+                getResources(), createPinBitmap(nama, color)));
         osmMap.getOverlays().add(marker);
     }
+
 
     // ─── Canvas: lingkaran berwarna + ikon sampah ────────────────────────────
 
