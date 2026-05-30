@@ -34,7 +34,7 @@ public class ProfilFragment extends Fragment {
     TextView tvTotalScan, tvJenisTerbanyak;
 
     MaterialButton btnLogout;
-    View rowNama, rowNomorHp, btnRiwayatScanMenu, progressBar;
+    View rowNama, rowNomorHp, btnRiwayatScanMenu, btnTentangAplikasiMenu, progressBar;
 
     FirebaseAuth mAuth;
     DataRepository repository;
@@ -67,6 +67,15 @@ public class ProfilFragment extends Fragment {
             btnRiwayatScanMenu.setOnClickListener(v -> {
                 if (isAdded() && getActivity() != null) {
                     Intent i = new Intent(getActivity(), com.example.ecosnap.user.HistoryActivity.class);
+                    startActivity(i);
+                }
+            });
+        }
+
+        if (btnTentangAplikasiMenu != null) {
+            btnTentangAplikasiMenu.setOnClickListener(v -> {
+                if (isAdded() && getActivity() != null) {
+                    Intent i = new Intent(getActivity(), com.example.ecosnap.user.AboutActivity.class);
                     startActivity(i);
                 }
             });
@@ -207,6 +216,7 @@ public class ProfilFragment extends Fragment {
         rowNama = view.findViewById(R.id.rowNama);
         rowNomorHp = view.findViewById(R.id.rowNomorHp);
         btnRiwayatScanMenu = view.findViewById(R.id.btnRiwayatScanMenu);
+        btnTentangAplikasiMenu = view.findViewById(R.id.btnTentangAplikasiMenu);
         progressBar = view.findViewById(R.id.progressBar);
         btnLogout = view.findViewById(R.id.btnLogout);
     }

@@ -384,6 +384,7 @@
 
                 <!-- Menu 2: Tentang Aplikasi -->
                 <FrameLayout
+                    android:id="@+id/btnTentangAplikasiMenu"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
                     android:background="?attr/selectableItemBackground">
