@@ -163,20 +163,51 @@ public class AdminMapsActivity extends AppCompatActivity {
                 PopupMenu popup = new PopupMenu(this, btnFilterArea);
                 popup.getMenu().add("Semua RW");
 
-                List<String> rws = new ArrayList<>();
-                for(ScanHistory s : allScans) {
-                    if (s.getRwId() != null && !s.getRwId().isEmpty() && !rws.contains(s.getRwId())) {
-                        rws.add(s.getRwId());
+                // Standard RWs
+                List<String> standardRwLabels = new ArrayList<>();
+                standardRwLabels.add("RW 01");
+                standardRwLabels.add("RW 02");
+                standardRwLabels.add("RW 03");
+                standardRwLabels.add("RW 04");
+                standardRwLabels.add("RW 05");
+
+                // Add standard RWs to popup
+                for (String label : standardRwLabels) {
+                    popup.getMenu().add(label);
+                }
+
+                // Add any other dynamic RW IDs found in the data, formatted nicely
+                for (ScanHistory s : allScans) {
+                    String rawRw = s.getRwId();
+                    if (rawRw != null && !rawRw.isEmpty()) {
+                        String formatted = formatRwId(rawRw);
+                        // Check if the formatted label is not already in standard list
+                        boolean exists = false;
+                        for (int i = 0; i < popup.getMenu().size(); i++) {
+                            if (popup.getMenu().getItem(i).getTitle().toString().equalsIgnoreCase(formatted)) {
+                                exists = true;
+                                break;
+                            }
+                        }
+                        if (!exists) {
+                            popup.getMenu().add(formatted);
+                        }
                     }
                 }
-                Collections.sort(rws);
-                for(String r : rws) popup.getMenu().add(r);
 
                 popup.setOnMenuItemClickListener(item -> {
-                    activeRwFilter = item.getTitle().toString();
-                    if (tvWilayahAdmin != null) tvWilayahAdmin.setText(activeRwFilter);
+                    String selectedLabel = item.getTitle().toString();
+                    if (tvWilayahAdmin != null) tvWilayahAdmin.setText(selectedLabel);
+                    
+                    if (selectedLabel.equals("Semua RW")) {
+                        activeRwFilter = "Semua RW";
+                    } else {
+                        // Map label back to raw ID or use fallback
+                        activeRwFilter = parseRwLabel(selectedLabel);
+                    }
+                    
                     applyFilters();
-                    Toast.makeText(this, "Area dipilih: " + activeRwFilter, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Area dipilih: " + selectedLabel, Toast.LENGTH_SHORT).show();
                     return true;
                 });
                 popup.show();
@@ -263,8 +294,12 @@ public class AdminMapsActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     User admin = response.body().get(0);
                     rwId = admin.getRwId() != null ? admin.getRwId() : "";
-                    if (tvWilayahAdmin != null) tvWilayahAdmin.setText(admin.getWilayah() != null
-                            ? admin.getWilayah() : "RW Area");
+                    if (admin.getWilayah() != null && !admin.getWilayah().isEmpty()) {
+                        activeRwFilter = admin.getWilayah();
+                    } else {
+                        activeRwFilter = "Semua RW";
+                    }
+                    if (tvWilayahAdmin != null) tvWilayahAdmin.setText(activeRwFilter);
                     loadDataSebaran();
                 }
             }
@@ -301,7 +336,7 @@ public class AdminMapsActivity extends AppCompatActivity {
     private void applyFilters() {
         displayedScans.clear();
         for (ScanHistory s : allScans) {
-            if ("Semua RW".equals(activeRwFilter) || (s.getRwId() != null && activeRwFilter.equals(s.getRwId()))) {
+            if ("Semua RW".equals(activeRwFilter) || isMatchingRw(s.getRwId(), activeRwFilter)) {
                 displayedScans.add(s);
             }
         }
@@ -733,6 +768,42 @@ public class AdminMapsActivity extends AppCompatActivity {
         root.setAlpha(0f);
         root.animate().alpha(1f).setDuration(320L)
                 .setInterpolator(new DecelerateInterpolator()).start();
+    }
+
+    private String formatRwId(String rwId) {
+        if (rwId == null) return "";
+        if (rwId.equals("001") || rwId.equals("01")) return "RW 01";
+        if (rwId.equals("002") || rwId.equals("02")) return "RW 02";
+        if (rwId.equals("003") || rwId.equals("03")) return "RW 03";
+        if (rwId.equals("004") || rwId.equals("04")) return "RW 04";
+        if (rwId.equals("005") || rwId.equals("05")) return "RW 05";
+        return rwId;
+    }
+
+    private String parseRwLabel(String label) {
+        if (label == null) return "";
+        if (label.equals("RW 01")) return "001";
+        if (label.equals("RW 02")) return "002";
+        if (label.equals("RW 03")) return "003";
+        if (label.equals("RW 04")) return "004";
+        if (label.equals("RW 05")) return "005";
+        return label;
+    }
+
+    private boolean isMatchingRw(String scanRwId, String filterRwId) {
+        if (scanRwId == null || filterRwId == null) return false;
+        return normalizeRw(scanRwId).equals(normalizeRw(filterRwId));
+    }
+
+    private String normalizeRw(String rw) {
+        if (rw == null) return "";
+        String clean = rw.replace("RW", "").replace("rw", "").trim();
+        try {
+            int num = Integer.parseInt(clean);
+            return String.valueOf(num);
+        } catch (NumberFormatException e) {
+            return clean.toLowerCase();
+        }
     }
 
     // ─── Lifecycle ─────────────────────────────────────────────────────────────
