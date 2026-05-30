@@ -74,6 +74,7 @@
         <activity android:name=".user.RekapActivity"         android:exported="false" />
         <activity android:name=".user.EditProfilActivity"    android:exported="false" />
         <activity android:name=".user.AboutActivity"         android:exported="false" />
+        <activity android:name=".user.HelpActivity"          android:exported="false" />
 
         <!-- Admin -->
         <activity android:name=".admin.DashboardAdminActivity" android:exported="false" />

@@ -406,6 +406,7 @@
 
                 <!-- Menu 3: Bantuan -->
                 <FrameLayout
+                    android:id="@+id/btnBantuanMenu"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
                     android:background="?attr/selectableItemBackground">
