@@ -104,15 +104,7 @@ public class LoginActivity extends AppCompatActivity {
                     User user = response.body().get(0);
                     String role = user.getRole() != null ? user.getRole() : "user";
 
-                    // ── Cek approval sebelum masuk dashboard ──
-                    Boolean approved = user.getIsApproved();
-                    if (approved == null || !approved) {
-                        showApprovalPendingDialog();
-                        mAuth.signOut(); // paksa logout — jangan simpan sesi
-                        return;
-                    }
-
-                    // Navigasi berdasarkan role
+                    // Navigasi berdasarkan role langsung
                     Intent intent;
                     if (role.equals("admin")) {
                         intent = new Intent(LoginActivity.this, DashboardAdminActivity.class);
@@ -136,15 +128,5 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         });
-    }
-
-    private void showApprovalPendingDialog() {
-        new androidx.appcompat.app.AlertDialog.Builder(LoginActivity.this)
-                .setTitle("⏳ Menunggu Persetujuan")
-                .setMessage("Akun Anda sudah terdaftar, namun belum disetujui oleh Admin.\n\n"
-                        + "Silakan hubungi admin wilayah Anda untuk konfirmasi aktivasi akun.")
-                .setPositiveButton("Mengerti", null)
-                .setIcon(android.R.drawable.ic_dialog_info)
-                .show();
     }
 }
