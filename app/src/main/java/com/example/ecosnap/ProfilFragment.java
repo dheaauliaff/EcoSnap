@@ -5,10 +5,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import com.example.ecosnap.model.User;
 import com.example.ecosnap.auth.LoginActivity;
@@ -30,7 +33,8 @@ public class ProfilFragment extends Fragment {
     TextView tvInfoNama, tvInfoNomorHp, tvInfoWilayah, tvInfoRole;
     TextView tvTotalScan, tvJenisTerbanyak;
 
-    MaterialButton btnEditProfil, btnLogout;
+    MaterialButton btnLogout;
+    View rowNama, rowNomorHp, btnRiwayatScanMenu, progressBar;
 
     FirebaseAuth mAuth;
     DataRepository repository;
@@ -45,39 +49,139 @@ public class ProfilFragment extends Fragment {
 
         initView(view);
 
-        if (btnEditProfil != null) btnEditProfil.setOnClickListener(v -> {
-            if (isAdded() && getActivity() != null) {
-                Intent i = new Intent(getActivity(), com.example.ecosnap.user.EditProfilActivity.class);
-                // Kirim data existing sebagai pre-fill
-                i.putExtra("nama",     tvInfoNama    != null ? tvInfoNama.getText().toString()    : "");
-                i.putExtra("nomor_hp", tvInfoNomorHp != null ? tvInfoNomorHp.getText().toString() : "");
-                i.putExtra("rt_id",    tvInfoWilayah != null ? tvInfoWilayah.getText().toString() : "");
-                startActivityForResult(i, 1001);
-            }
-        });
+        if (rowNama != null) {
+            rowNama.setOnClickListener(v -> {
+                String currentVal = tvInfoNama != null ? tvInfoNama.getText().toString() : "";
+                showEditDialog("Nama", currentVal, tvInfoNama);
+            });
+        }
 
-        if (btnLogout != null) btnLogout.setOnClickListener(v -> {
-            mAuth.signOut();
-            if (isAdded() && getActivity() != null) {
-                Intent i = new Intent(getActivity(), LoginActivity.class);
-                startActivity(i);
-                getActivity().finishAffinity();
-            }
-        });
+        if (rowNomorHp != null) {
+            rowNomorHp.setOnClickListener(v -> {
+                String currentVal = tvInfoNomorHp != null ? tvInfoNomorHp.getText().toString() : "";
+                showEditDialog("Nomor HP", currentVal, tvInfoNomorHp);
+            });
+        }
+
+        if (btnRiwayatScanMenu != null) {
+            btnRiwayatScanMenu.setOnClickListener(v -> {
+                if (isAdded() && getActivity() != null) {
+                    Intent i = new Intent(getActivity(), com.example.ecosnap.user.HistoryActivity.class);
+                    startActivity(i);
+                }
+            });
+        }
+
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> {
+                mAuth.signOut();
+                if (isAdded() && getActivity() != null) {
+                    Intent i = new Intent(getActivity(), LoginActivity.class);
+                    startActivity(i);
+                    getActivity().finishAffinity();
+                }
+            });
+        }
 
         return view;
     }
 
-    // Refresh profil setelah edit berhasil
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1001 && resultCode == android.app.Activity.RESULT_OK) {
-            loadProfil();   // reload data terbaru dari Supabase
-            loadStatistik();
+    private void showEditDialog(String fieldName, String currentValue, TextView targetTextView) {
+        if (getContext() == null) return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Ubah " + fieldName);
+
+        final EditText input = new EditText(getContext());
+        input.setText(currentValue.equals("-") ? "" : currentValue);
+        input.setSingleLine(true);
+        if (fieldName.equals("Nomor HP")) {
+            input.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
+        } else {
+            input.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
         }
+
+        LinearLayout container = new LinearLayout(getContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        int margin = dp(20);
+        lp.setMargins(margin, dp(8), margin, dp(8));
+        input.setLayoutParams(lp);
+        container.addView(input);
+        builder.setView(container);
+
+        builder.setPositiveButton("Simpan", (dialog, which) -> {
+            String newValue = input.getText().toString().trim();
+
+            if (newValue.isEmpty()) {
+                Toast.makeText(getContext(), fieldName + " tidak boleh kosong", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (fieldName.equals("Nomor HP")) {
+                if (!newValue.matches("^[0-9]{10,15}$")) {
+                    Toast.makeText(getContext(), "Nomor HP harus berupa 10-15 digit angka", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+
+            updateFieldOnSupabase(fieldName, newValue, targetTextView);
+        });
+        builder.setNegativeButton("Batal", (dialog, which) -> dialog.cancel());
+        builder.show();
     }
 
+    private void updateFieldOnSupabase(String fieldName, String newValue, TextView targetTextView) {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) return;
+        String uid = currentUser.getUid();
+
+        if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+
+        com.example.ecosnap.network.ApiService api =
+                com.example.ecosnap.network.RetrofitClient.getClient()
+                        .create(com.example.ecosnap.network.ApiService.class);
+
+        Map<String, String> updates = new HashMap<>();
+        if (fieldName.equals("Nama")) {
+            updates.put("nama", newValue);
+        } else if (fieldName.equals("Nomor HP")) {
+            updates.put("nomor_hp", newValue);
+        }
+
+        Call<Void> call = api.updateUserPatch("eq." + uid, updates);
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (progressBar != null) progressBar.setVisibility(View.GONE);
+                if (response.isSuccessful() || response.code() == 204) {
+                    Toast.makeText(getContext(), fieldName + " berhasil diperbarui ✓", Toast.LENGTH_SHORT).show();
+
+                    // Realtime Auto-refresh local UI state
+                    targetTextView.setText(newValue);
+                    if (fieldName.equals("Nama")) {
+                        if (tvNamaProfil != null) tvNamaProfil.setText(newValue);
+                        String inisial = newValue.substring(0, 1).toUpperCase();
+                        if (tvAvatarInisial != null) tvAvatarInisial.setText(inisial);
+                    }
+                } else {
+                    Toast.makeText(getContext(), "Gagal memperbarui: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                if (progressBar != null) progressBar.setVisibility(View.GONE);
+                Toast.makeText(getContext(), "Koneksi gagal: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private int dp(int v) {
+        if (getContext() == null) return v;
+        return Math.round(v * getContext().getResources().getDisplayMetrics().density);
+    }
 
     @Override
     public void onResume() {
@@ -100,7 +204,10 @@ public class ProfilFragment extends Fragment {
         tvTotalScan = view.findViewById(R.id.tvTotalScan);
         tvJenisTerbanyak = view.findViewById(R.id.tvJenisTerbanyak);
 
-        btnEditProfil = view.findViewById(R.id.btnEditProfil);
+        rowNama = view.findViewById(R.id.rowNama);
+        rowNomorHp = view.findViewById(R.id.rowNomorHp);
+        btnRiwayatScanMenu = view.findViewById(R.id.btnRiwayatScanMenu);
+        progressBar = view.findViewById(R.id.progressBar);
         btnLogout = view.findViewById(R.id.btnLogout);
     }
 

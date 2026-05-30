@@ -1,11 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8F9FA"
-    android:fitsSystemWindows="true"
-    android:overScrollMode="never">
+    android:fitsSystemWindows="true">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -283,7 +286,7 @@
                 android:orientation="vertical">
 
                 <!-- Row: Nama -->
-                <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
+                <LinearLayout android:id="@+id/rowNama" android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
                     <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_user_outline" app:tint="#2E7D32" />
                     </FrameLayout>
@@ -295,7 +298,7 @@
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginHorizontal="16dp"/>
 
                 <!-- Row: Nomor HP -->
-                <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
+                <LinearLayout android:id="@+id/rowNomorHp" android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
                     <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_phone_outline" app:tint="#2E7D32" />
                     </FrameLayout>
@@ -307,7 +310,7 @@
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginHorizontal="16dp"/>
 
                 <!-- Row: Wilayah -->
-                <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
+                <LinearLayout android:id="@+id/rowWilayah" android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
                     <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_location_outline" app:tint="#2E7D32" />
                     </FrameLayout>
@@ -319,7 +322,7 @@
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginHorizontal="16dp"/>
 
                 <!-- Row: Role -->
-                <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
+                <LinearLayout android:id="@+id/rowRole" android:layout_width="match_parent" android:layout_height="60dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:background="?attr/selectableItemBackground">
                     <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_white_circle_elevated" android:backgroundTint="#E8F5E9" android:elevation="0dp">
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@drawable/ic_shield_outline" app:tint="#2E7D32" />
                     </FrameLayout>
@@ -368,7 +371,7 @@
                         <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_arrow_right" app:tint="#BDBDBD" />
                     </LinearLayout>
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEditProfil"
+                        android:id="@+id/btnRiwayatScanMenu"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="@android:color/transparent"
@@ -444,3 +447,13 @@
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="#2E7D32"
+        android:visibility="gone" />
+
+</FrameLayout>
