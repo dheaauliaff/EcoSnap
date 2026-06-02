@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.example.ecosnap.model.User;
+import com.google.firebase.auth.FirebaseAuth;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -59,8 +62,30 @@ public class AdminRankingActivity extends AppCompatActivity {
     }
 
     private void loadDataFromSupabase() {
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        if (mAuth.getCurrentUser() == null) return;
+        String uid = mAuth.getCurrentUser().getUid();
+
         ApiService api = RetrofitClient.getClient().create(ApiService.class);
-        api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
+        api.getUserByFirebaseUid("eq." + uid).enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (isFinishing()) return;
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    User admin = response.body().get(0);
+                    String rwId = admin.getRwId() != null ? admin.getRwId() : "";
+                    if (!rwId.isEmpty()) {
+                        fetchScansForRw(api, rwId);
+                    }
+                }
+            }
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {}
+        });
+    }
+
+    private void fetchScansForRw(ApiService api, String rwId) {
+        api.getScanByRw("eq." + rwId).enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (isFinishing()) return;

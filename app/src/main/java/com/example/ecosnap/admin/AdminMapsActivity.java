@@ -314,8 +314,9 @@ public class AdminMapsActivity extends AppCompatActivity {
     }
 
     private void loadDataSebaran() {
+        if (rwId == null || rwId.isEmpty()) return;
         ApiService api = RetrofitClient.getClient().create(ApiService.class);
-        api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
+        api.getScanByRw("eq." + rwId).enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (response.isSuccessful() && response.body() != null) {

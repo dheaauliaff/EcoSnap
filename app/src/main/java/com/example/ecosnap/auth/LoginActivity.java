@@ -44,6 +44,9 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
 
         btnLogin.setOnClickListener(v -> {
+            btnLogin.setEnabled(false);
+            btnLogin.setText("Memproses...");
+
             String nomorHp = etNomorHp.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
@@ -51,6 +54,7 @@ public class LoginActivity extends AppCompatActivity {
             if (nomorHp.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Nomor HP dan password harus diisi",
                         Toast.LENGTH_SHORT).show();
+                resetLoginButton();
                 return;
             }
 
@@ -58,6 +62,7 @@ public class LoginActivity extends AppCompatActivity {
             if (nomorHp.length() < 10) {
                 Toast.makeText(this, "Nomor HP tidak valid",
                         Toast.LENGTH_SHORT).show();
+                resetLoginButton();
                 return;
             }
 
@@ -72,6 +77,7 @@ public class LoginActivity extends AppCompatActivity {
                             if (mAuth.getCurrentUser() == null) {
                                 Toast.makeText(this, "User login tidak terbaca",
                                         Toast.LENGTH_SHORT).show();
+                                resetLoginButton();
                                 return;
                             }
                             String uid = mAuth.getCurrentUser().getUid();
@@ -82,6 +88,7 @@ public class LoginActivity extends AppCompatActivity {
                                     : "Unknown error";
                             Toast.makeText(this, "Login gagal: " + msg,
                                     Toast.LENGTH_SHORT).show();
+                            resetLoginButton();
                         }
                     });
         });
@@ -118,6 +125,7 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this,
                             "User tidak ditemukan di database",
                             Toast.LENGTH_SHORT).show();
+                    resetLoginButton();
                 }
             }
 
@@ -126,7 +134,13 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(LoginActivity.this,
                         "Koneksi gagal: " + t.getMessage(),
                         Toast.LENGTH_LONG).show();
+                resetLoginButton();
             }
         });
+    }
+
+    private void resetLoginButton() {
+        btnLogin.setEnabled(true);
+        btnLogin.setText("Login");
     }
 }
