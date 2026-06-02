@@ -88,9 +88,13 @@ public class ProfilAdminActivity extends AppCompatActivity {
         loadDataProfil();
 
         if (btnEditProfil != null) {
-            btnEditProfil.setOnClickListener(v ->
-                    Toast.makeText(this, "Fitur edit profil coming soon!",
-                            Toast.LENGTH_SHORT).show());
+            btnEditProfil.setOnClickListener(v -> {
+                Intent intent = new Intent(this, EditProfilAdminActivity.class);
+                intent.putExtra("nama", tvInfoNama.getText().toString());
+                intent.putExtra("nomor_hp", tvInfoNomorHp.getText().toString());
+                intent.putExtra("rw_id", tvInfoWilayahHeader.getText().toString());
+                startActivityForResult(intent, 1001);
+            });
         }
 
         // Tombol lihat riwayat scan semua user
@@ -108,6 +112,14 @@ public class ProfilAdminActivity extends AppCompatActivity {
                 startActivity(new Intent(this, LoginActivity.class));
                 finishAffinity();
             });
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1001 && resultCode == RESULT_OK) {
+            loadDataProfil();
         }
     }
 

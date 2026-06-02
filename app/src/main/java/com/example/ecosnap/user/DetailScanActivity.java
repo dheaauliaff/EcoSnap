@@ -36,6 +36,11 @@ public class DetailScanActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
+        android.view.View btnInfoSaran = findViewById(R.id.btnInfoSaran);
+        if (btnInfoSaran != null) {
+            btnInfoSaran.setOnClickListener(v -> showInfoDialog());
+        }
+
         // Ambil data dari Intent
         String nama      = getIntent().getStringExtra("nama");
         String kategori  = getIntent().getStringExtra("kategori");
@@ -71,6 +76,42 @@ public class DetailScanActivity extends AppCompatActivity {
         tvDetailSaran.setText(buildSaran(nama));
         tvDetailFunfact.setText(buildFunfact(nama));
         tvDetailDampak.setText(buildDampak(nama));
+    }
+
+    private void showInfoDialog() {
+        android.view.View dialogView = android.view.LayoutInflater.from(this).inflate(R.layout.dialog_info_penanganan, null);
+        TextView tvDialogSaran = dialogView.findViewById(R.id.tvDialogSaran);
+        TextView tvDialogFunfact = dialogView.findViewById(R.id.tvDialogFunfact);
+
+        TextView tvSaran = findViewById(R.id.tvDetailSaran);
+        TextView tvFunfact = findViewById(R.id.tvDetailFunfact);
+
+        if (tvDialogSaran != null && tvSaran != null) {
+            tvDialogSaran.setText(tvSaran.getText());
+        }
+        if (tvDialogFunfact != null && tvFunfact != null) {
+            tvDialogFunfact.setText(tvFunfact.getText());
+        }
+
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        android.view.View btnDialogClose = dialogView.findViewById(R.id.btnDialogClose);
+        if (btnDialogClose != null) {
+            btnDialogClose.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        android.view.View btnDialogOke = dialogView.findViewById(R.id.btnDialogOke);
+        if (btnDialogOke != null) {
+            btnDialogOke.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        dialog.show();
     }
 
     // ─── Saran Penanganan per jenis sampah ─────────────────────────────────

@@ -38,20 +38,14 @@
             android:textColor="#1B5E20" />
     </LinearLayout>
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:fillViewport="true"
-        android:overScrollMode="never"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="24dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toBottomOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingBottom="24dp">
 
             <!-- IMAGE CARD -->
             <LinearLayout
@@ -232,181 +226,26 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- DIVIDER -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="24dp"
-                android:background="@drawable/bg_green_soft_card"
-                android:gravity="center"
-                android:orientation="horizontal">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="📚 Informasi &amp; Edukasi"
-                    android:textColor="#2E7D32"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+            <!-- INFO AND DETAIL REMOVED FROM HERE, MOVED TO FAB -->
 
-            <!-- SARAN PENANGANAN -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <!-- Hidden TextViews to preserve original variable binding compatibility -->
+            <TextView
+                android:id="@+id/tvDetailSaran"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_premium_card"
-                android:elevation="4dp"
-                android:outlineAmbientShadowColor="#0F000000"
-                android:outlineSpotShadowColor="#0A000000"
-                android:padding="20dp"
-                android:orientation="horizontal"
-                android:gravity="top">
+                android:visibility="gone" />
 
-                <FrameLayout
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@drawable/bg_green_circle"
-                    android:backgroundTint="#E8F5E9">
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_organik"
-                        app:tint="#2E7D32" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Saran Penanganan"
-                        android:textColor="#1B5E20"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvDetailSaran"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="-"
-                        android:textColor="#666666"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="4dp" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- FUN FACT -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tvDetailFunfact"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_premium_card"
-                android:elevation="4dp"
-                android:outlineAmbientShadowColor="#0F000000"
-                android:outlineSpotShadowColor="#0A000000"
-                android:padding="20dp"
-                android:orientation="horizontal"
-                android:gravity="top">
+                android:visibility="gone" />
 
-                <FrameLayout
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@drawable/bg_green_circle"
-                    android:backgroundTint="#FFF8E1">
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_idea"
-                        app:tint="#FF8F00" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Fun Fact"
-                        android:textColor="#1B5E20"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvDetailFunfact"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="-"
-                        android:textColor="#666666"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="4dp" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- DAMPAK LINGKUNGAN -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tvDetailDampak"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_premium_card"
-                android:elevation="4dp"
-                android:outlineAmbientShadowColor="#0F000000"
-                android:outlineSpotShadowColor="#0A000000"
-                android:padding="20dp"
-                android:orientation="horizontal"
-                android:gravity="top">
-
-                <FrameLayout
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@drawable/bg_green_circle"
-                    android:backgroundTint="#E3F2FD">
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_leaf"
-                        app:tint="#1565C0" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Dampak Lingkungan"
-                        android:textColor="#1B5E20"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvDetailDampak"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="-"
-                        android:textColor="#666666"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="4dp" />
-                </LinearLayout>
-            </LinearLayout>
+                android:visibility="gone" />
 
             <!-- Padding bottom -->
             <View
@@ -414,6 +253,19 @@
                 android:layout_height="24dp" />
 
         </LinearLayout>
-    </ScrollView>
+
+    <!-- FLOATING INFO BUTTON -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnInfoSaran"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:src="@drawable/ic_info_outline"
+        app:tint="#FFFFFF"
+        app:backgroundTint="#2E7D32"
+        app:elevation="6dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -82,6 +82,7 @@
         <activity android:name=".admin.AdminMapsActivity" android:exported="false" />
         <activity android:name=".admin.AdminRankingActivity" android:exported="false" />
         <activity android:name=".admin.ProfilAdminActivity" android:exported="false" />
+        <activity android:name=".admin.EditProfilAdminActivity" android:exported="false" />
 
         <!-- General -->
         <activity android:name=".auth.RegisterActivity" android:exported="false" />

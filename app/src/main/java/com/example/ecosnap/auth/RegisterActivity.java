@@ -23,7 +23,16 @@ import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    EditText etNama, etNomorHp, etPassword, etPasswordConfirm, etRT;
+    // Kode RW = password untuk masuk ke RW tertentu
+    // Admin RW kasih kode ini ke ketua RT di wilayahnya
+    private static final Map<String, String> KODE_RW = new HashMap<String, String>() {{
+        put("RW01-2024", "RW 01");
+        put("RW02-2024", "RW 02");
+        put("RW03-2024", "RW 03");
+        put("RW04-2024", "RW 04");
+    }};
+
+    EditText etNama, etNomorHp, etPassword, etPasswordConfirm, etRT, etRW;
     MaterialButton btnRegister;
     TextView tvLogin;
     FirebaseAuth mAuth;
@@ -40,6 +49,7 @@ public class RegisterActivity extends AppCompatActivity {
         etPassword       = findViewById(R.id.etPassword);
         etPasswordConfirm = findViewById(R.id.etPasswordConfirm);
         etRT             = findViewById(R.id.etRT);
+        etRW             = findViewById(R.id.etRW);
         btnRegister      = findViewById(R.id.btnRegister);
         tvLogin          = findViewById(R.id.tvLogin);
 
@@ -57,12 +67,22 @@ public class RegisterActivity extends AppCompatActivity {
         String password        = etPassword.getText().toString().trim();
         String passwordConfirm = etPasswordConfirm.getText().toString().trim();
         String rtId            = etRT.getText().toString().trim();
+        String kodeRwInput     = etRW.getText().toString().trim();
 
         // Validasi field wajib
-        if (nama.isEmpty() || nomorHp.isEmpty() || password.isEmpty() || rtId.isEmpty()) {
+        if (nama.isEmpty() || nomorHp.isEmpty() || password.isEmpty() || rtId.isEmpty() || kodeRwInput.isEmpty()) {
             Toast.makeText(this, "Semua field harus diisi!", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // Cek apakah Kode RW valid
+        if (!KODE_RW.containsKey(kodeRwInput)) {
+            Toast.makeText(this, "Kode RW tidak valid!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Ambil nama RW yang sebenarnya berdasarkan kode
+        String rwId = KODE_RW.get(kodeRwInput);
 
         if (nomorHp.length() < 10) {
             Toast.makeText(this, "Nomor HP tidak valid!", Toast.LENGTH_SHORT).show();
@@ -90,7 +110,7 @@ public class RegisterActivity extends AppCompatActivity {
                             return;
                         }
                         String uid = mAuth.getCurrentUser().getUid();
-                        simpanKeSupabase(uid, nama, nomorHp, rtId);
+                        simpanKeSupabase(uid, nama, nomorHp, rtId, rwId);
                     } else {
                         String msg = task.getException() != null
                                 ? task.getException().getMessage() : "Unknown error";
@@ -99,7 +119,7 @@ public class RegisterActivity extends AppCompatActivity {
                 });
     }
 
-    private void simpanKeSupabase(String uid, String nama, String nomorHp, String rtId) {
+    private void simpanKeSupabase(String uid, String nama, String nomorHp, String rtId, String rwId) {
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
 
         Map<String, String> data = new HashMap<>();
@@ -108,8 +128,8 @@ public class RegisterActivity extends AppCompatActivity {
         data.put("nomor_hp", nomorHp);
         data.put("role", "user");
         data.put("rt_id", rtId);
-        data.put("wilayah", rtId);         // contoh: "RT 02"
-        data.put("is_approved", "false");  // menunggu persetujuan admin
+        data.put("rw_id", rwId);
+        data.put("wilayah", rtId + " " + rwId); // contoh: "RT 02 RW 05"
 
         Call<Void> call = apiService.insertUser(data);
         call.enqueue(new Callback<Void>() {
@@ -117,14 +137,21 @@ public class RegisterActivity extends AppCompatActivity {
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.code() == 201 || response.code() == 204) {
                     Toast.makeText(RegisterActivity.this,
-                            "Pendaftaran berhasil! Menunggu persetujuan admin.",
+                            "Pendaftaran berhasil!",
                             Toast.LENGTH_LONG).show();
                     startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                     finish();
                 } else {
-                    Toast.makeText(RegisterActivity.this,
-                            "Gagal simpan data: " + response.code(),
-                            Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Gagal simpan data: " + response.code();
+                    try {
+                        if (response.errorBody() != null) {
+                            errorMsg += " " + response.errorBody().string();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(RegisterActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    rollbackFirebase();
                 }
             }
 
@@ -133,7 +160,16 @@ public class RegisterActivity extends AppCompatActivity {
                 Toast.makeText(RegisterActivity.this,
                         "Koneksi gagal: " + t.getMessage(),
                         Toast.LENGTH_SHORT).show();
+                rollbackFirebase();
             }
         });
+    }
+
+    private void rollbackFirebase() {
+        if (mAuth.getCurrentUser() != null) {
+            mAuth.getCurrentUser().delete().addOnCompleteListener(task -> {
+                // Berhasil dihapus agar bisa coba daftar lagi
+            });
+        }
     }
 }
