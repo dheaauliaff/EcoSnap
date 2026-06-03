@@ -40,6 +40,9 @@ public class ScanHistory {
     @SerializedName("created_at")
     private String createdAt;
 
+    @SerializedName("alamat")
+    private String alamat;
+
     // =====================
     // GETTER
     // =====================
@@ -56,4 +59,6 @@ public class ScanHistory {
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
     public String getCreatedAt() { return createdAt; }
+
+    public String getAlamat() { return alamat; }
 }

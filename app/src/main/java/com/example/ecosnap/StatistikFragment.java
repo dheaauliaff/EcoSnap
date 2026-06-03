@@ -20,7 +20,9 @@ import androidx.fragment.app.Fragment;
 
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.network.RetrofitClient;
+import com.example.ecosnap.model.User;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,8 +88,9 @@ public class StatistikFragment extends Fragment {
 
                 List<String> rts = new ArrayList<>();
                 for (ScanHistory s : allScanList) {
-                    if (s.getRtId() != null && !s.getRtId().isEmpty() && !rts.contains(s.getRtId())) {
-                        rts.add(s.getRtId());
+                    String rt = formatRtId(s.getRtId());
+                    if (!rt.isEmpty() && !rts.contains(rt)) {
+                        rts.add(rt);
                     }
                 }
                 Collections.sort(rts);
@@ -117,8 +120,40 @@ public class StatistikFragment extends Fragment {
     // ─── Ambil semua scan dari Supabase ──────────────────────────────────────
 
     private void loadDataFromSupabase() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            showError("User belum login");
+            return;
+        }
+
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         ApiService api = RetrofitClient.getClient().create(ApiService.class);
-        api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
+        api.getUserByFirebaseUid("eq." + uid).enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    User user = response.body().get(0);
+                    String rwId = user.getRwId() != null ? user.getRwId() : "";
+                    if (rwId.isEmpty()) {
+                        allScanList.clear();
+                        applyRtFilter();
+                        return;
+                    }
+                    loadScansByRw(api, rwId);
+                } else {
+                    showError("Gagal memuat profil user");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                if (isAdded()) showError("Gagal terhubung ke server");
+            }
+        });
+    }
+
+    private void loadScansByRw(ApiService api, String rwId) {
+        api.getScanByRw("eq." + rwId).enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (!isAdded()) return;
@@ -142,7 +177,7 @@ public class StatistikFragment extends Fragment {
         for (ScanHistory s : allScanList) {
             if ("Semua RT".equals(activeRtFilter)) {
                 filteredList.add(s);
-            } else if (s.getRtId() != null && activeRtFilter.equalsIgnoreCase(s.getRtId())) {
+            } else if (activeRtFilter.equalsIgnoreCase(formatRtId(s.getRtId()))) {
                 filteredList.add(s);
             }
         }
@@ -161,8 +196,8 @@ public class StatistikFragment extends Fragment {
             String nama = s.getJenisSampah();
             if (nama != null && !nama.isEmpty())
                 namaMap.put(nama, namaMap.getOrDefault(nama, 0) + 1);
-            String rt = s.getRtId();
-            if (rt != null && !rt.isEmpty())
+            String rt = formatRtId(s.getRtId());
+            if (!rt.isEmpty())
                 rtMap.put(rt, rtMap.getOrDefault(rt, 0) + 1);
         }
 
@@ -263,7 +298,7 @@ public class StatistikFragment extends Fragment {
             // Hitung jenis dominan per RT
             Map<String, Integer> rtJenisMap = new HashMap<>();
             for (ScanHistory s : allScanList) {
-                if (rtId.equals(s.getRtId()) && s.getJenisSampah() != null) {
+                if (rtId.equals(formatRtId(s.getRtId())) && s.getJenisSampah() != null) {
                     rtJenisMap.put(s.getJenisSampah(),
                             rtJenisMap.getOrDefault(s.getJenisSampah(), 0) + 1);
                 }
@@ -447,6 +482,17 @@ public class StatistikFragment extends Fragment {
         for (Map.Entry<String, Integer> e : map.entrySet())
             if (e.getValue() > max) { max = e.getValue(); dom = e.getKey(); }
         return dom;
+    }
+
+    private String formatRtId(String rtId) {
+        if (rtId == null) return "";
+        String clean = rtId.replace("RT", "").replace("rt", "").trim();
+        if (clean.isEmpty()) return "";
+        try {
+            return "RT " + String.format("%02d", Integer.parseInt(clean));
+        } catch (NumberFormatException e) {
+            return clean.toUpperCase().startsWith("RT") ? clean : "RT " + clean;
+        }
     }
 
     private int colorForNama(String nama) {

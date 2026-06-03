@@ -47,12 +47,19 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -94,6 +101,7 @@ public class AdminMapsActivity extends AppCompatActivity {
 
     // Legend views for toggling selection state
     final List<View> legendItemViews = new ArrayList<>();
+    private final ExecutorService geocodeExecutor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,50 +171,34 @@ public class AdminMapsActivity extends AppCompatActivity {
                 PopupMenu popup = new PopupMenu(this, btnFilterArea);
                 popup.getMenu().add("Semua RT");
 
-                // Standard RTs
-                List<String> standardRtLabels = new ArrayList<>();
-                standardRtLabels.add("RT 01");
-                standardRtLabels.add("RT 02");
-                standardRtLabels.add("RT 03");
-                standardRtLabels.add("RT 04");
-                standardRtLabels.add("RT 05");
-
-                // Add standard RTs to popup
-                for (String label : standardRtLabels) {
-                    popup.getMenu().add(label);
-                }
-
-                // Add any other dynamic RT IDs found in the data (for admin's RW)
+                List<String> rtLabels = new ArrayList<>();
                 for (ScanHistory s : allScans) {
                     if (isMatchingRw(s.getRwId(), rwId)) {
                         String rawRt = s.getRtId();
                         if (rawRt != null && !rawRt.isEmpty()) {
                             String formatted = formatRtId(rawRt);
-                            boolean exists = false;
-                            for (int i = 0; i < popup.getMenu().size(); i++) {
-                                if (popup.getMenu().getItem(i).getTitle().toString().equalsIgnoreCase(formatted)) {
-                                    exists = true;
-                                    break;
-                                }
-                            }
-                            if (!exists) {
-                                popup.getMenu().add(formatted);
+                            if (!formatted.isEmpty() && !rtLabels.contains(formatted)) {
+                                rtLabels.add(formatted);
                             }
                         }
                     }
+                }
+                Collections.sort(rtLabels);
+                for (String label : rtLabels) {
+                    popup.getMenu().add(label);
                 }
 
                 popup.setOnMenuItemClickListener(item -> {
                     String selectedLabel = item.getTitle().toString();
                     if (tvWilayahAdmin != null) tvWilayahAdmin.setText(selectedLabel);
-                    
+
                     if (selectedLabel.equals("Semua RT")) {
                         activeRtFilter = "Semua RT";
                     } else {
                         // Map label back to raw ID or use fallback
                         activeRtFilter = parseRtLabel(selectedLabel);
                     }
-                    
+
                     applyFilters();
                     Toast.makeText(this, "RT dipilih: " + selectedLabel, Toast.LENGTH_SHORT).show();
                     return true;
@@ -295,12 +287,12 @@ public class AdminMapsActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     User admin = response.body().get(0);
                     rwId = admin.getRwId() != null ? admin.getRwId() : "";
-                    
+
                     TextView tvPetaSubtitle = findViewById(R.id.tvPetaSubtitle);
                     if (tvPetaSubtitle != null && admin.getWilayah() != null) {
                         tvPetaSubtitle.setText("Pantau kondisi sampah di wilayah " + admin.getWilayah() + " secara real-time");
                     }
-                    
+
                     activeRtFilter = "Semua RT";
                     if (tvWilayahAdmin != null) tvWilayahAdmin.setText(activeRtFilter);
                     loadDataSebaran();
@@ -353,10 +345,10 @@ public class AdminMapsActivity extends AppCompatActivity {
 
         for (ScanHistory s : displayedScans) {
             String nama = s.getJenisSampah();
-            String rt = s.getRtId();
+            String rt = formatRtId(s.getRtId());
             if (nama != null) globalCategoryCount.put(nama,
                     globalCategoryCount.getOrDefault(nama, 0) + 1);
-            if (rt != null && !rt.isEmpty()) rtCount.put(rt,
+            if (!rt.isEmpty()) rtCount.put(rt,
                     rtCount.getOrDefault(rt, 0) + 1);
         }
 
@@ -409,15 +401,26 @@ public class AdminMapsActivity extends AppCompatActivity {
         zone.setStrokeWidth(2.5f);
         mapView.getOverlays().add(zone);
 
-        String rt = scan.getRtId() != null ? scan.getRtId() : "-";
-        
+        String rt = scan.getRtId() != null ? formatRtId(scan.getRtId()) : "-";
+        String rw = scan.getRwId() != null ? formatRwId(scan.getRwId()) : "-";
+        String alamat = scan.getAlamat() != null && !scan.getAlamat().trim().isEmpty()
+                ? scan.getAlamat().trim()
+                : "memuat...";
+        String dominanArea = getDominantNearby(lat, lng);
+        int totalArea = countNearby(lat, lng);
+
         Marker marker = new Marker(mapView);
         marker.setPosition(new GeoPoint(lat, lng));
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        marker.setTitle(nama);
-        marker.setSnippet("Kategori: " + kat + "\nSumber: " + rt);
+        marker.setTitle(nama + " — " + rt + " / " + rw);
+        marker.setSnippet(String.format(java.util.Locale.US,
+                "Jenis: %s | Kategori: %s\nAlamat: %s\nWilayah: %s / %s\nArea ini: %d scan | Dominan: %s",
+                nama, kat, alamat, rt, rw, totalArea, dominanArea));
         marker.setIcon(new BitmapDrawable(getResources(), createPinBitmap(nama, color)));
         mapView.getOverlays().add(marker);
+        if ("memuat...".equals(alamat)) {
+            fetchAddressAsync(lat, lng, marker);
+        }
     }
 
     // ─── Legend with clickable category filter ─────────────────────────────────
@@ -748,8 +751,119 @@ public class AdminMapsActivity extends AppCompatActivity {
             if (e.getValue() > max) {
                 max = e.getValue();
                 dom = e.getKey();
-            }
+        }
         return dom;
+    }
+
+    private String getDominantNearby(double lat, double lng) {
+        Map<String, Integer> nearby = new HashMap<>();
+        float[] result = new float[1];
+        for (ScanHistory s : displayedScans) {
+            if (s.getLatitude() == null || s.getLongitude() == null) continue;
+            if (s.getLatitude() == 0.0 || s.getLongitude() == 0.0) continue;
+            android.location.Location.distanceBetween(lat, lng, s.getLatitude(), s.getLongitude(), result);
+            if (result[0] <= ZONE_RADIUS_METERS && s.getJenisSampah() != null) {
+                String jenis = s.getJenisSampah();
+                nearby.put(jenis, nearby.getOrDefault(jenis, 0) + 1);
+            }
+        }
+        if (nearby.isEmpty()) return "-";
+        return getDominant(nearby);
+    }
+
+    private int countNearby(double lat, double lng) {
+        int count = 0;
+        float[] result = new float[1];
+        for (ScanHistory s : displayedScans) {
+            if (s.getLatitude() == null || s.getLongitude() == null) continue;
+            if (s.getLatitude() == 0.0 || s.getLongitude() == 0.0) continue;
+            android.location.Location.distanceBetween(lat, lng, s.getLatitude(), s.getLongitude(), result);
+            if (result[0] <= ZONE_RADIUS_METERS) count++;
+        }
+        return count;
+    }
+
+    private void fetchAddressAsync(double lat, double lng, Marker marker) {
+        geocodeExecutor.submit(() -> {
+            String address = reverseGeocode(lat, lng);
+            final String finalAddress = (address != null && !address.isEmpty()) ? address : "tidak tersedia";
+
+            runOnUiThread(() -> {
+                if (mapView == null) return;
+                String current = marker.getSnippet();
+                if (current != null) {
+                    String updated = current.replaceFirst("Alamat:.*?(\\n|$)", "Alamat: " + finalAddress + "\n");
+                    boolean wasOpen = marker.isInfoWindowShown();
+                    marker.setSnippet(updated);
+                    if (wasOpen) {
+                        marker.closeInfoWindow();
+                        marker.showInfoWindow();
+                    }
+                }
+                mapView.invalidate();
+            });
+        });
+    }
+
+    private String reverseGeocode(double lat, double lng) {
+        String address = "";
+        try {
+            String urlStr = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lng;
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("User-Agent", "EcoSnap/1.0 Android");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) sb.append(line);
+            br.close();
+
+            JSONObject json = new JSONObject(sb.toString());
+            JSONObject addr = json.optJSONObject("address");
+
+            if (addr != null) {
+                String road = addr.optString("road", "");
+                String neighbourhood = addr.optString("neighbourhood", "");
+                String village = addr.optString("village", "");
+                String suburb = addr.optString("suburb", "");
+                String town = addr.optString("town", "");
+                String city = addr.optString("city", "");
+                String county = addr.optString("county", "");
+
+                StringBuilder sb2 = new StringBuilder();
+                if (!road.isEmpty()) sb2.append(road);
+
+                String area = !neighbourhood.isEmpty() ? neighbourhood :
+                        (!village.isEmpty() ? village :
+                                (!suburb.isEmpty() ? suburb : ""));
+
+                if (!area.isEmpty()) {
+                    if (sb2.length() > 0) sb2.append(", ");
+                    sb2.append(area);
+                }
+
+                String cityArea = !town.isEmpty() ? town :
+                        (!city.isEmpty() ? city : county);
+
+                if (!cityArea.isEmpty()) {
+                    if (sb2.length() > 0) sb2.append(", ");
+                    sb2.append(cityArea);
+                }
+
+                address = sb2.toString().trim().replaceAll(",$", "");
+            }
+
+            if (address.isEmpty()) {
+                address = json.optString("display_name", "").split(",")[0].trim();
+            }
+        } catch (Exception e) {
+            address = "";
+        }
+
+        return address;
     }
 
     private int iconFor(String cat) {
@@ -814,12 +928,13 @@ public class AdminMapsActivity extends AppCompatActivity {
 
     private String formatRtId(String rtId) {
         if (rtId == null) return "";
-        if (rtId.equals("001") || rtId.equals("01")) return "RT 01";
-        if (rtId.equals("002") || rtId.equals("02")) return "RT 02";
-        if (rtId.equals("003") || rtId.equals("03")) return "RT 03";
-        if (rtId.equals("004") || rtId.equals("04")) return "RT 04";
-        if (rtId.equals("005") || rtId.equals("05")) return "RT 05";
-        return rtId;
+        String clean = rtId.replace("RT", "").replace("rt", "").trim();
+        if (clean.isEmpty()) return "";
+        try {
+            return "RT " + String.format("%02d", Integer.parseInt(clean));
+        } catch (NumberFormatException e) {
+            return clean.toUpperCase().startsWith("RT") ? clean : "RT " + clean;
+        }
     }
 
     private String parseRtLabel(String label) {
@@ -862,5 +977,13 @@ public class AdminMapsActivity extends AppCompatActivity {
         super.onPause();
         if (mapView != null) mapView.onPause();
         if (myLocationOverlay != null) myLocationOverlay.disableMyLocation();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (!geocodeExecutor.isShutdown()) {
+            geocodeExecutor.shutdown();
+        }
     }
 }

@@ -31,6 +31,13 @@ import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 
@@ -49,6 +56,7 @@ public class ResultActivity extends AppCompatActivity {
     String primaryNama = "-";
     float primaryConfidence = 0f;
     String primaryKategori = "-";
+    String alamat = "";
 
     boolean cloudinaryReady = false;
 
@@ -289,6 +297,68 @@ public class ResultActivity extends AppCompatActivity {
                 });
     }
 
+    private String reverseGeocode(double lat, double lng) {
+        String address = "";
+        try {
+            String urlStr = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lng;
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("User-Agent", "EcoSnap/1.0 Android");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) sb.append(line);
+            br.close();
+
+            JSONObject json = new JSONObject(sb.toString());
+            JSONObject addr = json.optJSONObject("address");
+
+            if (addr != null) {
+                String road = addr.optString("road", "");
+                String neighbourhood = addr.optString("neighbourhood", "");
+                String village = addr.optString("village", "");
+                String suburb = addr.optString("suburb", "");
+                String town = addr.optString("town", "");
+                String city = addr.optString("city", "");
+                String county = addr.optString("county", "");
+
+                StringBuilder sb2 = new StringBuilder();
+                if (!road.isEmpty()) sb2.append(road);
+
+                String area = !neighbourhood.isEmpty() ? neighbourhood :
+                        (!village.isEmpty() ? village :
+                                (!suburb.isEmpty() ? suburb : ""));
+
+                if (!area.isEmpty()) {
+                    if (sb2.length() > 0) sb2.append(", ");
+                    sb2.append(area);
+                }
+
+                String cityArea = !town.isEmpty() ? town :
+                        (!city.isEmpty() ? city : county);
+
+                if (!cityArea.isEmpty()) {
+                    if (sb2.length() > 0) sb2.append(", ");
+                    sb2.append(cityArea);
+                }
+
+                address = sb2.toString().trim().replaceAll(",$", "");
+            }
+
+            if (address.isEmpty()) {
+                address = json.optString("display_name", "").split(",")[0].trim();
+            }
+
+        } catch (Exception e) {
+            address = "";
+        }
+
+        return address;
+    }
+
     private void initCloudinary() {
         try {
             // Cek apakah MediaManager sudah diinisialisasi sebelumnya
@@ -413,69 +483,88 @@ public class ResultActivity extends AppCompatActivity {
     private void simpanKeSupabase(String imageUrl, User user) {
         ApiService api = RetrofitClient.getClient().create(ApiService.class);
 
-        // firebase_id = Firebase UID user yang login (sesuai kolom di Supabase)
         String firebaseId = user.getFirebaseUid();
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("firebase_id",  firebaseId);        // ✅ sesuai kolom Supabase
-        data.put("nama_sampah",  primaryNama);        // ✅ sesuai kolom Supabase
-        data.put("kategori",     primaryKategori);    // ✅ sesuai kolom Supabase
-        data.put("confidence",   primaryConfidence);  // ✅ sesuai kolom Supabase
-        data.put("image_url",    imageUrl);           // ✅ sesuai kolom Supabase
-        data.put("latitude",     latitude != 0 ? latitude : -6.8900);   // ✅
-        data.put("longitude",    longitude != 0 ? longitude : 107.5400); // ✅
-        if (user.getWilayah() != null && !user.getWilayah().isEmpty()) {
-            data.put("wilayah", user.getWilayah());   // ✅ sesuai kolom Supabase
-        }
-        if (user.getRwId() != null && !user.getRwId().isEmpty()) {
-            data.put("rw_id", user.getRwId());        // ✅ sesuai kolom Supabase
-        }
-        if (user.getRtId() != null && !user.getRtId().isEmpty()) {
-            data.put("rt_id", user.getRtId());        // ✅ sesuai kolom Supabase
-        }
+        double finalLat = latitude != 0 ? latitude : -6.8900;
+        double finalLng = longitude != 0 ? longitude : 107.5400;
 
-        android.util.Log.d("SUPABASE_INSERT", "Mengirim data: " + data.toString());
+        new Thread(() -> {
+            String alamatScan = reverseGeocode(finalLat, finalLng);
 
+            Map<String, Object> data = new HashMap<>();
+            data.put("firebase_id", firebaseId);
+            data.put("nama_sampah", primaryNama);
+            data.put("kategori", primaryKategori);
+            data.put("confidence", primaryConfidence);
+            data.put("image_url", imageUrl);
+            data.put("latitude", finalLat);
+            data.put("longitude", finalLng);
+            data.put("alamat", alamatScan);
 
-        api.insertScan(data).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    if (btnSimpan != null) {
-                        btnSimpan.setEnabled(false);
-                        btnSimpan.setText("Berhasil Disimpan ✓");
-                    }
-                    Toast.makeText(ResultActivity.this, "Data Tersimpan!", Toast.LENGTH_SHORT).show();
-                    String rt = (user.getRtId() != null && !user.getRtId().isEmpty()) ? user.getRtId() : "RT 01";
-                    SharedPrototypeData.getInstance().addScan(rt, primaryNama, primaryKategori, "Baru saja");
-                } else {
-                    String err = "Gagal: " + response.code();
-                    try {
-                        if (response.errorBody() != null) {
-                            String errorBody = response.errorBody().string();
-                            android.util.Log.e("SUPABASE_ERROR", "HTTP " + response.code() + " → " + errorBody);
-                            android.util.Log.e("SUPABASE_ERROR", "Data yang dikirim: " + data.toString());
-                            err += " - " + errorBody;
+            if (user.getWilayah() != null && !user.getWilayah().isEmpty()) {
+                data.put("wilayah", user.getWilayah());
+            }
+            if (user.getRwId() != null && !user.getRwId().isEmpty()) {
+                data.put("rw_id", user.getRwId());
+            }
+            if (user.getRtId() != null && !user.getRtId().isEmpty()) {
+                data.put("rt_id", user.getRtId());
+            }
+
+            android.util.Log.d("SUPABASE_INSERT", "Mengirim data: " + data.toString());
+
+            runOnUiThread(() -> {
+                api.insertScan(data).enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            if (btnSimpan != null) {
+                                btnSimpan.setEnabled(false);
+                                btnSimpan.setText("Berhasil Disimpan ✓");
+                            }
+                            Toast.makeText(ResultActivity.this, "Data Tersimpan!", Toast.LENGTH_SHORT).show();
+
+                            String rt = (user.getRtId() != null && !user.getRtId().isEmpty())
+                                    ? user.getRtId()
+                                    : "RT 01";
+
+                            SharedPrototypeData.getInstance().addScan(rt, primaryNama, primaryKategori, "Baru saja");
+                        } else {
+                            String err = "Gagal: " + response.code();
+                            try {
+                                if (response.errorBody() != null) {
+                                    String errorBody = response.errorBody().string();
+                                    android.util.Log.e("SUPABASE_ERROR", "HTTP " + response.code() + " → " + errorBody);
+                                    android.util.Log.e("SUPABASE_ERROR", "Data yang dikirim: " + data.toString());
+                                    err += " - " + errorBody;
+                                }
+                            } catch (Exception ignored) {}
+
+                            Toast.makeText(ResultActivity.this, err, Toast.LENGTH_LONG).show();
+
+                            if (btnSimpan != null) {
+                                btnSimpan.setEnabled(true);
+                                btnSimpan.setText("Simpan Ulang");
+                            }
                         }
-                    } catch (Exception ignored) {}
-                    Toast.makeText(ResultActivity.this, err, Toast.LENGTH_LONG).show();
-                    if (btnSimpan != null) {
-                        btnSimpan.setEnabled(true);
-                        btnSimpan.setText("Simpan Ulang");
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(ResultActivity.this, "Koneksi database gagal: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                android.util.Log.e("SUPABASE_ERROR", "Network failure: " + t.getMessage());
-                if (btnSimpan != null) {
-                    btnSimpan.setEnabled(true);
-                    btnSimpan.setText("Simpan Ulang");
-                }
-            }
-        });
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(ResultActivity.this,
+                                "Koneksi database gagal: " + t.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+
+                        android.util.Log.e("SUPABASE_ERROR", "Network failure: " + t.getMessage());
+
+                        if (btnSimpan != null) {
+                            btnSimpan.setEnabled(true);
+                            btnSimpan.setText("Simpan Ulang");
+                        }
+                    }
+                });
+            });
+        }).start();
     }
 
     private List<TFLiteHelper.Result> readFrozenDetections() {

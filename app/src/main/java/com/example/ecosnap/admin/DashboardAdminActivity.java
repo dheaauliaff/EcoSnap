@@ -4,11 +4,13 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.app.DatePickerDialog;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 
@@ -29,9 +31,14 @@ import com.google.android.material.chip.Chip;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -52,6 +59,11 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
     String rwId = "";
     String periodAktif = "minggu";
+    String selectedStartDate = "";
+    String selectedEndDate = "";
+    String selectedMonthKey = "";
+    String selectedYearKey = "2026";
+    final List<ScanHistory> cachedScans = new ArrayList<>();
 
     // RT tracking
     final Map<String, Integer> rtCount = new HashMap<>();
@@ -95,17 +107,17 @@ public class DashboardAdminActivity extends AppCompatActivity {
         if (btnMinggu != null) btnMinggu.setOnClickListener(v -> {
             periodAktif = "minggu";
             updateChipStyle();
-            loadStatistik();
+            showDateRangePicker();
         });
         if (btnBulan != null) btnBulan.setOnClickListener(v -> {
             periodAktif = "bulan";
             updateChipStyle();
-            loadStatistik();
+            showMonthPicker();
         });
         if (btnTahun != null) btnTahun.setOnClickListener(v -> {
             periodAktif = "tahun";
             updateChipStyle();
-            loadStatistik();
+            showYearPicker();
         });
 
         // Bottom nav
@@ -203,11 +215,10 @@ public class DashboardAdminActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<ScanHistory> allData = response.body();
-                    List<ScanHistory> filtered = filterByPeriod(allData);
-                    hitungStatistik(filtered);
-                    buatGrafik(filtered);
-                    buatRanking(filtered);
+                    cachedScans.clear();
+                    cachedScans.addAll(response.body());
+                    initializeDefaultPeriod();
+                    applyCurrentPeriod();
                 }
             }
             @Override
@@ -218,8 +229,219 @@ public class DashboardAdminActivity extends AppCompatActivity {
     }
 
     private List<ScanHistory> filterByPeriod(List<ScanHistory> data) {
-        // TODO: filter by date based on periodAktif
-        return data;
+        List<ScanHistory> filtered = new ArrayList<>();
+        for (ScanHistory s : data) {
+            String date = extractDate(s.getCreatedAt());
+            if (date.isEmpty()) continue;
+
+            if ("minggu".equals(periodAktif)) {
+                if (!selectedStartDate.isEmpty() && !selectedEndDate.isEmpty()
+                        && date.compareTo(selectedStartDate) >= 0
+                        && date.compareTo(selectedEndDate) <= 0) {
+                    filtered.add(s);
+                }
+            } else if ("bulan".equals(periodAktif)) {
+                if (!selectedMonthKey.isEmpty() && date.startsWith(selectedMonthKey)) {
+                    filtered.add(s);
+                }
+            } else if ("tahun".equals(periodAktif)) {
+                if (!selectedYearKey.isEmpty() && date.startsWith(selectedYearKey)) {
+                    filtered.add(s);
+                }
+            } else {
+                filtered.add(s);
+            }
+        }
+        return filtered;
+    }
+
+    private void applyCurrentPeriod() {
+        List<ScanHistory> filtered = filterByPeriod(cachedScans);
+        hitungStatistik(filtered);
+        buatGrafik(filtered);
+        buatRanking(filtered);
+    }
+
+    private void initializeDefaultPeriod() {
+        if (selectedStartDate.isEmpty() || selectedEndDate.isEmpty()) {
+            Calendar cal = Calendar.getInstance();
+            selectedEndDate = formatDate(cal);
+            cal.add(Calendar.DAY_OF_YEAR, -6);
+            selectedStartDate = formatDate(cal);
+        }
+
+        if (selectedMonthKey.isEmpty()) {
+            List<String> months = getAvailableMonths();
+            if (!months.isEmpty()) {
+                selectedMonthKey = months.get(0);
+            }
+        }
+
+        if (selectedYearKey.isEmpty()) {
+            selectedYearKey = "2026";
+        }
+    }
+
+    private void showDateRangePicker() {
+        Calendar startCal = parseDateToCalendar(selectedStartDate);
+        DatePickerDialog startDialog = new DatePickerDialog(this,
+                (view, year, month, dayOfMonth) -> {
+                    Calendar selectedStart = Calendar.getInstance();
+                    selectedStart.set(year, month, dayOfMonth);
+                    selectedStartDate = formatDate(selectedStart);
+
+                    Calendar endCal = parseDateToCalendar(selectedEndDate);
+                    DatePickerDialog endDialog = new DatePickerDialog(this,
+                            (endView, endYear, endMonth, endDayOfMonth) -> {
+                                Calendar selectedEnd = Calendar.getInstance();
+                                selectedEnd.set(endYear, endMonth, endDayOfMonth);
+                                selectedEndDate = formatDate(selectedEnd);
+
+                                if (selectedStartDate.compareTo(selectedEndDate) > 0) {
+                                    String temp = selectedStartDate;
+                                    selectedStartDate = selectedEndDate;
+                                    selectedEndDate = temp;
+                                }
+
+                                Toast.makeText(this,
+                                        "Periode: " + selectedStartDate + " s/d " + selectedEndDate,
+                                        Toast.LENGTH_SHORT).show();
+                                applyCurrentPeriod();
+                            },
+                            endCal.get(Calendar.YEAR),
+                            endCal.get(Calendar.MONTH),
+                            endCal.get(Calendar.DAY_OF_MONTH));
+                    endDialog.setTitle("Pilih tanggal akhir");
+                    endDialog.show();
+                },
+                startCal.get(Calendar.YEAR),
+                startCal.get(Calendar.MONTH),
+                startCal.get(Calendar.DAY_OF_MONTH));
+        startDialog.setTitle("Pilih tanggal awal");
+        startDialog.show();
+    }
+
+    private void showMonthPicker() {
+        List<String> months = getAvailableMonths();
+        if (months.isEmpty()) {
+            Toast.makeText(this, "Belum ada data bulan dari scan", Toast.LENGTH_SHORT).show();
+            applyCurrentPeriod();
+            return;
+        }
+
+        String[] labels = new String[months.size()];
+        int checked = 0;
+        for (int i = 0; i < months.size(); i++) {
+            labels[i] = formatMonthLabel(months.get(i));
+            if (months.get(i).equals(selectedMonthKey)) checked = i;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Pilih bulan")
+                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                    selectedMonthKey = months.get(which);
+                    dialog.dismiss();
+                    applyCurrentPeriod();
+                })
+                .show();
+    }
+
+    private void showYearPicker() {
+        List<String> years = getAvailableYears();
+        if (years.isEmpty()) {
+            years.add("2026");
+        }
+
+        String[] labels = years.toArray(new String[0]);
+        int checked = 0;
+        for (int i = 0; i < years.size(); i++) {
+            if (years.get(i).equals(selectedYearKey)) checked = i;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Pilih tahun")
+                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                    selectedYearKey = years.get(which);
+                    dialog.dismiss();
+                    applyCurrentPeriod();
+                })
+                .show();
+    }
+
+    private List<String> getAvailableMonths() {
+        Set<String> months = new LinkedHashSet<>();
+        List<String> sorted = new ArrayList<>();
+        for (ScanHistory s : cachedScans) {
+            String date = extractDate(s.getCreatedAt());
+            if (date.length() >= 7) sorted.add(date.substring(0, 7));
+        }
+        Collections.sort(sorted);
+        months.addAll(sorted);
+        return new ArrayList<>(months);
+    }
+
+    private List<String> getAvailableYears() {
+        Set<String> years = new LinkedHashSet<>();
+        List<String> sorted = new ArrayList<>();
+        for (ScanHistory s : cachedScans) {
+            String date = extractDate(s.getCreatedAt());
+            if (date.length() >= 4) sorted.add(date.substring(0, 4));
+        }
+        Collections.sort(sorted);
+        years.addAll(sorted);
+        return new ArrayList<>(years);
+    }
+
+    private String extractDate(String createdAt) {
+        if (createdAt == null || createdAt.length() < 10) return "";
+        return createdAt.substring(0, 10);
+    }
+
+    private String formatDate(Calendar cal) {
+        return String.format(Locale.US, "%04d-%02d-%02d",
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH) + 1,
+                cal.get(Calendar.DAY_OF_MONTH));
+    }
+
+    private Calendar parseDateToCalendar(String date) {
+        Calendar cal = Calendar.getInstance();
+        if (date != null && date.length() >= 10) {
+            try {
+                int year = Integer.parseInt(date.substring(0, 4));
+                int month = Integer.parseInt(date.substring(5, 7)) - 1;
+                int day = Integer.parseInt(date.substring(8, 10));
+                cal.set(year, month, day);
+            } catch (NumberFormatException ignored) {}
+        }
+        return cal;
+    }
+
+    private String formatMonthLabel(String monthKey) {
+        if (monthKey == null || monthKey.length() < 7) return monthKey;
+        String[] monthNames = {
+                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        };
+        try {
+            int month = Integer.parseInt(monthKey.substring(5, 7));
+            String year = monthKey.substring(0, 4);
+            if (month >= 1 && month <= 12) {
+                return monthNames[month - 1] + " " + year;
+            }
+        } catch (NumberFormatException ignored) {}
+        return monthKey;
+    }
+
+    private String formatRtId(String rtId) {
+        if (rtId == null) return "";
+        String clean = rtId.replace("RT", "").replace("rt", "").trim();
+        if (clean.isEmpty()) return "";
+        try {
+            return "RT " + String.format(Locale.US, "%02d", Integer.parseInt(clean));
+        } catch (NumberFormatException e) {
+            return clean.toUpperCase().startsWith("RT") ? clean : "RT " + clean;
+        }
     }
 
     private void hitungStatistik(List<ScanHistory> data) {
@@ -237,8 +459,9 @@ public class DashboardAdminActivity extends AppCompatActivity {
                     case "recycle":       recycle++;      break;
                 }
             }
-            if (s.getRtId() != null && !s.getRtId().isEmpty()) {
-                rtCount.put(s.getRtId(), rtCount.getOrDefault(s.getRtId(), 0) + 1);
+            String rt = formatRtId(s.getRtId());
+            if (!rt.isEmpty()) {
+                rtCount.put(rt, rtCount.getOrDefault(rt, 0) + 1);
             }
         }
 
@@ -306,8 +529,9 @@ public class DashboardAdminActivity extends AppCompatActivity {
         Map<String, Integer> rtScanCount = new HashMap<>();
 
         for (ScanHistory s : data) {
-            if (s.getWilayah() != null) {
-                rtScanCount.put(s.getWilayah(), rtScanCount.getOrDefault(s.getWilayah(), 0) + 1);
+            String rt = formatRtId(s.getRtId());
+            if (!rt.isEmpty()) {
+                rtScanCount.put(rt, rtScanCount.getOrDefault(rt, 0) + 1);
             }
         }
 

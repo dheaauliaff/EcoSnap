@@ -44,13 +44,20 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -60,6 +67,8 @@ public class MapsFragment extends Fragment {
 
     private static final String[] CATEGORIES = {"Organik", "Plastik", "Kertas", "Kaca", "Kardus", "Logam", "Bukan Sampah"};
     private static final double ZONE_RADIUS_METERS = 80.0; // radius lingkaran zona (meter)
+    private static final double FALLBACK_LATITUDE = -6.8900;
+    private static final double FALLBACK_LONGITUDE = 107.5400;
 
     // Views
     private MapView osmMap;
@@ -90,6 +99,7 @@ public class MapsFragment extends Fragment {
     private TextView tvFilterPeriod;
     private TextView tvFilterArea;
     private final List<View> legendItemViews = new ArrayList<>();
+    private final ExecutorService geocodeExecutor = Executors.newSingleThreadExecutor();
 
     @Nullable
     @Override
@@ -155,8 +165,9 @@ public class MapsFragment extends Fragment {
 
                 List<String> rts = new ArrayList<>();
                 for (ScanHistory s : allScans) {
-                    if (s.getRtId() != null && !s.getRtId().isEmpty() && !rts.contains(s.getRtId())) {
-                        rts.add(s.getRtId());
+                    String rt = normalizeRt(s.getRtId());
+                    if (!rt.isEmpty() && !rts.contains(rt)) {
+                        rts.add(rt);
                     }
                 }
                 Collections.sort(rts);
@@ -201,6 +212,15 @@ public class MapsFragment extends Fragment {
         super.onPause();
         if (osmMap != null) osmMap.onPause();
         if (myLocationOverlay != null) myLocationOverlay.disableMyLocation();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (geocodeExecutor != null && !geocodeExecutor.isShutdown()) {
+            geocodeExecutor.shutdown();
+        }
+        osmMap = null;
     }
 
     // ─── Setup OSMDroid ───────────────────────────────────────────────────────
@@ -263,12 +283,12 @@ public class MapsFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     processData(response.body());
                 } else {
-                    showError("Gagal memuat data peta");
+                    handleLoadError("Gagal memuat data peta");
                 }
             }
             @Override
             public void onFailure(Call<List<ScanHistory>> call, Throwable t) {
-                if (isAdded()) showError("Tidak dapat terhubung ke server");
+                if (isAdded()) handleLoadError("Tidak dapat terhubung ke server");
             }
         });
     }
@@ -292,7 +312,7 @@ public class MapsFragment extends Fragment {
             // 2. RT filter
             boolean matchesRt = true;
             if (!"Semua RT".equals(activeRtFilter)) {
-                matchesRt = s.getRtId() != null && activeRtFilter.equalsIgnoreCase(s.getRtId());
+                matchesRt = normalizeRt(activeRtFilter).equalsIgnoreCase(normalizeRt(s.getRtId()));
             }
 
             if (matchesPeriod && matchesRt) {
@@ -306,10 +326,10 @@ public class MapsFragment extends Fragment {
 
         for (ScanHistory s : displayedScans) {
             String nama = s.getJenisSampah();
-            String rt   = s.getRtId();
+            String rt   = normalizeRt(s.getRtId());
             if (nama != null) globalCategoryCount.put(nama,
                     globalCategoryCount.getOrDefault(nama, 0) + 1);
-            if (rt != null && !rt.isEmpty()) rtCount.put(rt,
+            if (!rt.isEmpty()) rtCount.put(rt,
                     rtCount.getOrDefault(rt, 0) + 1);
         }
 
@@ -338,8 +358,7 @@ public class MapsFragment extends Fragment {
         }
 
         for (ScanHistory s : toShow) {
-            if (s.getLatitude() != null && s.getLongitude() != null
-                    && s.getLatitude() != 0.0 && s.getLongitude() != 0.0) {
+            if (hasRenderableLocation(s)) {
                 addScanPinAndZone(s);
             }
         }
@@ -362,7 +381,7 @@ public class MapsFragment extends Fragment {
         double lng  = scan.getLongitude();
         String nama = scan.getJenisSampah() != null ? scan.getJenisSampah() : "Sampah";
         String kat  = scan.getKategori()    != null ? scan.getKategori()    : "-";
-        String rt   = scan.getRtId()        != null ? scan.getRtId()        : "-";
+        String rt   = scan.getRtId()        != null ? normalizeRt(scan.getRtId()) : "-";
         String rw   = scan.getRwId()        != null ? scan.getRwId()        : "-";
         int    color = colorForNama(nama);
 
@@ -374,18 +393,21 @@ public class MapsFragment extends Fragment {
         zone.setStrokeWidth(2.5f);
         osmMap.getOverlays().add(zone);
 
-        // 2. Pin ikon kategori dengan koordinat presisi 6 desimal di InfoWindow
+        // 2. Pin ikon kategori dengan koordinat presisi 3 desimal di InfoWindow
         Marker marker = new Marker(osmMap);
         marker.setPosition(new GeoPoint(lat, lng));
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         marker.setTitle(nama + " — " + rt + " / " + rw);
-        // Koordinat ditampilkan dengan presisi 6 desimal
+        String dominanArea = getDominantNearby(lat, lng);
+        int totalArea = countNearby(lat, lng);
+        // Alamat diisi async agar InfoWindow tidak menunggu request jaringan.
         marker.setSnippet(String.format(Locale.US,
-                "Jenis: %s | Kategori: %s\nLat: %.6f | Lng: %.6f\nWilayah: %s / %s",
-                nama, kat, lat, lng, rt, rw));
+                "Jenis: %s | Kategori: %s\nAlamat: memuat...\nWilayah: %s / %s\nArea ini: %d scan | Dominan: %s",
+                nama, kat, rt, rw, totalArea, dominanArea));
         marker.setIcon(new android.graphics.drawable.BitmapDrawable(
                 getResources(), createPinBitmap(nama, color)));
         osmMap.getOverlays().add(marker);
+        fetchAddressAsync(lat, lng, marker);
     }
 
 
@@ -531,6 +553,13 @@ public class MapsFragment extends Fragment {
             String nama = entry.getKey();
             int count = entry.getValue();
             int color = colorForNama(nama);
+            int subduedTextColor = ContextCompat.getColor(getContext(), android.R.color.darker_gray);
+            int dividerColor = Color.argb(
+                    40,
+                    Color.red(subduedTextColor),
+                    Color.green(subduedTextColor),
+                    Color.blue(subduedTextColor)
+            );
             int pct = totalReports == 0 ? 0 : Math.round((count * 100f) / totalReports);
 
             LinearLayout row = new LinearLayout(getContext());
@@ -551,7 +580,7 @@ public class MapsFragment extends Fragment {
             // Nama
             TextView tvNama = new TextView(getContext());
             tvNama.setText(nama);
-            tvNama.setTextColor(android.graphics.Color.parseColor("#424242"));
+            tvNama.setTextColor(subduedTextColor);
             tvNama.setTextSize(13f);
             LinearLayout.LayoutParams namaParams = new LinearLayout.LayoutParams(0,
                     LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
@@ -574,7 +603,7 @@ public class MapsFragment extends Fragment {
             LinearLayout.LayoutParams divParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, 1);
             divider.setLayoutParams(divParams);
-            divider.setBackgroundColor(android.graphics.Color.parseColor("#EEEEEE"));
+            divider.setBackgroundColor(dividerColor);
             categoryBreakdownContainer.addView(divider);
         }
 
@@ -702,6 +731,99 @@ public class MapsFragment extends Fragment {
         return dom;
     }
 
+    private String getDominantNearby(double lat, double lng) {
+        Map<String, Integer> nearby = new HashMap<>();
+        float[] result = new float[1];
+        for (ScanHistory s : displayedScans) {
+            if (s.getLatitude() == null || s.getLongitude() == null) continue;
+            if (s.getLatitude() == 0.0 && s.getLongitude() == 0.0) continue;
+            if (s.getLatitude() == FALLBACK_LATITUDE && s.getLongitude() == FALLBACK_LONGITUDE) continue;
+            android.location.Location.distanceBetween(lat, lng, s.getLatitude(), s.getLongitude(), result);
+            if (result[0] <= ZONE_RADIUS_METERS && s.getJenisSampah() != null) {
+                String jenis = s.getJenisSampah();
+                nearby.put(jenis, nearby.getOrDefault(jenis, 0) + 1);
+            }
+        }
+        if (nearby.isEmpty()) return "-";
+        return getDominant(nearby);
+    }
+
+    private int countNearby(double lat, double lng) {
+        int count = 0;
+        float[] result = new float[1];
+        for (ScanHistory s : displayedScans) {
+            if (s.getLatitude() == null || s.getLongitude() == null) continue;
+            if (s.getLatitude() == 0.0 && s.getLongitude() == 0.0) continue;
+            if (s.getLatitude() == FALLBACK_LATITUDE && s.getLongitude() == FALLBACK_LONGITUDE) continue;
+            android.location.Location.distanceBetween(lat, lng, s.getLatitude(), s.getLongitude(), result);
+            if (result[0] <= ZONE_RADIUS_METERS) count++;
+        }
+        return count;
+    }
+
+    private void fetchAddressAsync(double lat, double lng, Marker marker) {
+        geocodeExecutor.submit(() -> {
+            String address = null;
+            try {
+                String urlStr = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lng;
+                URL url = new URL(urlStr);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestProperty("User-Agent", "EcoSnap/1.0 Android");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
+                br.close();
+                JSONObject json = new JSONObject(sb.toString());
+                JSONObject addr = json.optJSONObject("address");
+                if (addr != null) {
+                    String road = addr.optString("road", "");
+                    String neighbourhood = addr.optString("neighbourhood", "");
+                    String village = addr.optString("village", "");
+                    String suburb = addr.optString("suburb", "");
+                    String town = addr.optString("town", "");
+                    String city = addr.optString("city", "");
+                    String county = addr.optString("county", "");
+                    StringBuilder sb2 = new StringBuilder();
+                    if (!road.isEmpty()) sb2.append(road);
+                    String area = !neighbourhood.isEmpty() ? neighbourhood : (!village.isEmpty() ? village : (!suburb.isEmpty() ? suburb : ""));
+                    if (!area.isEmpty()) { if (sb2.length() > 0) sb2.append(", "); sb2.append(area); }
+                    String cityArea = !town.isEmpty() ? town : (!city.isEmpty() ? city : county);
+                    if (!cityArea.isEmpty()) { if (sb2.length() > 0) sb2.append(", "); sb2.append(cityArea); }
+                    address = sb2.toString().trim().replaceAll(",$", "");
+                    if (address.isEmpty()) {
+                        address = json.optString("display_name", "").split(",")[0].trim();
+                    }
+                }
+            } catch (Exception e) {
+                address = null;
+            }
+            final String finalAddress = (address != null && !address.isEmpty()) ? address : null;
+            if (finalAddress == null) return;
+            requireActivity().runOnUiThread(() -> {
+                if (!isAdded() || osmMap == null) return;
+                String current = marker.getSnippet();
+                if (current != null) {
+                    String updated = current.replaceFirst("Alamat:.*?(\\n|$)", "Alamat: " + finalAddress + "\n");
+                    marker.setSnippet(updated);
+                }
+                osmMap.invalidate();
+            });
+        });
+    }
+
+    private String normalizeRt(String raw) {
+        if (raw == null || raw.trim().isEmpty()) return "";
+        String s = raw.trim().replaceAll("(?i)^rt\\s*", "");
+        try {
+            return "RT " + String.format("%02d", Integer.parseInt(s.trim()));
+        } catch (NumberFormatException e) {
+            return "RT " + s.trim();
+        }
+    }
+
     private int iconFor(String cat) {
         if (cat == null) return R.drawable.ic_leaf;
         switch (cat.toLowerCase()) {
@@ -731,6 +853,42 @@ public class MapsFragment extends Fragment {
         root.setTranslationY(20f);
         root.animate().alpha(1f).translationY(0f)
                 .setDuration(320L).setInterpolator(new DecelerateInterpolator()).start();
+    }
+
+    private boolean hasRenderableLocation(ScanHistory scan) {
+        if (scan == null || scan.getLatitude() == null || scan.getLongitude() == null) {
+            return false;
+        }
+
+        double lat = scan.getLatitude();
+        double lng = scan.getLongitude();
+        if (lat == 0.0 || lng == 0.0) {
+            return false;
+        }
+
+        return !(lat == FALLBACK_LATITUDE && lng == FALLBACK_LONGITUDE);
+    }
+
+    private void handleLoadError(String msg) {
+        if (!isAdded() || getContext() == null) return;
+
+        if (allScans.isEmpty()) {
+            showInitialLoadErrorState();
+        }
+        showError(msg);
+    }
+
+    private void showInitialLoadErrorState() {
+        if (categoryBreakdownContainer == null || getContext() == null) return;
+
+        categoryBreakdownContainer.removeAllViews();
+        TextView error = new TextView(getContext());
+        error.setText("Gagal memuat data. Tarik ke bawah untuk coba lagi.");
+        error.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
+        error.setTextSize(13f);
+        error.setGravity(android.view.Gravity.CENTER);
+        error.setPadding(0, dp(16), 0, dp(16));
+        categoryBreakdownContainer.addView(error);
     }
 
     private void showError(String msg) {
