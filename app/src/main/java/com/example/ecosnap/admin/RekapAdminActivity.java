@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -58,9 +59,15 @@ public class RekapAdminActivity extends AppCompatActivity {
     // Section riwayat scan (semua user)
     private LinearLayout layoutRiwayatAll;
     private ProgressBar pbRiwayat;
+    private LinearLayout layoutRiwayatPagination;
+    private TextView tvRiwayatPageInfo;
+    private AppCompatButton btnRiwayatPrev, btnRiwayatNext;
 
     private List<ScanHistory> allScans = new ArrayList<>();
+    private List<ScanHistory> currentRiwayatList = new ArrayList<>();
     private String activeRtFilter = "Semua RT";
+    private int currentRiwayatPage = 0;
+    private static final int RIWAYAT_PAGE_SIZE = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,10 +94,36 @@ public class RekapAdminActivity extends AppCompatActivity {
 
         layoutRiwayatAll = findViewById(R.id.layoutRiwayatAll);
         pbRiwayat        = findViewById(R.id.pbRiwayat);
+        layoutRiwayatPagination = findViewById(R.id.layoutRiwayatPagination);
+        tvRiwayatPageInfo = findViewById(R.id.tvRiwayatPageInfo);
+        btnRiwayatPrev = findViewById(R.id.btnRiwayatPrev);
+        btnRiwayatNext = findViewById(R.id.btnRiwayatNext);
+        setupRiwayatPagination();
 
         setupBottomNavigation();
         setupBackPressed();
         loadDataFromSupabase();
+    }
+
+    private void setupRiwayatPagination() {
+        if (btnRiwayatPrev != null) {
+            btnRiwayatPrev.setOnClickListener(v -> {
+                if (currentRiwayatPage > 0) {
+                    currentRiwayatPage--;
+                    buildRiwayatAllUsers(currentRiwayatList);
+                }
+            });
+        }
+
+        if (btnRiwayatNext != null) {
+            btnRiwayatNext.setOnClickListener(v -> {
+                int totalPages = getRiwayatTotalPages();
+                if (currentRiwayatPage < totalPages - 1) {
+                    currentRiwayatPage++;
+                    buildRiwayatAllUsers(currentRiwayatList);
+                }
+            });
+        }
     }
 
     private void loadDataFromSupabase() {
@@ -121,12 +154,18 @@ public class RekapAdminActivity extends AppCompatActivity {
     }
 
     private void fetchScansForRw(ApiService api, String rwId) {
-        api.getScanByRw("eq." + rwId).enqueue(new Callback<List<ScanHistory>>() {
+        api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (isFinishing()) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    allScans = response.body();
+                    allScans = new ArrayList<>();
+                    for (ScanHistory s : response.body()) {
+                        if (isMatchingRw(s.getRwId(), rwId)) {
+                            allScans.add(s);
+                        }
+                    }
+                    sortNewestFirst(allScans);
                     setupFilterDropdown();
                     applyFilterAndDisplay();
                 } else {
@@ -152,8 +191,9 @@ public class RekapAdminActivity extends AppCompatActivity {
 
             List<String> rts = new ArrayList<>();
             for (ScanHistory s : allScans) {
-                if (s.getRtId() != null && !s.getRtId().isEmpty() && !rts.contains(s.getRtId())) {
-                    rts.add(s.getRtId());
+                String rt = formatRtId(s.getRtId());
+                if (!rt.isEmpty() && !rts.contains(rt)) {
+                    rts.add(rt);
                 }
             }
             Collections.sort(rts);
@@ -174,10 +214,13 @@ public class RekapAdminActivity extends AppCompatActivity {
     private void applyFilterAndDisplay() {
         List<ScanHistory> filtered = new ArrayList<>();
         for (ScanHistory s : allScans) {
-            if ("Semua RT".equals(activeRtFilter) || (s.getRtId() != null && activeRtFilter.equals(s.getRtId()))) {
+            if ("Semua RT".equals(activeRtFilter)
+                    || activeRtFilter.equalsIgnoreCase(formatRtId(s.getRtId()))) {
                 filtered.add(s);
             }
         }
+        sortNewestFirst(filtered);
+        currentRiwayatPage = 0;
         processAndDisplay(filtered);
     }
 
@@ -192,8 +235,8 @@ public class RekapAdminActivity extends AppCompatActivity {
             if (nama != null && !nama.isEmpty()) {
                 namaMap.put(nama, namaMap.getOrDefault(nama, 0) + 1);
             }
-            String rt = s.getRtId();
-            if (rt != null && !rt.isEmpty()) {
+            String rt = formatRtId(s.getRtId());
+            if (!rt.isEmpty()) {
                 rtMap.put(rt, rtMap.getOrDefault(rt, 0) + 1);
             }
         }
@@ -239,10 +282,20 @@ public class RekapAdminActivity extends AppCompatActivity {
         if (pbRiwayat != null) pbRiwayat.setVisibility(View.GONE);
         layoutRiwayatAll.removeAllViews();
 
-        // Ambil 20 scan terbaru
-        List<ScanHistory> recent = list.size() > 20 ? list.subList(0, 20) : list;
+        List<ScanHistory> sortedList = new ArrayList<>(list);
+        sortNewestFirst(sortedList);
+        currentRiwayatList = sortedList;
 
-        for (ScanHistory scan : recent) {
+        int totalPages = getRiwayatTotalPages();
+        if (currentRiwayatPage >= totalPages) {
+            currentRiwayatPage = Math.max(totalPages - 1, 0);
+        }
+
+        int start = currentRiwayatPage * RIWAYAT_PAGE_SIZE;
+        int end = Math.min(start + RIWAYAT_PAGE_SIZE, sortedList.size());
+        List<ScanHistory> pageItems = start < end ? sortedList.subList(start, end) : new ArrayList<>();
+
+        for (ScanHistory scan : pageItems) {
             LinearLayout card = new LinearLayout(this);
             card.setOrientation(LinearLayout.HORIZONTAL);
             card.setPadding(dp(12), dp(12), dp(12), dp(12));
@@ -357,7 +410,7 @@ public class RekapAdminActivity extends AppCompatActivity {
             layoutRiwayatAll.addView(card);
         }
 
-        if (recent.isEmpty()) {
+        if (pageItems.isEmpty()) {
             TextView empty = new TextView(this);
             empty.setText("Belum ada riwayat scan");
             empty.setTextColor(Color.parseColor("#9E9E9E"));
@@ -365,6 +418,39 @@ public class RekapAdminActivity extends AppCompatActivity {
             empty.setGravity(android.view.Gravity.CENTER);
             empty.setPadding(0, dp(24), 0, dp(24));
             layoutRiwayatAll.addView(empty);
+        }
+
+        updateRiwayatPagination();
+    }
+
+    private int getRiwayatTotalPages() {
+        if (currentRiwayatList == null || currentRiwayatList.isEmpty()) return 1;
+        return (int) Math.ceil(currentRiwayatList.size() / (float) RIWAYAT_PAGE_SIZE);
+    }
+
+    private void updateRiwayatPagination() {
+        int total = currentRiwayatList == null ? 0 : currentRiwayatList.size();
+        int totalPages = getRiwayatTotalPages();
+        boolean showPagination = total > RIWAYAT_PAGE_SIZE;
+
+        if (layoutRiwayatPagination != null) {
+            layoutRiwayatPagination.setVisibility(showPagination ? View.VISIBLE : View.GONE);
+        }
+
+        if (tvRiwayatPageInfo != null) {
+            tvRiwayatPageInfo.setText("Halaman " + (currentRiwayatPage + 1) + " dari " + totalPages);
+        }
+
+        if (btnRiwayatPrev != null) {
+            boolean enabled = currentRiwayatPage > 0;
+            btnRiwayatPrev.setEnabled(enabled);
+            btnRiwayatPrev.setAlpha(enabled ? 1f : 0.45f);
+        }
+
+        if (btnRiwayatNext != null) {
+            boolean enabled = currentRiwayatPage < totalPages - 1;
+            btnRiwayatNext.setEnabled(enabled);
+            btnRiwayatNext.setAlpha(enabled ? 1f : 0.45f);
         }
     }
 
@@ -416,7 +502,7 @@ public class RekapAdminActivity extends AppCompatActivity {
 
             Map<String, Integer> rtJenis = new HashMap<>();
             for (ScanHistory s : allList) {
-                if (rtId.equals(s.getRtId()) && s.getJenisSampah() != null)
+                if (rtId.equals(formatRtId(s.getRtId())) && s.getJenisSampah() != null)
                     rtJenis.put(s.getJenisSampah(), rtJenis.getOrDefault(s.getJenisSampah(), 0) + 1);
             }
 
@@ -610,6 +696,40 @@ public class RekapAdminActivity extends AppCompatActivity {
 
     private String safe(String s) {
         return (s == null || s.isEmpty()) ? "-" : s;
+    }
+
+    private void sortNewestFirst(List<ScanHistory> list) {
+        list.sort((a, b) -> safeDate(b.getCreatedAt()).compareTo(safeDate(a.getCreatedAt())));
+    }
+
+    private String safeDate(String date) {
+        return date == null ? "" : date;
+    }
+
+    private String formatRtId(String rtId) {
+        if (rtId == null) return "";
+        String clean = rtId.replace("RT", "").replace("rt", "").trim();
+        if (clean.isEmpty()) return "";
+        try {
+            return "RT " + String.format(Locale.US, "%02d", Integer.parseInt(clean));
+        } catch (NumberFormatException e) {
+            return clean.toUpperCase(Locale.US).startsWith("RT") ? clean : "RT " + clean;
+        }
+    }
+
+    private boolean isMatchingRw(String scanRwId, String filterRwId) {
+        if (scanRwId == null || filterRwId == null) return false;
+        return normalizeRw(scanRwId).equals(normalizeRw(filterRwId));
+    }
+
+    private String normalizeRw(String rw) {
+        if (rw == null) return "";
+        String clean = rw.replace("RW", "").replace("rw", "").trim();
+        try {
+            return String.valueOf(Integer.parseInt(clean));
+        } catch (NumberFormatException e) {
+            return clean.toLowerCase(Locale.US);
+        }
     }
 
     private String formatDate(String isoDate) {

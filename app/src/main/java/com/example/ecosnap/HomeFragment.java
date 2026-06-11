@@ -207,6 +207,7 @@ public class HomeFragment extends Fragment {
                 if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
                     List<ScanHistory> allScans = response.body();
+                    allScans.sort((a, b) -> safeDate(b.getCreatedAt()).compareTo(safeDate(a.getCreatedAt())));
 
                     recentScans.clear();
                     // Tampilkan max 5 scan terbaru
@@ -246,5 +247,9 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private String safeDate(String date) {
+        return date == null ? "" : date;
     }
 }

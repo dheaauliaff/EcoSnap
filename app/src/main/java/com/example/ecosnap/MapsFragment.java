@@ -33,8 +33,10 @@ import androidx.fragment.app.Fragment;
 
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.network.RetrofitClient;
+import com.example.ecosnap.model.User;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.auth.FirebaseAuth;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -88,13 +90,14 @@ public class MapsFragment extends Fragment {
     // Data
     private int totalReports = 0;
     private List<ScanHistory> allScans = new ArrayList<>();
+    private String userRwId = "";
     private final List<ScanHistory> displayedScans = new ArrayList<>();
     private final Map<String, Integer> globalCategoryCount = new HashMap<>();
     private final Map<String, Integer> rtCount = new HashMap<>();
 
     // Filter state
     private String activeFilter = null;
-    private String activePeriodFilter = "Bulan Ini";
+    private String activePeriodFilter = "Semua Waktu";
     private String activeRtFilter = "Semua RT";
     private TextView tvFilterPeriod;
     private TextView tvFilterArea;
@@ -119,6 +122,7 @@ public class MapsFragment extends Fragment {
         btnResetFilter             = view.findViewById(R.id.btnResetFilter);
         tvFilterPeriod             = view.findViewById(R.id.tvFilterPeriod);
         tvFilterArea               = view.findViewById(R.id.tvFilterArea);
+        if (tvFilterPeriod != null) tvFilterPeriod.setText(activePeriodFilter);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
@@ -275,13 +279,47 @@ public class MapsFragment extends Fragment {
 
     private void loadDataFromSupabase() {
         ApiService api = RetrofitClient.getClient().create(ApiService.class);
+
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            handleLoadError("User belum login");
+            return;
+        }
+
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        api.getUserByFirebaseUid("eq." + uid).enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    User user = response.body().get(0);
+                    userRwId = user.getRwId() != null ? user.getRwId() : "";
+                    loadAllScansForUserRw(api);
+                } else {
+                    handleLoadError("Gagal memuat profil user");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                if (isAdded()) handleLoadError("Tidak dapat terhubung ke server");
+            }
+        });
+    }
+
+    private void loadAllScansForUserRw(ApiService api) {
         api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call,
                                    Response<List<ScanHistory>> response) {
                 if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    processData(response.body());
+                    List<ScanHistory> sameRw = new ArrayList<>();
+                    for (ScanHistory s : response.body()) {
+                        if (isMatchingRw(s.getRwId(), userRwId)) {
+                            sameRw.add(s);
+                        }
+                    }
+                    processData(sameRw);
                 } else {
                     handleLoadError("Gagal memuat data peta");
                 }
@@ -821,6 +859,21 @@ public class MapsFragment extends Fragment {
             return "RT " + String.format("%02d", Integer.parseInt(s.trim()));
         } catch (NumberFormatException e) {
             return "RT " + s.trim();
+        }
+    }
+
+    private boolean isMatchingRw(String scanRwId, String filterRwId) {
+        if (scanRwId == null || filterRwId == null) return false;
+        return normalizeRw(scanRwId).equals(normalizeRw(filterRwId));
+    }
+
+    private String normalizeRw(String raw) {
+        if (raw == null || raw.trim().isEmpty()) return "";
+        String s = raw.trim().replaceAll("(?i)^rw\\s*", "");
+        try {
+            return String.valueOf(Integer.parseInt(s.trim()));
+        } catch (NumberFormatException e) {
+            return s.trim().toLowerCase(Locale.US);
         }
     }
 

@@ -522,7 +522,7 @@ public class ResultActivity extends AppCompatActivity {
                                 btnSimpan.setEnabled(false);
                                 btnSimpan.setText("Berhasil Disimpan ✓");
                             }
-                            Toast.makeText(ResultActivity.this, "Data Tersimpan!", Toast.LENGTH_SHORT).show();
+                            showSaveSuccessDialog();
 
                             String rt = (user.getRtId() != null && !user.getRtId().isEmpty())
                                     ? user.getRtId()
@@ -565,6 +565,16 @@ public class ResultActivity extends AppCompatActivity {
                 });
             });
         }).start();
+    }
+
+    private void showSaveSuccessDialog() {
+        if (isFinishing() || isDestroyed()) return;
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Foto berhasil disimpan")
+                .setMessage("Hasil scan sudah tersimpan dan masuk ke riwayat kamu.")
+                .setPositiveButton("Oke", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     private List<TFLiteHelper.Result> readFrozenDetections() {

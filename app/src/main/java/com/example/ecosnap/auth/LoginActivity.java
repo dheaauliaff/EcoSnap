@@ -12,7 +12,6 @@ import com.example.ecosnap.R;
 import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.model.User;
 import com.example.ecosnap.admin.DashboardAdminActivity;
-import com.example.ecosnap.user.DashboardUserActivity;
 import com.example.ecosnap.MainDashboardActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -97,6 +96,42 @@ public class LoginActivity extends AppCompatActivity {
         TextView tvRegister = findViewById(R.id.tvRegister);
         tvRegister.setOnClickListener(v ->
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
+
+        TextView tvForgotPassword = findViewById(R.id.tvForgotPassword);
+        if (tvForgotPassword != null) {
+            tvForgotPassword.setOnClickListener(v -> sendPasswordReset());
+        }
+    }
+
+    private void sendPasswordReset() {
+        String nomorHp = etNomorHp.getText() != null
+                ? etNomorHp.getText().toString().trim()
+                : "";
+
+        if (nomorHp.isEmpty()) {
+            Toast.makeText(this, "Masukkan nomor HP dulu untuk reset password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (nomorHp.length() < 10) {
+            Toast.makeText(this, "Nomor HP tidak valid", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String emailFiktif = nomorHp + "@ecosnap.com";
+        mAuth.sendPasswordResetEmail(emailFiktif)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(this,
+                                "Link reset password dikirim ke akun Firebase: " + emailFiktif,
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        String msg = task.getException() != null
+                                ? task.getException().getMessage()
+                                : "Unknown error";
+                        Toast.makeText(this, "Reset password gagal: " + msg, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     private void cekRoleUser(String uid) {
@@ -143,4 +178,4 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setEnabled(true);
         btnLogin.setText("Login");
     }
-}
+}

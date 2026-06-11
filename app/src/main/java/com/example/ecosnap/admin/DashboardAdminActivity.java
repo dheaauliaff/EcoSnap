@@ -26,19 +26,24 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.components.YAxis;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -62,7 +67,10 @@ public class DashboardAdminActivity extends AppCompatActivity {
     String selectedStartDate = "";
     String selectedEndDate = "";
     String selectedMonthKey = "";
-    String selectedYearKey = "2026";
+    String selectedYearKey = "";
+    boolean customWeekRangeSelected = false;
+    boolean customMonthSelected = false;
+    boolean customYearSelected = false;
     final List<ScanHistory> cachedScans = new ArrayList<>();
 
     // RT tracking
@@ -106,7 +114,10 @@ public class DashboardAdminActivity extends AppCompatActivity {
         // Period filters
         if (btnMinggu != null) btnMinggu.setOnClickListener(v -> {
             periodAktif = "minggu";
+            customWeekRangeSelected = false;
+            resetCurrentWeekRange();
             updateChipStyle();
+            applyCurrentPeriod();
             showDateRangePicker();
         });
         if (btnBulan != null) btnBulan.setOnClickListener(v -> {
@@ -152,6 +163,14 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (rwId != null && !rwId.isEmpty()) {
+            loadStatistik();
+        }
     }
 
     /** Highlight chip yang sedang aktif, reset yang lain */
@@ -211,12 +230,16 @@ public class DashboardAdminActivity extends AppCompatActivity {
         if (rwId == null || rwId.isEmpty()) return;
         ApiService api = RetrofitClient.getClient().create(ApiService.class);
 
-        api.getScanByRw("eq." + rwId).enqueue(new Callback<List<ScanHistory>>() {
+        api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     cachedScans.clear();
-                    cachedScans.addAll(response.body());
+                    for (ScanHistory s : response.body()) {
+                        if (isMatchingRw(s.getRwId(), rwId)) {
+                            cachedScans.add(s);
+                        }
+                    }
                     initializeDefaultPeriod();
                     applyCurrentPeriod();
                 }
@@ -264,22 +287,27 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
     private void initializeDefaultPeriod() {
         if (selectedStartDate.isEmpty() || selectedEndDate.isEmpty()) {
-            Calendar cal = Calendar.getInstance();
-            selectedEndDate = formatDate(cal);
-            cal.add(Calendar.DAY_OF_YEAR, -6);
-            selectedStartDate = formatDate(cal);
+            resetCurrentWeekRange();
+        } else if ("minggu".equals(periodAktif) && !customWeekRangeSelected) {
+            resetCurrentWeekRange();
         }
 
-        if (selectedMonthKey.isEmpty()) {
-            List<String> months = getAvailableMonths();
-            if (!months.isEmpty()) {
-                selectedMonthKey = months.get(0);
-            }
+        if (selectedMonthKey.isEmpty() || !customMonthSelected) {
+            selectedMonthKey = getDefaultMonthKey();
         }
 
-        if (selectedYearKey.isEmpty()) {
-            selectedYearKey = "2026";
+        if (selectedYearKey.isEmpty() || !customYearSelected) {
+            selectedYearKey = getDefaultYearKey();
         }
+    }
+
+    private void resetCurrentWeekRange() {
+        Calendar cal = Calendar.getInstance();
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        selectedStartDate = formatDate(cal);
+        cal.add(Calendar.DAY_OF_YEAR, 6);
+        selectedEndDate = formatDate(cal);
     }
 
     private void showDateRangePicker() {
@@ -303,6 +331,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
                                     selectedEndDate = temp;
                                 }
 
+                                customWeekRangeSelected = true;
                                 Toast.makeText(this,
                                         "Periode: " + selectedStartDate + " s/d " + selectedEndDate,
                                         Toast.LENGTH_SHORT).show();
@@ -340,6 +369,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 .setTitle("Pilih bulan")
                 .setSingleChoiceItems(labels, checked, (dialog, which) -> {
                     selectedMonthKey = months.get(which);
+                    customMonthSelected = true;
                     dialog.dismiss();
                     applyCurrentPeriod();
                 })
@@ -362,10 +392,25 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 .setTitle("Pilih tahun")
                 .setSingleChoiceItems(labels, checked, (dialog, which) -> {
                     selectedYearKey = years.get(which);
+                    customYearSelected = true;
                     dialog.dismiss();
                     applyCurrentPeriod();
                 })
                 .show();
+    }
+
+    private String getDefaultMonthKey() {
+        List<String> months = getAvailableMonths();
+        if (months.isEmpty()) return "";
+        String currentMonth = formatMonthKey(Calendar.getInstance());
+        return months.contains(currentMonth) ? currentMonth : months.get(months.size() - 1);
+    }
+
+    private String getDefaultYearKey() {
+        List<String> years = getAvailableYears();
+        String currentYear = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
+        if (years.isEmpty()) return currentYear;
+        return years.contains(currentYear) ? currentYear : years.get(years.size() - 1);
     }
 
     private List<String> getAvailableMonths() {
@@ -394,7 +439,56 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
     private String extractDate(String createdAt) {
         if (createdAt == null || createdAt.length() < 10) return "";
-        return createdAt.substring(0, 10);
+        String clean = createdAt.trim();
+        Date parsed = parseCreatedAt(clean);
+        if (parsed != null) {
+            SimpleDateFormat output = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            output.setTimeZone(TimeZone.getTimeZone("Asia/Jakarta"));
+            return output.format(parsed);
+        }
+        return clean.substring(0, 10);
+    }
+
+    private Date parseCreatedAt(String createdAt) {
+        String normalized = normalizeIsoDateTime(createdAt);
+        String[] patterns = {
+                "yyyy-MM-dd'T'HH:mm:ssXXX",
+                "yyyy-MM-dd'T'HH:mm:ss",
+                "yyyy-MM-dd"
+        };
+
+        for (String pattern : patterns) {
+            try {
+                SimpleDateFormat input = new SimpleDateFormat(pattern, Locale.US);
+                if (!pattern.endsWith("XXX")) {
+                    input.setTimeZone(TimeZone.getTimeZone("UTC"));
+                }
+                return input.parse(normalized);
+            } catch (ParseException ignored) {}
+        }
+        return null;
+    }
+
+    private String normalizeIsoDateTime(String value) {
+        String clean = value.trim();
+        int dotIndex = clean.indexOf('.');
+        if (dotIndex >= 0) {
+            int zoneIndex = findTimeZoneStart(clean, dotIndex + 1);
+            String zone = zoneIndex >= 0 ? clean.substring(zoneIndex) : "";
+            clean = clean.substring(0, dotIndex) + zone;
+        }
+        if (clean.endsWith("Z")) {
+            clean = clean.substring(0, clean.length() - 1) + "+00:00";
+        }
+        return clean;
+    }
+
+    private int findTimeZoneStart(String value, int startIndex) {
+        for (int i = Math.max(startIndex, 19); i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == '+' || c == '-' || c == 'Z') return i;
+        }
+        return -1;
     }
 
     private String formatDate(Calendar cal) {
@@ -402,6 +496,12 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH) + 1,
                 cal.get(Calendar.DAY_OF_MONTH));
+    }
+
+    private String formatMonthKey(Calendar cal) {
+        return String.format(Locale.US, "%04d-%02d",
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH) + 1);
     }
 
     private Calendar parseDateToCalendar(String date) {
@@ -444,6 +544,21 @@ public class DashboardAdminActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isMatchingRw(String scanRwId, String filterRwId) {
+        if (scanRwId == null || filterRwId == null) return false;
+        return normalizeRw(scanRwId).equals(normalizeRw(filterRwId));
+    }
+
+    private String normalizeRw(String rw) {
+        if (rw == null) return "";
+        String clean = rw.replace("RW", "").replace("rw", "").trim();
+        try {
+            return String.valueOf(Integer.parseInt(clean));
+        } catch (NumberFormatException e) {
+            return clean.toLowerCase(Locale.US);
+        }
+    }
+
     private void hitungStatistik(List<ScanHistory> data) {
         rtCount.clear();
         int total = data.size();
@@ -481,14 +596,17 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
         for (ScanHistory s : data) {
             if (s.getJenisSampah() != null) {
-                String jenis = s.getJenisSampah().toLowerCase();
+                String jenis = normalizeJenisKey(s.getJenisSampah());
                 if (countMap.containsKey(jenis)) countMap.put(jenis, countMap.get(jenis) + 1);
             }
         }
 
         ArrayList<BarEntry> entries = new ArrayList<>();
+        int maxValue = 0;
         for (int i = 0; i < labels.length; i++) {
-            entries.add(new BarEntry(i, countMap.get(labels[i].toLowerCase())));
+            int value = countMap.get(labels[i].toLowerCase());
+            maxValue = Math.max(maxValue, value);
+            entries.add(new BarEntry(i, value));
         }
 
         BarDataSet dataSet = new BarDataSet(entries, "Jenis Sampah");
@@ -518,10 +636,28 @@ public class DashboardAdminActivity extends AppCompatActivity {
         xAxis.setTextSize(10f);
         xAxis.setTextColor(Color.parseColor("#333333"));
 
-        barChart.getAxisLeft().setTextColor(Color.parseColor("#333333"));
+        YAxis leftAxis = barChart.getAxisLeft();
+        leftAxis.setTextColor(Color.parseColor("#333333"));
+        leftAxis.setAxisMinimum(0f);
+        leftAxis.setAxisMaximum(Math.max(5f, maxValue + 1f));
+        leftAxis.setLabelCount(6, true);
+        leftAxis.setGranularity(1f);
+        leftAxis.setGranularityEnabled(true);
         barChart.getAxisRight().setEnabled(false);
         barChart.animateY(800);
         barChart.invalidate();
+    }
+
+    private String normalizeJenisKey(String jenisSampah) {
+        if (jenisSampah == null) return "";
+        String clean = jenisSampah.toLowerCase(Locale.US).replace("_", " ").trim();
+        if (clean.contains("organik")) return "organik";
+        if (clean.contains("kardus")) return "kardus";
+        if (clean.contains("kaca")) return "kaca";
+        if (clean.contains("logam") || clean.contains("kaleng")) return "logam";
+        if (clean.contains("kertas")) return "kertas";
+        if (clean.contains("plastik") || clean.contains("botol")) return "plastik";
+        return clean;
     }
 
     private void buatRanking(List<ScanHistory> data) {

@@ -1107,6 +1107,10 @@
             <span class="detail-val" id="modalRt">-</span>
           </div>
           <div class="detail-row">
+            <span class="detail-label">📌 Alamat</span>
+            <span class="detail-val" id="modalAlamat">-</span>
+          </div>
+          <div class="detail-row">
             <span class="detail-label">🎯 Akurasi AI</span>
             <span class="detail-val" id="modalAkurasi">-</span>
           </div>
@@ -1122,6 +1126,9 @@
         <div style="margin-top:auto; padding-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
           <a id="modalMapLink" href="#" target="_blank" class="btn-refresh" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
             🗺️ Buka di Google Maps
+          </a>
+          <a id="modalDownloadLink" href="#" target="_blank" download class="btn-refresh" style="text-decoration:none; display:none; align-items:center; gap:6px;">
+            ⬇️ Download Foto
           </a>
           <button class="filter-chip" onclick="closeDetailModal()" style="height:34px; line-height:22px; font-weight:600;">
             Tutup
@@ -1231,7 +1238,8 @@ function showDetail(id, createdAt) {
 
   document.getElementById('modalJenis').textContent = item.nama_sampah || '-';
   document.getElementById('modalWilayah').textContent = item.wilayah || '-';
-  document.getElementById('modalRt').textContent = item.rt_id ? `RT ${item.rt_id}` : '-';
+  document.getElementById('modalRt').textContent = formatRt(item.rt_id);
+  document.getElementById('modalAlamat').textContent = item.alamat || '-';
   document.getElementById('modalAkurasi').textContent = conf != null ? `${conf.toFixed(1)}%` : '-';
   document.getElementById('modalWaktu').textContent = time;
   
@@ -1244,6 +1252,15 @@ function showDetail(id, createdAt) {
     mapLink.style.display = 'inline-flex';
   } else {
     mapLink.style.display = 'none';
+  }
+
+  const downloadLink = document.getElementById('modalDownloadLink');
+  if (item.image_url) {
+    downloadLink.href = item.image_url;
+    downloadLink.setAttribute('download', `ecosnap-${item.id || item.created_at || 'foto'}.jpg`);
+    downloadLink.style.display = 'inline-flex';
+  } else {
+    downloadLink.style.display = 'none';
   }
 
   // Show modal
@@ -1304,19 +1321,20 @@ function buildFilters() {
   const rtSet = new Set();
 
   allData.forEach(d => {
-    if (d.rt_id) rtSet.add(d.rt_id);
+    const rt = normalizeRt(d.rt_id);
+    if (rt) rtSet.add(rt);
   });
 
   rtSel.innerHTML = '<option value="">Semua RT</option>';
   [...rtSet].sort().forEach(rt => {
-    rtSel.innerHTML += `<option>${rt}</option>`;
+    rtSel.innerHTML += `<option value="${rt}">${rt}</option>`;
   });
 }
 
 function applyFilter() {
   const rt = document.getElementById('filterRt').value;
   filteredData = allData.filter(d =>
-    (!rt || d.rt_id === rt)
+    (!rt || normalizeRt(d.rt_id) === rt)
   );
   currentPage = 1;
   renderAll();
@@ -1351,7 +1369,7 @@ function renderKPI() {
   const total = d.length;
 
   // Count unique RT
-  const rtSet = new Set(d.map(x => x.rt_id).filter(Boolean));
+  const rtSet = new Set(d.map(x => normalizeRt(x.rt_id)).filter(Boolean));
 
   // Dominant
   const catMap = {};
@@ -1381,7 +1399,7 @@ function renderKPI() {
   const rtArr = [...Object.entries(groupBy(d, 'rt_id'))].sort((a,b)=>b[1]-a[1]);
 
   if (rtArr[0]) {
-    document.getElementById('rankTopRt').textContent = 'RT ' + rtArr[0][0];
+    document.getElementById('rankTopRt').textContent = rtArr[0][0];
     document.getElementById('rankTopRtCount').textContent = rtArr[0][1] + ' scan';
   }
 
@@ -1389,11 +1407,12 @@ function renderKPI() {
   const rtConfMap = {};
   const rtConfCount = {};
   d.forEach(x => {
-    if (x.rt_id && x.confidence != null) {
+    const rt = normalizeRt(x.rt_id);
+    if (rt && x.confidence != null) {
       const conf = parseConf(x.confidence);
       if (conf != null) {
-        rtConfMap[x.rt_id] = (rtConfMap[x.rt_id] || 0) + conf;
-        rtConfCount[x.rt_id] = (rtConfCount[x.rt_id] || 0) + 1;
+        rtConfMap[rt] = (rtConfMap[rt] || 0) + conf;
+        rtConfCount[rt] = (rtConfCount[rt] || 0) + 1;
       }
     }
   });
@@ -1403,13 +1422,13 @@ function renderKPI() {
     const avg = sum / rtConfCount[rt];
     if (avg > topRtConfVal) {
       topRtConfVal = avg;
-      topRtConf = 'RT ' + rt;
+      topRtConf = rt;
     }
   });
   document.getElementById('rankTopRtConf').textContent = topRtConf;
   document.getElementById('rankTopRtConfVal').textContent = topRtConfVal > 0 ? `${topRtConfVal.toFixed(1)}% rata-rata` : '-';
 
-  document.getElementById('rankActiveRt').textContent = rtArr[0] ? 'RT ' + rtArr[0][0] : '-';
+  document.getElementById('rankActiveRt').textContent = rtArr[0] ? rtArr[0][0] : '-';
   document.getElementById('rankActiveRtSub').textContent = rtArr[0] ? rtArr[0][1] + ' scan' : '-';
   document.getElementById('rankTotalRt').textContent = rtSet.size;
 }
@@ -1507,7 +1526,7 @@ function renderTrendChart() {
 function renderRtBarChart() {
   const rtMap = groupBy(filteredData, 'rt_id');
   const rtArr = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  const labels = rtArr.map(([k])=> `RT ${k}` || 'N/A');
+  const labels = rtArr.map(([k])=> k || 'N/A');
   const values = rtArr.map(([,v])=>v);
   const colors = labels.map((_,i)=>`hsl(${130+i*12},55%,${42+i*3}%)`);
 
@@ -1601,7 +1620,7 @@ function renderMonthlyChart() {
 function renderRtPieChart() {
   const rtMap = groupBy(filteredData,'rt_id');
   const arr = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const labels = arr.map(([k])=> `RT ${k}` || 'N/A');
+  const labels = arr.map(([k])=> k || 'N/A');
   const values = arr.map(([,v])=>v);
   const colors = labels.map((_,i)=>`hsl(${120+i*20},50%,${45+i*4}%)`);
 
@@ -1623,7 +1642,7 @@ function renderRtPieChart() {
 function renderRankRtChart() {
   const rtMap = groupBy(filteredData,'rt_id');
   const arr = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const labels = arr.map(([k])=> `RT ${k}` || 'N/A');
+  const labels = arr.map(([k])=> k || 'N/A');
   const values = arr.map(([,v])=>v);
   const colors = labels.map((_,i)=>`hsl(${125+i*10},55%,${42+i*3}%)`);
 
@@ -1663,7 +1682,7 @@ function renderRecentTimeline() {
         <div class="timeline-content">
           <div class="timeline-title">${d.nama_sampah||'Unknown'}</div>
           <div class="timeline-time">${time}</div>
-          <div class="timeline-detail">${d.wilayah||'-'} · RT ${d.rt_id||'-'}</div>
+          <div class="timeline-detail">${d.wilayah||'-'} · ${formatRt(d.rt_id)}</div>
         </div>
       </div>`;
   }).join('');
@@ -1794,12 +1813,12 @@ function renderTable() {
       <td>
         <b style="color:var(--text-1)">${d.nama_sampah||'-'}</b>
         <div class="mobile-subtext" style="display:none;font-size:11px;color:var(--text-3);margin-top:2px">
-          RT ${d.rt_id||'-'} · ${time}
+          ${formatRt(d.rt_id)} · ${time}
         </div>
       </td>
       <td><span class="kategori-pill" style="background:${color}22;color:${color}">${icon} ${d.kategori||d.nama_sampah||'-'}</span></td>
       <td style="color:var(--text-2)">${d.wilayah||'-'}</td>
-      <td style="font-size:12px;color:var(--text-3)">RT ${d.rt_id||'-'}</td>
+      <td style="font-size:12px;color:var(--text-3)">${formatRt(d.rt_id)}</td>
       <td>${conf!=null?`<div class="confidence-bar-wrap"><div class="confidence-bar"><div class="confidence-fill" style="width:${Math.min(conf,100)}%"></div></div><span style="font-size:12px;font-weight:600;color:var(--text-1)">${conf.toFixed(1)}%</span></div>`:'-'}</td>
       <td style="font-size:12px;color:var(--text-3);white-space:nowrap">${time}</td>
     </tr>`;
@@ -1836,7 +1855,7 @@ function renderRanking() {
   tbody.innerHTML = rtArr.map(([rt,cnt],i)=>{
     const pct = Math.round(cnt*100/maxRT);
     // dominant per RT
-    const rtItems = filteredData.filter(d=>d.rt_id===rt&&d.nama_sampah);
+    const rtItems = filteredData.filter(d=>normalizeRt(d.rt_id)===rt&&d.nama_sampah);
     const dominMap = {};
     rtItems.forEach(d=>dominMap[d.nama_sampah]=(dominMap[d.nama_sampah]||0)+1);
     const dom = Object.entries(dominMap).sort((a,b)=>b[1]-a[1])[0];
@@ -1866,8 +1885,9 @@ function renderRtTable() {
   const grouped = {};
   filteredData.forEach(d => {
     if (!d.rt_id) return;
-    const key = `${d.rt_id}`;
-    if (!grouped[key]) grouped[key] = { rt:d.rt_id, items:[] };
+    const key = normalizeRt(d.rt_id);
+    if (!key) return;
+    if (!grouped[key]) grouped[key] = { rt:key, items:[] };
     grouped[key].items.push(d);
   });
   const arr = Object.values(grouped).sort((a,b)=>b.items.length-a.items.length);
@@ -1888,7 +1908,7 @@ function renderRtTable() {
     return `<tr>
       <td style="font-weight:700;color:var(--eco-dark)">${i+1}</td>
       <td>
-        <div class="rank-name">RT ${g.rt}</div>
+        <div class="rank-name">${g.rt}</div>
       </td>
       <td><span class="rank-count">${cnt}</span></td>
       <td>${dom?`<span class="kategori-pill" style="background:${CAT_COLORS[dom[0]]||'#eee'}22;color:${CAT_COLORS[dom[0]]||'#555'}">${CAT_ICONS[dom[0]]||''} ${dom[0]}</span>`:'-'}</td>
@@ -1965,13 +1985,22 @@ function updateMapPins() {
       });
       const time = d.created_at ? new Date(d.created_at).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '-';
       const conf = d.confidence!=null ? (parseConf(d.confidence).toFixed(1)+'%') : '-';
+      const rt = formatRt(d.rt_id);
+      const rw = formatRw(d.rw_id);
+      const alamat = d.alamat || '-';
+      const totalArea = countNearby(d.latitude, d.longitude);
+      const dominanArea = dominantNearby(d.latitude, d.longitude);
       const popup = `
         <div class="popup-title">${icon} ${d.nama_sampah||'Sampah'}</div>
-        <div class="popup-row"><span>Wilayah</span><b>${d.wilayah||'-'}</b></div>
-        <div class="popup-row"><span>RT</span><b>RT ${d.rt_id||'-'}</b></div>
+        <div class="popup-row"><span>Kategori</span><b>${d.kategori||'-'}</b></div>
+        <div class="popup-row"><span>Alamat</span><b>${alamat}</b></div>
+        <div class="popup-row"><span>Wilayah</span><b>${rt} / ${rw}</b></div>
+        <div class="popup-row"><span>Area ini</span><b>${totalArea} scan</b></div>
+        <div class="popup-row"><span>Dominan</span><b>${dominanArea}</b></div>
         <div class="popup-row"><span>Akurasi</span><b>${conf}</b></div>
         <div class="popup-row"><span>Waktu</span><b>${time}</b></div>
         ${d.image_url?`<img src="${d.image_url}" style="width:100%;border-radius:8px;margin-top:8px;object-fit:cover;max-height:120px" onerror="this.style.display='none'" />`:''}
+        ${d.image_url?`<a href="${d.image_url}" target="_blank" download style="display:inline-flex;margin-top:8px;color:#2E7D32;font-size:12px;font-weight:700;text-decoration:none">Download foto</a>`:''}
         <div><span class="popup-badge">${d.kategori||d.nama_sampah||'Sampah'}</span></div>`;
       L.marker([d.latitude,d.longitude],{icon:markerIcon}).bindPopup(popup,{maxWidth:220}).addTo(pinGroup);
     });
@@ -1980,7 +2009,7 @@ function updateMapPins() {
     // Group by RT and show circle marker per RT
     const rtGroups = {};
     withCoords.forEach(d=>{
-      const key=d.rt_id||'Unknown';
+      const key=normalizeRt(d.rt_id)||'Unknown';
       if(!rtGroups[key]) rtGroups[key]={items:[],lat:0,lng:0};
       rtGroups[key].items.push(d);
       rtGroups[key].lat+=d.latitude;
@@ -1995,7 +2024,7 @@ function updateMapPins() {
       const dom=Object.entries(dominMap).sort((a,b)=>b[1]-a[1])[0];
       const color=dom?CAT_COLORS[dom[0]]:'#4CAF50';
       L.circleMarker([lat,lng],{radius:r,fillColor:color,color:'#fff',weight:2,fillOpacity:.75})
-        .bindPopup(`<div class="popup-title">RT ${rt}</div><div class="popup-row"><span>Total Scan</span><b>${n}</b></div><div class="popup-row"><span>Dominan</span><b>${dom?`${CAT_ICONS[dom[0]]||''} ${dom[0]}`:'-'}</b></div><div><span class="popup-badge">Cluster ${n} scan</span></div>`)
+        .bindPopup(`<div class="popup-title">${rt}</div><div class="popup-row"><span>Total Scan</span><b>${n}</b></div><div class="popup-row"><span>Dominan</span><b>${dom?`${CAT_ICONS[dom[0]]||''} ${dom[0]}`:'-'}</b></div><div><span class="popup-badge">Cluster ${n} scan</span></div>`)
         .addTo(pinGroup);
     });
   }
@@ -2014,11 +2043,59 @@ function setMapMode(mode) {
 function groupBy(arr, key) {
   const out = {};
   arr.forEach(d => {
-    const k = d[key]||'';
+    const k = key === 'rt_id' ? normalizeRt(d[key]) : (d[key]||'');
     if (!k) return;
     out[k] = (out[k]||0) + 1;
   });
   return out;
+}
+
+function normalizeRt(raw) {
+  if (raw == null || String(raw).trim() === '') return '';
+  const s = String(raw).trim().replace(/^rt\s*/i, '');
+  const n = parseInt(s, 10);
+  return Number.isNaN(n) ? `RT ${s.trim()}` : `RT ${String(n).padStart(2, '0')}`;
+}
+
+function formatRt(raw) {
+  return normalizeRt(raw) || '-';
+}
+
+function formatRw(raw) {
+  if (raw == null || String(raw).trim() === '') return '-';
+  const s = String(raw).trim().replace(/^rw\s*/i, '');
+  const n = parseInt(s, 10);
+  return Number.isNaN(n) ? `RW ${s.trim()}` : `RW ${String(n).padStart(2, '0')}`;
+}
+
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const p1 = lat1 * Math.PI / 180;
+  const p2 = lat2 * Math.PI / 180;
+  const dp = (lat2 - lat1) * Math.PI / 180;
+  const dl = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2;
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function nearbyItems(lat, lng) {
+  return filteredData.filter(d =>
+    d.latitude && d.longitude &&
+    distanceMeters(lat, lng, d.latitude, d.longitude) <= 80
+  );
+}
+
+function countNearby(lat, lng) {
+  return nearbyItems(lat, lng).length;
+}
+
+function dominantNearby(lat, lng) {
+  const counts = {};
+  nearbyItems(lat, lng).forEach(d => {
+    if (d.nama_sampah) counts[d.nama_sampah] = (counts[d.nama_sampah] || 0) + 1;
+  });
+  const dom = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  return dom ? dom[0] : '-';
 }
 
 /* ════════════════════════════════════════════

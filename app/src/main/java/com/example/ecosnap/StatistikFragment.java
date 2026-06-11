@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -153,12 +154,18 @@ public class StatistikFragment extends Fragment {
     }
 
     private void loadScansByRw(ApiService api, String rwId) {
-        api.getScanByRw("eq." + rwId).enqueue(new Callback<List<ScanHistory>>() {
+        api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    allScanList = response.body();
+                    List<ScanHistory> sameRw = new ArrayList<>();
+                    for (ScanHistory s : response.body()) {
+                        if (isMatchingRw(s.getRwId(), rwId)) {
+                            sameRw.add(s);
+                        }
+                    }
+                    allScanList = sameRw;
                     applyRtFilter();
                 } else {
                     showError("Gagal memuat statistik (server)");
@@ -492,6 +499,21 @@ public class StatistikFragment extends Fragment {
             return "RT " + String.format("%02d", Integer.parseInt(clean));
         } catch (NumberFormatException e) {
             return clean.toUpperCase().startsWith("RT") ? clean : "RT " + clean;
+        }
+    }
+
+    private boolean isMatchingRw(String scanRwId, String filterRwId) {
+        if (scanRwId == null || filterRwId == null) return false;
+        return normalizeRw(scanRwId).equals(normalizeRw(filterRwId));
+    }
+
+    private String normalizeRw(String rw) {
+        if (rw == null) return "";
+        String clean = rw.replace("RW", "").replace("rw", "").trim();
+        try {
+            return String.valueOf(Integer.parseInt(clean));
+        } catch (NumberFormatException e) {
+            return clean.toLowerCase(Locale.US);
         }
     }
 

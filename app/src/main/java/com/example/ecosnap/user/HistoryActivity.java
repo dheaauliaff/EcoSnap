@@ -96,6 +96,7 @@ public class HistoryActivity extends AppCompatActivity {
                                 scanList.add(s);
                             }
                         }
+                        sortNewestFirst(scanList);
                         adapter.notifyDataSetChanged();
                         tvJumlahRiwayat.setText(scanList.size() + " scan");
                         showList();
@@ -135,6 +136,7 @@ public class HistoryActivity extends AppCompatActivity {
                                 scanList.add(s);
                             }
                         }
+                        sortNewestFirst(scanList);
                         adapter.notifyDataSetChanged();
                         tvJumlahRiwayat.setText(scanList.size() + " scan");
                         showList();
@@ -174,5 +176,13 @@ public class HistoryActivity extends AppCompatActivity {
         if (rvRiwayat != null) rvRiwayat.setVisibility(View.GONE);
         if (layoutEmpty != null) layoutEmpty.setVisibility(View.VISIBLE);
         if (tvJumlahRiwayat != null) tvJumlahRiwayat.setText("0 scan");
+    }
+
+    private void sortNewestFirst(List<ScanHistory> list) {
+        list.sort((a, b) -> safeDate(b.getCreatedAt()).compareTo(safeDate(a.getCreatedAt())));
+    }
+
+    private String safeDate(String date) {
+        return date == null ? "" : date;
     }
 }
