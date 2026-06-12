@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.ecosnap.R;
 import com.example.ecosnap.ScanHistory;
+import com.example.ecosnap.WilayahUtils;
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.network.RetrofitClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -44,6 +45,7 @@ public class AdminRankingActivity extends AppCompatActivity {
 
     // Simpan data semua scan supaya bisa difilter per RT
     private List<ScanHistory> allScanList = new ArrayList<>();
+    private final List<String> registeredRtLabels = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +77,7 @@ public class AdminRankingActivity extends AppCompatActivity {
                     User admin = response.body().get(0);
                     String rwId = admin.getRwId() != null ? admin.getRwId() : "";
                     if (!rwId.isEmpty()) {
+                        loadRegisteredRtUsers(api, rwId);
                         fetchScansForRw(api, rwId);
                     }
                 }
@@ -84,13 +87,43 @@ public class AdminRankingActivity extends AppCompatActivity {
         });
     }
 
+    private void loadRegisteredRtUsers(ApiService api, String rwId) {
+        registeredRtLabels.clear();
+        api.getAllUsers().enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (isFinishing()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    for (User user : response.body()) {
+                        if (!"user".equalsIgnoreCase(user.getRole())) continue;
+                        if (!WilayahUtils.isMatchingRw(user.getRwId(), rwId)) continue;
+                        String rt = WilayahUtils.formatRtId(user.getRtId());
+                        if (!rt.isEmpty() && !registeredRtLabels.contains(rt)) {
+                            registeredRtLabels.add(rt);
+                        }
+                    }
+                    java.util.Collections.sort(registeredRtLabels);
+                    if (!allScanList.isEmpty()) processAndDisplay(allScanList);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {}
+        });
+    }
+
     private void fetchScansForRw(ApiService api, String rwId) {
-        api.getScanByRw("eq." + rwId).enqueue(new Callback<List<ScanHistory>>() {
+        api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (isFinishing()) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    allScanList = response.body();
+                    allScanList = new ArrayList<>();
+                    for (ScanHistory s : response.body()) {
+                        if (WilayahUtils.isMatchingRw(s.getRwId(), rwId)) {
+                            allScanList.add(s);
+                        }
+                    }
                     processAndDisplay(allScanList);
                 } else {
                     Toast.makeText(AdminRankingActivity.this, "Gagal memuat ranking", Toast.LENGTH_SHORT).show();
@@ -114,18 +147,23 @@ public class AdminRankingActivity extends AppCompatActivity {
         Map<String, Integer> rtMap = new HashMap<>();
         Map<String, Integer> namaGlobalMap = new HashMap<>();
 
+        for (String rt : registeredRtLabels) {
+            rtMap.put(rt, 0);
+        }
+
         for (ScanHistory s : list) {
-            String rt = s.getRtId();
-            if (rt != null && !rt.isEmpty()) {
+            String rt = WilayahUtils.formatRtId(s.getRtId());
+            boolean rtRegistered = registeredRtLabels.isEmpty() || registeredRtLabels.contains(rt);
+            if (rtRegistered && rt != null && !rt.isEmpty()) {
                 rtMap.put(rt, rtMap.getOrDefault(rt, 0) + 1);
             }
-            String nama = s.getJenisSampah();
-            if (nama != null && !nama.isEmpty()) {
+            String nama = WilayahUtils.normalizeJenis(s.getJenisSampah());
+            if (rtRegistered && nama != null && !nama.isEmpty()) {
                 namaGlobalMap.put(nama, namaGlobalMap.getOrDefault(nama, 0) + 1);
             }
         }
 
-        tvTotalRtAktif.setText(String.valueOf(rtMap.size()));
+        tvTotalRtAktif.setText(String.valueOf(registeredRtLabels.isEmpty() ? rtMap.size() : registeredRtLabels.size()));
 
         // Tampilkan jenis dominan global
         String dominan = getDominant(namaGlobalMap);
@@ -195,9 +233,9 @@ public class AdminRankingActivity extends AppCompatActivity {
             // Hitung jenis dominan per RT ini
             Map<String, Integer> rtJenisMap = new HashMap<>();
             for (ScanHistory s : allScanList) {
-                if (rtId.equals(s.getRtId()) && s.getJenisSampah() != null) {
-                    rtJenisMap.put(s.getJenisSampah(),
-                            rtJenisMap.getOrDefault(s.getJenisSampah(), 0) + 1);
+                String jenis = WilayahUtils.normalizeJenis(s.getJenisSampah());
+                if (WilayahUtils.isMatchingRt(s.getRtId(), rtId) && !jenis.isEmpty()) {
+                    rtJenisMap.put(jenis, rtJenisMap.getOrDefault(jenis, 0) + 1);
                 }
             }
             String dominanRT = getDominant(rtJenisMap);

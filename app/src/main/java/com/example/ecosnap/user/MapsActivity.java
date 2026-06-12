@@ -10,6 +10,7 @@ import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.R;
 import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.ScanHistory;
+import com.example.ecosnap.WilayahUtils;
 import com.example.ecosnap.model.User;
 import com.example.ecosnap.admin.DashboardAdminActivity;
 import com.example.ecosnap.admin.RekapAdminActivity;
@@ -25,6 +26,7 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -118,11 +120,17 @@ public class MapsActivity extends AppCompatActivity {
     private void loadDataSebaran() {
         if (rwId.isEmpty()) return;
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
-        apiService.getScanByRw("eq." + rwId).enqueue(new Callback<List<ScanHistory>>() {
+        apiService.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
             @Override
             public void onResponse(Call<List<ScanHistory>> call, Response<List<ScanHistory>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    tampilkanMarkers(response.body());
+                    List<ScanHistory> sameRw = new ArrayList<>();
+                    for (ScanHistory s : response.body()) {
+                        if (WilayahUtils.isMatchingRw(s.getRwId(), rwId)) {
+                            sameRw.add(s);
+                        }
+                    }
+                    tampilkanMarkers(sameRw);
                 }
             }
             @Override

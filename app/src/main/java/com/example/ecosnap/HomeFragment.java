@@ -129,7 +129,7 @@ public class HomeFragment extends Fragment {
                 if (!isAdded() || !response.isSuccessful() || response.body() == null) return;
                 java.util.Map<String, Integer> counts = new java.util.HashMap<>();
                 for (ScanHistory s : response.body()) {
-                    String nama = s.getJenisSampah(); // nama_sampah dari Supabase
+                    String nama = WilayahUtils.normalizeJenis(s.getJenisSampah()); // nama_sampah dari Supabase
                     if (nama != null) counts.put(nama, counts.getOrDefault(nama, 0) + 1);
                 }
                 if (tvHomeOrganik != null) tvHomeOrganik.setText(counts.getOrDefault("Organik", 0) > 0 ? String.valueOf(counts.get("Organik")) : "-");

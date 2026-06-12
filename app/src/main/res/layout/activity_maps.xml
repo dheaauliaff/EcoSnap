@@ -187,15 +187,6 @@
             <include
                 android:id="@+id/metricLaporan"
                 layout="@layout/item_maps_metric" />
-
-            <View
-                android:layout_width="1dp"
-                android:layout_height="54dp"
-                android:background="#EEEEEE" />
-
-            <include
-                android:id="@+id/metricDominan"
-                layout="@layout/item_maps_metric" />
          </LinearLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -338,6 +329,7 @@
             android:elevation="5dp"
             android:orientation="vertical"
             android:padding="20dp">
+
 
             <TextView
                 android:layout_width="wrap_content"

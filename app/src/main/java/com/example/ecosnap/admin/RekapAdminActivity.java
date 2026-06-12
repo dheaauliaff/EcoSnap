@@ -22,6 +22,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.example.ecosnap.DonutChartView;
 import com.example.ecosnap.R;
 import com.example.ecosnap.ScanHistory;
+import com.example.ecosnap.WilayahUtils;
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.network.RetrofitClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -65,9 +66,10 @@ public class RekapAdminActivity extends AppCompatActivity {
 
     private List<ScanHistory> allScans = new ArrayList<>();
     private List<ScanHistory> currentRiwayatList = new ArrayList<>();
+    private final List<String> registeredRtLabels = new ArrayList<>();
     private String activeRtFilter = "Semua RT";
     private int currentRiwayatPage = 0;
-    private static final int RIWAYAT_PAGE_SIZE = 5;
+    private static final int RIWAYAT_PAGE_SIZE = 10000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +93,7 @@ public class RekapAdminActivity extends AppCompatActivity {
         tvRankTotalScan    = findViewById(R.id.tvRankTotalScan);
         tvRankDominan      = findViewById(R.id.tvRankDominan);
         layoutRankingList  = findViewById(R.id.layoutRankingList);
+        hideDuplicateRankingSection();
 
         layoutRiwayatAll = findViewById(R.id.layoutRiwayatAll);
         pbRiwayat        = findViewById(R.id.pbRiwayat);
@@ -140,6 +143,7 @@ public class RekapAdminActivity extends AppCompatActivity {
                     User admin = response.body().get(0);
                     String rwId = admin.getRwId() != null ? admin.getRwId() : "";
                     if (!rwId.isEmpty()) {
+                        loadRegisteredRtUsers(api, rwId);
                         fetchScansForRw(api, rwId);
                     } else {
                         showError("RW Admin tidak ditemukan");
@@ -153,6 +157,33 @@ public class RekapAdminActivity extends AppCompatActivity {
         });
     }
 
+    private void loadRegisteredRtUsers(ApiService api, String rwId) {
+        registeredRtLabels.clear();
+        api.getAllUsers().enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (isFinishing()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    for (User user : response.body()) {
+                        if (!"user".equalsIgnoreCase(user.getRole())) continue;
+                        if (!WilayahUtils.isMatchingRw(user.getRwId(), rwId)) continue;
+                        String rt = WilayahUtils.formatRtId(user.getRtId());
+                        if (!rt.isEmpty() && !registeredRtLabels.contains(rt)) {
+                            registeredRtLabels.add(rt);
+                        }
+                    }
+                    Collections.sort(registeredRtLabels);
+                    if (!allScans.isEmpty()) {
+                        applyFilterAndDisplay();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {}
+        });
+    }
+
     private void fetchScansForRw(ApiService api, String rwId) {
         api.getAllScans().enqueue(new Callback<List<ScanHistory>>() {
             @Override
@@ -161,7 +192,7 @@ public class RekapAdminActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     allScans = new ArrayList<>();
                     for (ScanHistory s : response.body()) {
-                        if (isMatchingRw(s.getRwId(), rwId)) {
+                        if (WilayahUtils.isMatchingRw(s.getRwId(), rwId)) {
                             allScans.add(s);
                         }
                     }
@@ -189,14 +220,7 @@ public class RekapAdminActivity extends AppCompatActivity {
             PopupMenu popup = new PopupMenu(this, btnFilterRt);
             popup.getMenu().add("Semua RT");
 
-            List<String> rts = new ArrayList<>();
-            for (ScanHistory s : allScans) {
-                String rt = formatRtId(s.getRtId());
-                if (!rt.isEmpty() && !rts.contains(rt)) {
-                    rts.add(rt);
-                }
-            }
-            Collections.sort(rts);
+            List<String> rts = getDropdownRtLabels();
             for (String rt : rts) {
                 popup.getMenu().add(rt);
             }
@@ -211,11 +235,29 @@ public class RekapAdminActivity extends AppCompatActivity {
         });
     }
 
+    private List<String> getDropdownRtLabels() {
+        if (!registeredRtLabels.isEmpty()) {
+            return new ArrayList<>(registeredRtLabels);
+        }
+
+        List<String> rts = new ArrayList<>();
+        for (ScanHistory s : allScans) {
+            String rt = WilayahUtils.formatRtId(s.getRtId());
+            if (!rt.isEmpty() && !rts.contains(rt)) {
+                rts.add(rt);
+            }
+        }
+        Collections.sort(rts);
+        return rts;
+    }
+
     private void applyFilterAndDisplay() {
         List<ScanHistory> filtered = new ArrayList<>();
         for (ScanHistory s : allScans) {
-            if ("Semua RT".equals(activeRtFilter)
-                    || activeRtFilter.equalsIgnoreCase(formatRtId(s.getRtId()))) {
+            boolean rtRegistered = registeredRtLabels.isEmpty()
+                    || registeredRtLabels.contains(WilayahUtils.formatRtId(s.getRtId()));
+            if (rtRegistered && ("Semua RT".equals(activeRtFilter)
+                    || WilayahUtils.isMatchingRt(s.getRtId(), activeRtFilter))) {
                 filtered.add(s);
             }
         }
@@ -231,11 +273,11 @@ public class RekapAdminActivity extends AppCompatActivity {
         Map<String, Integer> rtMap   = new HashMap<>();
 
         for (ScanHistory s : list) {
-            String nama = s.getJenisSampah();
+            String nama = WilayahUtils.normalizeJenis(s.getJenisSampah());
             if (nama != null && !nama.isEmpty()) {
                 namaMap.put(nama, namaMap.getOrDefault(nama, 0) + 1);
             }
-            String rt = formatRtId(s.getRtId());
+            String rt = WilayahUtils.formatRtId(s.getRtId());
             if (!rt.isEmpty()) {
                 rtMap.put(rt, rtMap.getOrDefault(rt, 0) + 1);
             }
@@ -263,7 +305,7 @@ public class RekapAdminActivity extends AppCompatActivity {
         updateStatText(tvStatPlastik, namaMap.getOrDefault("Plastik", 0), total);
 
         // ── Summary card ranking
-        if (tvRankTotalRtAktif != null) tvRankTotalRtAktif.setText(String.valueOf(rtMap.size()));
+        if (tvRankTotalRtAktif != null) tvRankTotalRtAktif.setText(String.valueOf(registeredRtLabels.size()));
         if (tvRankTotalScan    != null) tvRankTotalScan.setText(String.valueOf(total));
         String dominan = getDominant(namaMap);
         if (tvRankDominan != null) tvRankDominan.setText("Sampah paling banyak: " + dominan);
@@ -272,6 +314,22 @@ public class RekapAdminActivity extends AppCompatActivity {
 
         // Tampilkan riwayat scan semua user dengan foto
         buildRiwayatAllUsers(list);
+    }
+
+    private void hideDuplicateRankingSection() {
+        if (tvRankTotalRtAktif == null || layoutRankingList == null) return;
+
+        View summaryCard = (View) tvRankTotalRtAktif.getParent();
+        while (summaryCard != null && summaryCard.getParent() instanceof View
+                && summaryCard.getId() != R.id.scrollView) {
+            View parent = (View) summaryCard.getParent();
+            if (parent instanceof LinearLayout
+                    && ((LinearLayout) parent).indexOfChild(layoutRankingList) >= 0) {
+                parent.setVisibility(View.GONE);
+                return;
+            }
+            summaryCard = parent;
+        }
     }
 
     /**
@@ -502,8 +560,9 @@ public class RekapAdminActivity extends AppCompatActivity {
 
             Map<String, Integer> rtJenis = new HashMap<>();
             for (ScanHistory s : allList) {
-                if (rtId.equals(formatRtId(s.getRtId())) && s.getJenisSampah() != null)
-                    rtJenis.put(s.getJenisSampah(), rtJenis.getOrDefault(s.getJenisSampah(), 0) + 1);
+                String jenis = WilayahUtils.normalizeJenis(s.getJenisSampah());
+                if (WilayahUtils.isMatchingRt(s.getRtId(), rtId) && !jenis.isEmpty())
+                    rtJenis.put(jenis, rtJenis.getOrDefault(jenis, 0) + 1);
             }
 
             android.widget.TextView tvDom = new android.widget.TextView(this);

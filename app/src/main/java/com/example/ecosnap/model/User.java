@@ -13,7 +13,9 @@ public class User {
     @SerializedName("nama")
     private String nama;
 
-    // Ganti email jadi nomor_hp sesuai kolom di Supabase
+    @SerializedName("email")
+    private String email;
+
     @SerializedName("nomor_hp")
     private String nomorHp;
 
@@ -35,6 +37,7 @@ public class User {
     public String getId() { return id; }
     public String getFirebaseUid() { return firebaseUid; }
     public String getNama() { return nama; }
+    public String getEmail() { return email; }
     public String getNomorHp() { return nomorHp; }
     public String getRole() { return role; }
     public String getWilayah() { return wilayah; }

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.app.DatePickerDialog;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,7 @@ import com.example.ecosnap.auth.LoginActivity;
 import com.example.ecosnap.R;
 import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.ScanHistory;
+import com.example.ecosnap.WilayahUtils;
 import com.example.ecosnap.model.User;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -72,6 +74,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
     boolean customMonthSelected = false;
     boolean customYearSelected = false;
     final List<ScanHistory> cachedScans = new ArrayList<>();
+    final List<String> registeredRtLabels = new ArrayList<>();
 
     // RT tracking
     final Map<String, Integer> rtCount = new HashMap<>();
@@ -216,12 +219,42 @@ public class DashboardAdminActivity extends AppCompatActivity {
                     if (tvNamaAdmin != null) tvNamaAdmin.setText(admin.getNama());
                     if (tvWilayahAdmin != null) tvWilayahAdmin.setText(admin.getWilayah());
                     rwId = admin.getRwId() != null ? admin.getRwId() : "";
+                    loadRegisteredRtUsers(api);
                     loadStatistik();
                 }
             }
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
                 Toast.makeText(DashboardAdminActivity.this, "Gagal load data", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadRegisteredRtUsers(ApiService api) {
+        registeredRtLabels.clear();
+        api.getAllUsers().enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (User user : response.body()) {
+                        if (!"user".equalsIgnoreCase(user.getRole())) continue;
+                        if (!WilayahUtils.isMatchingRw(user.getRwId(), rwId)) continue;
+                        String rt = WilayahUtils.formatRtId(user.getRtId());
+                        if (!rt.isEmpty() && !registeredRtLabels.contains(rt)) {
+                            registeredRtLabels.add(rt);
+                        }
+                    }
+                    Collections.sort(registeredRtLabels);
+                    if (tvTotalRtAktif != null) {
+                        tvTotalRtAktif.setText(String.valueOf(registeredRtLabels.size()));
+                    }
+                    applyCurrentPeriod();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                if (tvTotalRtAktif != null) tvTotalRtAktif.setText("0");
             }
         });
     }
@@ -236,7 +269,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     cachedScans.clear();
                     for (ScanHistory s : response.body()) {
-                        if (isMatchingRw(s.getRwId(), rwId)) {
+                        if (WilayahUtils.isMatchingRw(s.getRwId(), rwId)) {
                             cachedScans.add(s);
                         }
                     }
@@ -282,7 +315,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
         List<ScanHistory> filtered = filterByPeriod(cachedScans);
         hitungStatistik(filtered);
         buatGrafik(filtered);
-        buatRanking(filtered);
+        buatRanking(cachedScans);
     }
 
     private void initializeDefaultPeriod() {
@@ -351,29 +384,55 @@ public class DashboardAdminActivity extends AppCompatActivity {
     }
 
     private void showMonthPicker() {
-        List<String> months = getAvailableMonths();
-        if (months.isEmpty()) {
-            Toast.makeText(this, "Belum ada data bulan dari scan", Toast.LENGTH_SHORT).show();
+
+        String[] months = {
+                "Januari", "Februari", "Maret", "April",
+                "Mei", "Juni", "Juli", "Agustus",
+                "September", "Oktober", "November", "Desember"
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog_month_wheel, null);
+
+        NumberPicker picker = view.findViewById(R.id.monthPicker);
+
+        picker.setMinValue(0);
+        picker.setMaxValue(11);
+        picker.setDisplayedValues(months);
+        picker.setWrapSelectorWheel(true);
+
+        // set default selected
+        if (selectedMonthKey != null && !selectedMonthKey.isEmpty()) {
+            try {
+                int monthIndex = Integer.parseInt(selectedMonthKey.substring(5, 7)) - 1;
+                picker.setValue(monthIndex);
+            } catch (Exception ignored) {}
+        }
+
+        builder.setView(view);
+
+        AlertDialog dialog = builder.create();
+
+        view.findViewById(R.id.btnOk).setOnClickListener(v -> {
+
+            int selectedIndex = picker.getValue();
+            Calendar cal = Calendar.getInstance();
+            int year = cal.get(Calendar.YEAR);
+
+            selectedMonthKey = String.format(Locale.US, "%04d-%02d",
+                    year, selectedIndex + 1);
+
+            customMonthSelected = true;
             applyCurrentPeriod();
-            return;
-        }
 
-        String[] labels = new String[months.size()];
-        int checked = 0;
-        for (int i = 0; i < months.size(); i++) {
-            labels[i] = formatMonthLabel(months.get(i));
-            if (months.get(i).equals(selectedMonthKey)) checked = i;
-        }
+            Toast.makeText(this,
+                    "Bulan: " + months[selectedIndex],
+                    Toast.LENGTH_SHORT).show();
 
-        new AlertDialog.Builder(this)
-                .setTitle("Pilih bulan")
-                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
-                    selectedMonthKey = months.get(which);
-                    customMonthSelected = true;
-                    dialog.dismiss();
-                    applyCurrentPeriod();
-                })
-                .show();
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     private void showYearPicker() {
@@ -574,7 +633,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
                     case "recycle":       recycle++;      break;
                 }
             }
-            String rt = formatRtId(s.getRtId());
+            String rt = WilayahUtils.formatRtId(s.getRtId());
             if (!rt.isEmpty()) {
                 rtCount.put(rt, rtCount.getOrDefault(rt, 0) + 1);
             }
@@ -585,7 +644,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
         if (tvTotalAnorganik != null) tvTotalAnorganik.setText(String.valueOf(anorganik));
         if (tvTotalBukanSampah != null) tvTotalBukanSampah.setText(String.valueOf(bukanSampah));
         if (tvTotalRecycle   != null) tvTotalRecycle.setText(String.valueOf(recycle));
-        if (tvTotalRtAktif   != null) tvTotalRtAktif.setText(String.valueOf(rtCount.size()));
+        if (tvTotalRtAktif   != null) tvTotalRtAktif.setText(String.valueOf(registeredRtLabels.size()));
     }
 
     private void buatGrafik(List<ScanHistory> data) {
@@ -596,7 +655,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
         for (ScanHistory s : data) {
             if (s.getJenisSampah() != null) {
-                String jenis = normalizeJenisKey(s.getJenisSampah());
+                String jenis = WilayahUtils.normalizeJenis(s.getJenisSampah()).toLowerCase(Locale.US);
                 if (countMap.containsKey(jenis)) countMap.put(jenis, countMap.get(jenis) + 1);
             }
         }
@@ -620,6 +679,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
         );
         dataSet.setValueTextColor(Color.parseColor("#333333"));
         dataSet.setValueTextSize(10f);
+        dataSet.setValueFormatter(WilayahUtils.integerValueFormatter());
 
         BarData barData = new BarData(dataSet);
         barData.setBarWidth(0.6f);
@@ -643,6 +703,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
         leftAxis.setLabelCount(6, true);
         leftAxis.setGranularity(1f);
         leftAxis.setGranularityEnabled(true);
+        leftAxis.setValueFormatter(WilayahUtils.integerValueFormatter());
         barChart.getAxisRight().setEnabled(false);
         barChart.animateY(800);
         barChart.invalidate();
@@ -664,9 +725,13 @@ public class DashboardAdminActivity extends AppCompatActivity {
         if (layoutRanking == null) return;
         Map<String, Integer> rtScanCount = new HashMap<>();
 
+        for (String rt : registeredRtLabels) {
+            rtScanCount.put(rt, 0);
+        }
+
         for (ScanHistory s : data) {
-            String rt = formatRtId(s.getRtId());
-            if (!rt.isEmpty()) {
+            String rt = WilayahUtils.formatRtId(s.getRtId());
+            if (!rt.isEmpty() && (registeredRtLabels.isEmpty() || registeredRtLabels.contains(rt))) {
                 rtScanCount.put(rt, rtScanCount.getOrDefault(rt, 0) + 1);
             }
         }

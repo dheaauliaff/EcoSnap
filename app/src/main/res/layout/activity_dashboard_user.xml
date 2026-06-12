@@ -155,7 +155,7 @@
                 android:layout_marginTop="16dp"
                 android:orientation="vertical">
 
-                                <!-- ROW 1 -->
+                <!-- ROW 1 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -285,7 +285,7 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                                <!-- ROW 2 -->
+                <!-- ROW 2 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -416,7 +416,7 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                                <!-- ROW 3 -->
+                <!-- ROW 3 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

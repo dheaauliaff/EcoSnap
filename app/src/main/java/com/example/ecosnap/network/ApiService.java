@@ -20,6 +20,9 @@ public interface ApiService {
             @Query("firebase_uid") String uid
     );
 
+    @GET("user?select=*")
+    Call<List<User>> getAllUsers();
+
     @POST("user")
     Call<Void> insertUser(@Body Map<String, String> data);
 

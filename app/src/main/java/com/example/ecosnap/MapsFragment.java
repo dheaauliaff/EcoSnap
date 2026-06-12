@@ -169,7 +169,7 @@ public class MapsFragment extends Fragment {
 
                 List<String> rts = new ArrayList<>();
                 for (ScanHistory s : allScans) {
-                    String rt = normalizeRt(s.getRtId());
+                    String rt = WilayahUtils.formatRtId(s.getRtId());
                     if (!rt.isEmpty() && !rts.contains(rt)) {
                         rts.add(rt);
                     }
@@ -315,7 +315,7 @@ public class MapsFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     List<ScanHistory> sameRw = new ArrayList<>();
                     for (ScanHistory s : response.body()) {
-                        if (isMatchingRw(s.getRwId(), userRwId)) {
+                        if (WilayahUtils.isMatchingRw(s.getRwId(), userRwId)) {
                             sameRw.add(s);
                         }
                     }
@@ -350,7 +350,7 @@ public class MapsFragment extends Fragment {
             // 2. RT filter
             boolean matchesRt = true;
             if (!"Semua RT".equals(activeRtFilter)) {
-                matchesRt = normalizeRt(activeRtFilter).equalsIgnoreCase(normalizeRt(s.getRtId()));
+                matchesRt = WilayahUtils.isMatchingRt(s.getRtId(), activeRtFilter);
             }
 
             if (matchesPeriod && matchesRt) {
@@ -363,8 +363,8 @@ public class MapsFragment extends Fragment {
         rtCount.clear();
 
         for (ScanHistory s : displayedScans) {
-            String nama = s.getJenisSampah();
-            String rt   = normalizeRt(s.getRtId());
+            String nama = WilayahUtils.normalizeJenis(s.getJenisSampah());
+            String rt   = WilayahUtils.formatRtId(s.getRtId());
             if (nama != null) globalCategoryCount.put(nama,
                     globalCategoryCount.getOrDefault(nama, 0) + 1);
             if (!rt.isEmpty()) rtCount.put(rt,
@@ -417,9 +417,11 @@ public class MapsFragment extends Fragment {
     private void addScanPinAndZone(ScanHistory scan) {
         double lat  = scan.getLatitude();
         double lng  = scan.getLongitude();
-        String nama = scan.getJenisSampah() != null ? scan.getJenisSampah() : "Sampah";
+        String nama = !WilayahUtils.normalizeJenis(scan.getJenisSampah()).isEmpty()
+                ? WilayahUtils.normalizeJenis(scan.getJenisSampah())
+                : "Sampah";
         String kat  = scan.getKategori()    != null ? scan.getKategori()    : "-";
-        String rt   = scan.getRtId()        != null ? normalizeRt(scan.getRtId()) : "-";
+        String rt   = scan.getRtId()        != null ? WilayahUtils.formatRtId(scan.getRtId()) : "-";
         String rw   = scan.getRwId()        != null ? scan.getRwId()        : "-";
         int    color = colorForNama(nama);
 
@@ -562,8 +564,6 @@ public class MapsFragment extends Fragment {
                 R.drawable.ic_user_outline, String.valueOf(rtCount.size()), "RT Aktif");
         bindMetric(getView().findViewById(R.id.metricLaporan),
                 R.drawable.ic_document_outline, String.valueOf(totalReports), "Total Scan");
-        bindMetric(getView().findViewById(R.id.metricDominan),
-                iconFor(dominant), dominant, "Dominan");
 
         // Update category breakdown detail
         buildCategoryBreakdown();

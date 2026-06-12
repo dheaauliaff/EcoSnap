@@ -155,6 +155,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:layout_gravity="center"
                 app:singleSelection="true"
                 app:selectionRequired="true"
                 app:chipSpacingHorizontal="8dp">
@@ -205,68 +206,9 @@
                 android:clipChildren="false"
                 android:clipToPadding="false">
 
-                <!-- Total Scan Card -->
+                <!-- RT Aktif placeholder card -->
                 <LinearLayout
-                    android:id="@+id/cardTotalScan"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_premium_card"
-                    android:elevation="4dp"
-                    android:stateListAnimator="@animator/card_bounce_anim"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
-
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@drawable/bg_icon_gradient_organik">
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_document_outline"
-                            app:tint="#4CAF50" />
-                    </FrameLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:orientation="vertical"
-                        android:gravity="center">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Total Scan"
-                            android:textColor="#212121"
-                            android:textSize="13sp" />
-                        <TextView
-                            android:id="@+id/tvTotalSampah"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="0"
-                            android:textColor="#4CAF50"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.05" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="items"
-                            android:textColor="#757575"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Organik Card -->
-                <LinearLayout
-                    android:id="@+id/cardOrganik"
+                    android:id="@+id/cardRtAktif"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -283,13 +225,13 @@
                     <FrameLayout
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/bg_icon_gradient_organik">
+                        android:background="@drawable/bg_icon_gradient_kertas">
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_leaf_outline"
-                            app:tint="#4CAF50" />
+                            android:src="@drawable/ic_user_outline"
+                            app:tint="#FFC107" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -301,23 +243,23 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Organik"
+                            android:text="RT Aktif"
                             android:textColor="#212121"
                             android:textSize="13sp" />
                         <TextView
-                            android:id="@+id/tvTotalOrganik"
+                            android:id="@+id/tvTotalRtAktif"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="0"
-                            android:textColor="#4CAF50"
+                            android:textColor="#FFC107"
                             android:textSize="22sp"
                             android:textStyle="bold"
                             android:letterSpacing="0.05" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="items"
+                            android:text="RT"
                             android:textColor="#757575"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -522,9 +464,9 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- RT Aktif placeholder card -->
+                <!-- Organik Card -->
                 <LinearLayout
-                    android:id="@+id/cardRtAktif"
+                    android:id="@+id/cardOrganik"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -541,13 +483,13 @@
                     <FrameLayout
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/bg_icon_gradient_kertas">
+                        android:background="@drawable/bg_icon_gradient_organik">
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_user_outline"
-                            app:tint="#FFC107" />
+                            android:src="@drawable/ic_leaf_outline"
+                            app:tint="#4CAF50" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -559,23 +501,92 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RT Aktif"
+                            android:text="Organik"
                             android:textColor="#212121"
                             android:textSize="13sp" />
                         <TextView
-                            android:id="@+id/tvTotalRtAktif"
+                            android:id="@+id/tvTotalOrganik"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="0"
-                            android:textColor="#FFC107"
+                            android:textColor="#4CAF50"
                             android:textSize="22sp"
                             android:textStyle="bold"
                             android:letterSpacing="0.05" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RT"
+                            android:text="items"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- GRID STATISTIK - ROW 3 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:clipChildren="false"
+                android:clipToPadding="false">
+
+                <LinearLayout
+                    android:id="@+id/cardTotalScan"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_premium_card"
+                    android:elevation="4dp"
+                    android:stateListAnimator="@animator/card_bounce_anim"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <FrameLayout
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_icon_gradient_organik">
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_document_outline"
+                            app:tint="#4CAF50" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical"
+                        android:gravity="center">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Scan Seluruh User"
+                            android:textColor="#212121"
+                            android:textSize="13sp" />
+                        <TextView
+                            android:id="@+id/tvTotalSampah"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="0"
+                            android:textColor="#4CAF50"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="items"
                             android:textColor="#757575"
                             android:textSize="12sp" />
                     </LinearLayout>

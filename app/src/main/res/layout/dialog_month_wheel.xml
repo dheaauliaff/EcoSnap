@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pilih Bulan"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:paddingBottom="12dp"/>
+
+    <!-- 🔥 INI WAJIB ADA -->
+    <NumberPicker
+        android:id="@+id/monthPicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/btnOk"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pilih"
+        android:layout_marginTop="12dp"/>
+</LinearLayout>

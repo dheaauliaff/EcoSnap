@@ -84,6 +84,10 @@ public class DonutChartView extends View {
 
         float total = 0f;
         for (float v : values) total += v;
+
+        if (total <= 0f) {
+            return;
+        }
         
         float currentAngle = -90f; // Start at top
         

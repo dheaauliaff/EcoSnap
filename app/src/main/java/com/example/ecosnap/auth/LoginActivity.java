@@ -25,8 +25,7 @@ import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
-    // Ganti etEmail jadi etNomorHp
-    TextInputEditText etNomorHp, etPassword;
+    TextInputEditText etEmail, etPassword;
     MaterialButton btnLogin;
     FirebaseAuth mAuth;
 
@@ -37,8 +36,7 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        // Init views sesuai id baru
-        etNomorHp = findViewById(R.id.etNomorHp);
+        etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
 
@@ -46,90 +44,86 @@ public class LoginActivity extends AppCompatActivity {
             btnLogin.setEnabled(false);
             btnLogin.setText("Memproses...");
 
-            String nomorHp = etNomorHp.getText().toString().trim();
+            String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
-            // Validasi field tidak boleh kosong
-            if (nomorHp.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Nomor HP dan password harus diisi",
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Email dan password harus diisi",
                         Toast.LENGTH_SHORT).show();
                 resetLoginButton();
                 return;
             }
 
-            // Validasi format nomor HP minimal 10 digit
-            if (nomorHp.length() < 10) {
-                Toast.makeText(this, "Nomor HP tidak valid",
-                        Toast.LENGTH_SHORT).show();
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(this, "Email tidak valid", Toast.LENGTH_SHORT).show();
                 resetLoginButton();
                 return;
             }
 
-            // Konversi nomor HP ke format email untuk Firebase
-            // contoh: "081234567890" → "081234567890@ecosnap.com"
-            String emailFiktif = nomorHp + "@ecosnap.com";
-
-            // Login ke Firebase pakai email fiktif
-            mAuth.signInWithEmailAndPassword(emailFiktif, password)
+            mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
+
                             if (mAuth.getCurrentUser() == null) {
                                 Toast.makeText(this, "User login tidak terbaca",
                                         Toast.LENGTH_SHORT).show();
                                 resetLoginButton();
                                 return;
                             }
+
                             String uid = mAuth.getCurrentUser().getUid();
                             cekRoleUser(uid);
+
                         } else {
                             String msg = task.getException() != null
                                     ? task.getException().getMessage()
                                     : "Unknown error";
+
                             Toast.makeText(this, "Login gagal: " + msg,
                                     Toast.LENGTH_SHORT).show();
+
                             resetLoginButton();
                         }
                     });
         });
 
-        // Link ke halaman register
         TextView tvRegister = findViewById(R.id.tvRegister);
         tvRegister.setOnClickListener(v ->
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
 
         TextView tvForgotPassword = findViewById(R.id.tvForgotPassword);
-        if (tvForgotPassword != null) {
-            tvForgotPassword.setOnClickListener(v -> sendPasswordReset());
-        }
+        tvForgotPassword.setOnClickListener(v -> sendPasswordReset());
     }
 
     private void sendPasswordReset() {
-        String nomorHp = etNomorHp.getText() != null
-                ? etNomorHp.getText().toString().trim()
+        String email = etEmail.getText() != null
+                ? etEmail.getText().toString().trim()
                 : "";
 
-        if (nomorHp.isEmpty()) {
-            Toast.makeText(this, "Masukkan nomor HP dulu untuk reset password", Toast.LENGTH_SHORT).show();
+        if (email.isEmpty()) {
+            Toast.makeText(this, "Masukkan email dulu untuk reset password", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (nomorHp.length() < 10) {
-            Toast.makeText(this, "Nomor HP tidak valid", Toast.LENGTH_SHORT).show();
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Email tidak valid", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String emailFiktif = nomorHp + "@ecosnap.com";
-        mAuth.sendPasswordResetEmail(emailFiktif)
+        mAuth.sendPasswordResetEmail(email)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(this,
-                                "Link reset password dikirim ke akun Firebase: " + emailFiktif,
+                                "Link reset password dikirim ke: " + email,
                                 Toast.LENGTH_LONG).show();
                     } else {
                         String msg = task.getException() != null
                                 ? task.getException().getMessage()
                                 : "Unknown error";
-                        Toast.makeText(this, "Reset password gagal: " + msg, Toast.LENGTH_LONG).show();
+
+                        Toast.makeText(this,
+                                "Reset password gagal: " + msg,
+                                Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -141,21 +135,26 @@ public class LoginActivity extends AppCompatActivity {
         call.enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-                if (response.isSuccessful() && response.body() != null
+
+                if (response.isSuccessful()
+                        && response.body() != null
                         && !response.body().isEmpty()) {
+
                     User user = response.body().get(0);
                     String role = user.getRole() != null ? user.getRole() : "user";
 
-                    // Navigasi berdasarkan role langsung
                     Intent intent;
+
                     if (role.equals("admin")) {
                         intent = new Intent(LoginActivity.this, DashboardAdminActivity.class);
                     } else {
                         intent = new Intent(LoginActivity.this, MainDashboardActivity.class);
                     }
+
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
+
                 } else {
                     Toast.makeText(LoginActivity.this,
                             "User tidak ditemukan di database",

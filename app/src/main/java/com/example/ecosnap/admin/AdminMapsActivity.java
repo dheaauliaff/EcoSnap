@@ -35,6 +35,7 @@ import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.R;
 import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.ScanHistory;
+import com.example.ecosnap.WilayahUtils;
 import com.example.ecosnap.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -88,6 +89,7 @@ public class AdminMapsActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     String rwId = "";
     List<ScanHistory> allScans = new ArrayList<>();
+    final List<String> registeredRtLabels = new ArrayList<>();
 
     // State
     int totalReports = 0;
@@ -171,19 +173,7 @@ public class AdminMapsActivity extends AppCompatActivity {
                 PopupMenu popup = new PopupMenu(this, btnFilterArea);
                 popup.getMenu().add("Semua RT");
 
-                List<String> rtLabels = new ArrayList<>();
-                for (ScanHistory s : allScans) {
-                    if (isMatchingRw(s.getRwId(), rwId)) {
-                        String rawRt = s.getRtId();
-                        if (rawRt != null && !rawRt.isEmpty()) {
-                            String formatted = formatRtId(rawRt);
-                            if (!formatted.isEmpty() && !rtLabels.contains(formatted)) {
-                                rtLabels.add(formatted);
-                            }
-                        }
-                    }
-                }
-                Collections.sort(rtLabels);
+                List<String> rtLabels = getDropdownRtLabels();
                 for (String label : rtLabels) {
                     popup.getMenu().add(label);
                 }
@@ -196,7 +186,7 @@ public class AdminMapsActivity extends AppCompatActivity {
                         activeRtFilter = "Semua RT";
                     } else {
                         // Map label back to raw ID or use fallback
-                        activeRtFilter = parseRtLabel(selectedLabel);
+                        activeRtFilter = selectedLabel;
                     }
 
                     applyFilters();
@@ -295,6 +285,7 @@ public class AdminMapsActivity extends AppCompatActivity {
 
                     activeRtFilter = "Semua RT";
                     if (tvWilayahAdmin != null) tvWilayahAdmin.setText(activeRtFilter);
+                    loadRegisteredRtUsers(api);
                     loadDataSebaran();
                 }
             }
@@ -303,6 +294,49 @@ public class AdminMapsActivity extends AppCompatActivity {
                 Toast.makeText(AdminMapsActivity.this, "Gagal load data admin", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void loadRegisteredRtUsers(ApiService api) {
+        registeredRtLabels.clear();
+        api.getAllUsers().enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (isFinishing()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    for (User user : response.body()) {
+                        if (!"user".equalsIgnoreCase(user.getRole())) continue;
+                        if (!WilayahUtils.isMatchingRw(user.getRwId(), rwId)) continue;
+                        String rt = WilayahUtils.formatRtId(user.getRtId());
+                        if (!rt.isEmpty() && !registeredRtLabels.contains(rt)) {
+                            registeredRtLabels.add(rt);
+                        }
+                    }
+                    Collections.sort(registeredRtLabels);
+                    if (!allScans.isEmpty()) applyFilters();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {}
+        });
+    }
+
+    private List<String> getDropdownRtLabels() {
+        if (!registeredRtLabels.isEmpty()) {
+            return new ArrayList<>(registeredRtLabels);
+        }
+
+        List<String> rtLabels = new ArrayList<>();
+        for (ScanHistory s : allScans) {
+            if (WilayahUtils.isMatchingRw(s.getRwId(), rwId)) {
+                String formatted = WilayahUtils.formatRtId(s.getRtId());
+                if (!formatted.isEmpty() && !rtLabels.contains(formatted)) {
+                    rtLabels.add(formatted);
+                }
+            }
+        }
+        Collections.sort(rtLabels);
+        return rtLabels;
     }
 
     private void loadDataSebaran() {
@@ -332,8 +366,11 @@ public class AdminMapsActivity extends AppCompatActivity {
     private void applyFilters() {
         displayedScans.clear();
         for (ScanHistory s : allScans) {
-            if (isMatchingRw(s.getRwId(), rwId)) {
-                if ("Semua RT".equals(activeRtFilter) || isMatchingRt(s.getRtId(), activeRtFilter)) {
+            if (WilayahUtils.isMatchingRw(s.getRwId(), rwId)) {
+                boolean rtRegistered = registeredRtLabels.isEmpty()
+                        || registeredRtLabels.contains(WilayahUtils.formatRtId(s.getRtId()));
+                if (rtRegistered && ("Semua RT".equals(activeRtFilter)
+                        || WilayahUtils.isMatchingRt(s.getRtId(), activeRtFilter))) {
                     displayedScans.add(s);
                 }
             }
@@ -343,9 +380,13 @@ public class AdminMapsActivity extends AppCompatActivity {
         globalCategoryCount.clear();
         rtCount.clear();
 
+        for (String rt : registeredRtLabels) {
+            rtCount.put(rt, 0);
+        }
+
         for (ScanHistory s : displayedScans) {
-            String nama = s.getJenisSampah();
-            String rt = formatRtId(s.getRtId());
+            String nama = WilayahUtils.normalizeJenis(s.getJenisSampah());
+            String rt = WilayahUtils.formatRtId(s.getRtId());
             if (nama != null) globalCategoryCount.put(nama,
                     globalCategoryCount.getOrDefault(nama, 0) + 1);
             if (!rt.isEmpty()) rtCount.put(rt,
@@ -372,7 +413,7 @@ public class AdminMapsActivity extends AppCompatActivity {
         List<ScanHistory> toShow = (activeFilter == null) ? displayedScans : new ArrayList<>();
         if (activeFilter != null) {
             for (ScanHistory s : displayedScans) {
-                if (activeFilter.equalsIgnoreCase(s.getJenisSampah())) {
+                if (activeFilter.equalsIgnoreCase(WilayahUtils.normalizeJenis(s.getJenisSampah()))) {
                     toShow.add(s);
                 }
             }
@@ -390,7 +431,9 @@ public class AdminMapsActivity extends AppCompatActivity {
     private void addScanPinAndZone(ScanHistory scan) {
         double lat = scan.getLatitude();
         double lng = scan.getLongitude();
-        String nama = scan.getJenisSampah() != null ? scan.getJenisSampah() : "Sampah";
+        String nama = !WilayahUtils.normalizeJenis(scan.getJenisSampah()).isEmpty()
+                ? WilayahUtils.normalizeJenis(scan.getJenisSampah())
+                : "Sampah";
         String kat = scan.getKategori() != null ? scan.getKategori() : "-";
         int color = colorForNama(nama);
 
@@ -401,8 +444,8 @@ public class AdminMapsActivity extends AppCompatActivity {
         zone.setStrokeWidth(2.5f);
         mapView.getOverlays().add(zone);
 
-        String rt = scan.getRtId() != null ? formatRtId(scan.getRtId()) : "-";
-        String rw = scan.getRwId() != null ? formatRwId(scan.getRwId()) : "-";
+        String rt = scan.getRtId() != null ? WilayahUtils.formatRtId(scan.getRtId()) : "-";
+        String rw = scan.getRwId() != null ? WilayahUtils.formatRwId(scan.getRwId()) : "-";
         String alamat = scan.getAlamat() != null && !scan.getAlamat().trim().isEmpty()
                 ? scan.getAlamat().trim()
                 : "memuat...";
@@ -509,8 +552,6 @@ public class AdminMapsActivity extends AppCompatActivity {
                 R.drawable.ic_user_outline, String.valueOf(rtCount.size()), "RT Aktif");
         bindMetric(findViewById(R.id.metricLaporan),
                 R.drawable.ic_document_outline, String.valueOf(totalReports), "Total Scan");
-        bindMetric(findViewById(R.id.metricDominan),
-                iconFor(dominant), dominant, "Dominan");
     }
 
     private void buildCategoryBreakdown() {
@@ -763,7 +804,7 @@ public class AdminMapsActivity extends AppCompatActivity {
             if (s.getLatitude() == 0.0 || s.getLongitude() == 0.0) continue;
             android.location.Location.distanceBetween(lat, lng, s.getLatitude(), s.getLongitude(), result);
             if (result[0] <= ZONE_RADIUS_METERS && s.getJenisSampah() != null) {
-                String jenis = s.getJenisSampah();
+                String jenis = WilayahUtils.normalizeJenis(s.getJenisSampah());
                 nearby.put(jenis, nearby.getOrDefault(jenis, 0) + 1);
             }
         }

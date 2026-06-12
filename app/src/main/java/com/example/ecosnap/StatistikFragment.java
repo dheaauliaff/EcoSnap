@@ -89,7 +89,7 @@ public class StatistikFragment extends Fragment {
 
                 List<String> rts = new ArrayList<>();
                 for (ScanHistory s : allScanList) {
-                    String rt = formatRtId(s.getRtId());
+                    String rt = WilayahUtils.formatRtId(s.getRtId());
                     if (!rt.isEmpty() && !rts.contains(rt)) {
                         rts.add(rt);
                     }
@@ -161,7 +161,7 @@ public class StatistikFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     List<ScanHistory> sameRw = new ArrayList<>();
                     for (ScanHistory s : response.body()) {
-                        if (isMatchingRw(s.getRwId(), rwId)) {
+                        if (WilayahUtils.isMatchingRw(s.getRwId(), rwId)) {
                             sameRw.add(s);
                         }
                     }
@@ -184,7 +184,7 @@ public class StatistikFragment extends Fragment {
         for (ScanHistory s : allScanList) {
             if ("Semua RT".equals(activeRtFilter)) {
                 filteredList.add(s);
-            } else if (activeRtFilter.equalsIgnoreCase(formatRtId(s.getRtId()))) {
+            } else if (WilayahUtils.isMatchingRt(s.getRtId(), activeRtFilter)) {
                 filteredList.add(s);
             }
         }
@@ -200,10 +200,10 @@ public class StatistikFragment extends Fragment {
         Map<String, Integer> rtMap   = new HashMap<>();
 
         for (ScanHistory s : list) {
-            String nama = s.getJenisSampah();
+            String nama = WilayahUtils.normalizeJenis(s.getJenisSampah());
             if (nama != null && !nama.isEmpty())
                 namaMap.put(nama, namaMap.getOrDefault(nama, 0) + 1);
-            String rt = formatRtId(s.getRtId());
+            String rt = WilayahUtils.formatRtId(s.getRtId());
             if (!rt.isEmpty())
                 rtMap.put(rt, rtMap.getOrDefault(rt, 0) + 1);
         }
@@ -305,9 +305,9 @@ public class StatistikFragment extends Fragment {
             // Hitung jenis dominan per RT
             Map<String, Integer> rtJenisMap = new HashMap<>();
             for (ScanHistory s : allScanList) {
-                if (rtId.equals(formatRtId(s.getRtId())) && s.getJenisSampah() != null) {
-                    rtJenisMap.put(s.getJenisSampah(),
-                            rtJenisMap.getOrDefault(s.getJenisSampah(), 0) + 1);
+                String jenis = WilayahUtils.normalizeJenis(s.getJenisSampah());
+                if (WilayahUtils.isMatchingRt(s.getRtId(), rtId) && !jenis.isEmpty()) {
+                    rtJenisMap.put(jenis, rtJenisMap.getOrDefault(jenis, 0) + 1);
                 }
             }
             String dominanRT = getDominant(rtJenisMap);

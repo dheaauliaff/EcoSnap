@@ -37,7 +37,7 @@ public class HelpActivity extends AppCompatActivity {
     }
 
     private void openWhatsApp() {
-        String phoneNumber = "6281234567890"; // Dummy admin phone number
+        String phoneNumber = "6283822535274"; // wa dhea
         String message = "Halo Admin EcoSnap, saya butuh bantuan terkait aplikasi.";
         String url = "https://api.whatsapp.com/send?phone=" + phoneNumber + "&text=" + Uri.encode(message);
 
