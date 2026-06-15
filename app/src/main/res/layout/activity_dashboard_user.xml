@@ -21,7 +21,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- 2️⃣ HEADER -->
+            <!-- HEADER -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -52,7 +52,7 @@
                     android:id="@+id/tvNamaUser"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Daffa Danishwara"
+                    android:text="Name"
                     android:textColor="#212121"
                     android:textSize="22sp"
                     android:textStyle="bold"

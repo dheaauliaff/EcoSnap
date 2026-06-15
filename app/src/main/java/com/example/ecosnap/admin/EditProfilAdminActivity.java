@@ -24,7 +24,7 @@ import retrofit2.Response;
 
 public class EditProfilAdminActivity extends AppCompatActivity {
 
-    private TextInputEditText etEditNama, etEditNomorHp, etEditRwId;
+    private TextInputEditText etEditNama, etEditNomorHp;
     private MaterialButton btnSimpanProfil;
     private ImageView btnBack;
     private View progressBar;
@@ -38,7 +38,6 @@ public class EditProfilAdminActivity extends AppCompatActivity {
 
         etEditNama    = findViewById(R.id.etEditNama);
         etEditNomorHp = findViewById(R.id.etEditNomorHp);
-        etEditRwId    = findViewById(R.id.etEditRwId);
         btnSimpanProfil = findViewById(R.id.btnSimpanProfil);
         btnBack       = findViewById(R.id.btnBack);
         progressBar   = findViewById(R.id.progressBar);
@@ -46,11 +45,10 @@ public class EditProfilAdminActivity extends AppCompatActivity {
         // Pre-fill dari data yang dikirim ProfilFragment
         String prefillNama   = getIntent().getStringExtra("nama");
         String prefillHp     = getIntent().getStringExtra("nomor_hp");
-        String prefillRw     = getIntent().getStringExtra("rw_id");
+
 
         if (prefillNama != null && !prefillNama.equals("-")) etEditNama.setText(prefillNama);
         if (prefillHp   != null && !prefillHp.equals("-"))   etEditNomorHp.setText(prefillHp);
-        if (prefillRw   != null && !prefillRw.equals("-"))   etEditRwId.setText(prefillRw);
 
         // Ambil UID dari Firebase
         firebaseUid = FirebaseAuth.getInstance().getCurrentUser() != null
@@ -61,9 +59,13 @@ public class EditProfilAdminActivity extends AppCompatActivity {
     }
 
     private void simpanPerubahan() {
-        String nama    = etEditNama.getText()    != null ? etEditNama.getText().toString().trim()    : "";
-        String nomorHp = etEditNomorHp.getText() != null ? etEditNomorHp.getText().toString().trim() : "";
-        String rwId    = etEditRwId.getText()    != null ? etEditRwId.getText().toString().trim()    : "";
+        String nama = etEditNama.getText() != null
+                ? etEditNama.getText().toString().trim()
+                : "";
+
+        String nomorHp = etEditNomorHp.getText() != null
+                ? etEditNomorHp.getText().toString().trim()
+                : "";
 
         if (nama.isEmpty() || nomorHp.isEmpty()) {
             Toast.makeText(this, "Nama dan nomor HP wajib diisi", Toast.LENGTH_SHORT).show();
@@ -86,14 +88,9 @@ public class EditProfilAdminActivity extends AppCompatActivity {
         ApiService api = RetrofitClient.getClient().create(ApiService.class);
 
         Map<String, String> updates = new HashMap<>();
-        updates.put("nama",     nama);
+        updates.put("nama", nama);
         updates.put("nomor_hp", nomorHp);
-        if (!rwId.isEmpty()) {
-            updates.put("rw_id",   rwId);
-            updates.put("wilayah", rwId);
-        }
 
-        // PATCH ke Supabase — filter by firebase_uid
         Call<Void> call = api.updateUserPatch("eq." + firebaseUid, updates);
         call.enqueue(new Callback<Void>() {
             @Override
@@ -103,7 +100,9 @@ public class EditProfilAdminActivity extends AppCompatActivity {
 
                 if (response.isSuccessful() || response.code() == 204) {
                     Toast.makeText(EditProfilAdminActivity.this,
-                            "Profil berhasil diperbarui ✓", Toast.LENGTH_SHORT).show();
+                            "Profil berhasil diperbarui ✓",
+                            Toast.LENGTH_SHORT).show();
+
                     setResult(Activity.RESULT_OK);
                     finish();
                 } else {
@@ -117,6 +116,7 @@ public class EditProfilAdminActivity extends AppCompatActivity {
             public void onFailure(Call<Void> call, Throwable t) {
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
                 btnSimpanProfil.setEnabled(true);
+
                 Toast.makeText(EditProfilAdminActivity.this,
                         "Koneksi gagal: " + t.getMessage(),
                         Toast.LENGTH_SHORT).show();

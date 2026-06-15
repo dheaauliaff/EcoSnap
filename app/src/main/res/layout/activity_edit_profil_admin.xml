@@ -105,29 +105,6 @@
                     android:inputType="phone" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- NOMOR RW -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="Nomor RW"
-                app:helperText="Contoh: RW 05"
-                app:boxBackgroundColor="#FFFFFF"
-                app:boxCornerRadiusBottomEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxStrokeColor="#C8E6C9"
-                app:startIconDrawable="@android:drawable/ic_menu_mapmode"
-                app:startIconTint="#2E7D32">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etEditRwId"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:inputType="text" />
-            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- INFO NOTE -->
             <LinearLayout
