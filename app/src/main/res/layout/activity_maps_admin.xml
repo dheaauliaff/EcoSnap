@@ -9,6 +9,7 @@
 
     <!-- Scrollable content -->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollViewMaps"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -370,9 +371,9 @@
                 </HorizontalScrollView>
             </LinearLayout>
 
-            <!-- Detail Breakdown Per Jenis Sampah -->
+            <!-- Detail Marker Terpilih -->
             <LinearLayout
-                android:id="@+id/categoryBreakdownCard"
+                android:id="@+id/detailMarkerCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -381,36 +382,26 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tvDetailTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Detail Lokasi"
+                    android:textColor="#111111"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvDetailContent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginTop="12dp"
+                    android:text="Pilih marker pada peta untuk melihat informasi."
+                    android:textColor="#616161"
+                    android:textSize="14sp" />
 
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_pie_chart"
-                        app:tint="#2E7D32"
-                        android:layout_marginEnd="8dp"/>
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Detail Sampah Ditemukan"
-                        android:textColor="#111111"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/categoryBreakdownContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical" />
             </LinearLayout>
+
 
             <!-- Top 3 RT -->
             <LinearLayout

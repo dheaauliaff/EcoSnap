@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.widget.NestedScrollView;
 
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.R;
@@ -78,9 +79,12 @@ public class AdminMapsActivity extends AppCompatActivity {
     LinearLayout topRegionRow;
     LinearLayout categoryBreakdownContainer;
     LinearLayout filterBadgeRow;
+    TextView tvDetailContent;
     TextView tvFilterBadge;
+    LinearLayout detailMarkerCard;
     TextView btnResetFilter;
     TextView tvWilayahAdmin;
+    NestedScrollView scrollView;
 
     // OSMDroid
     private MyLocationNewOverlay myLocationOverlay;
@@ -118,11 +122,14 @@ public class AdminMapsActivity extends AppCompatActivity {
         bottomNav = findViewById(R.id.bottomNav);
         legendRow = findViewById(R.id.legendRow);
         topRegionRow = findViewById(R.id.topRegionRow);
-        categoryBreakdownContainer = findViewById(R.id.categoryBreakdownContainer);
         filterBadgeRow = findViewById(R.id.filterBadgeRow);
         tvFilterBadge = findViewById(R.id.tvFilterBadge);
         btnResetFilter = findViewById(R.id.btnResetFilter);
         tvWilayahAdmin = findViewById(R.id.tvWilayahAdmin);
+        //ini baruu yaa
+        tvDetailContent = findViewById(R.id.tvDetailContent);
+        detailMarkerCard = findViewById(R.id.detailMarkerCard);
+        scrollView = findViewById(R.id.scrollViewMaps);
 
         // Request location permission
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -455,15 +462,32 @@ public class AdminMapsActivity extends AppCompatActivity {
         Marker marker = new Marker(mapView);
         marker.setPosition(new GeoPoint(lat, lng));
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        marker.setTitle(nama + " — " + rt + " / " + rw);
-        marker.setSnippet(String.format(java.util.Locale.US,
-                "Jenis: %s | Kategori: %s\nAlamat: %s\nWilayah: %s / %s\nArea ini: %d scan | Dominan: %s",
-                nama, kat, alamat, rt, rw, totalArea, dominanArea));
+        marker.setTitle("");
+        marker.setSnippet("");
         marker.setIcon(new BitmapDrawable(getResources(), createPinBitmap(nama, color)));
         mapView.getOverlays().add(marker);
         if ("memuat...".equals(alamat)) {
             fetchAddressAsync(lat, lng, marker);
         }
+            //BARU
+        marker.setOnMarkerClickListener((m, mapView) -> {
+
+            showMarkerDetail(
+                    nama,
+                    kat,
+                    alamat,
+                    rt,
+                    rw,
+                    totalArea,
+                    dominanArea
+            );
+
+            mapView.getController().animateTo(
+                    new GeoPoint(lat, lng)
+            );
+
+            return true;
+        });
     }
 
     // ─── Legend with clickable category filter ─────────────────────────────────
@@ -644,6 +668,34 @@ public class AdminMapsActivity extends AppCompatActivity {
         if (icon != null) icon.setImageResource(iconRes);
         if (val != null) val.setText(value);
         if (lab != null) lab.setText(label);
+    }
+    //---------------DETAIL MARKER-------------------------
+    private void showMarkerDetail(
+            String jenis,
+            String kategori,
+            String alamat,
+            String rt,
+            String rw,
+            int totalArea,
+            String dominanArea) {
+
+        if (tvDetailContent == null) return;
+
+        String detail =
+                "Jenis Sampah : " + jenis +
+                        "\nKategori : " + kategori +
+                        "\nAlamat : " + alamat +
+                        "\nWilayah : " + rt + " / " + rw +
+                        "\nTotal Scan Area : " + totalArea +
+                        "\nSampah Dominan : " + dominanArea;
+
+        tvDetailContent.setText(detail);
+
+        if (scrollView != null && detailMarkerCard != null) {
+            scrollView.post(() ->
+                    scrollView.smoothScrollTo(0, detailMarkerCard.getTop())
+            );
+        }
     }
 
     // ─── Top RT ────────────────────────────────────────────────────────────────

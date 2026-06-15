@@ -77,9 +77,12 @@ public class MapsFragment extends Fragment {
     private LinearLayout legendRow;
     private LinearLayout topRegionRow;
     private LinearLayout categoryBreakdownContainer;
+    private TextView tvDetailContent;
     private LinearLayout filterBadgeRow;
     private TextView tvFilterBadge;
     private TextView btnResetFilter;
+    private View detailMarkerCard;
+    private androidx.core.widget.NestedScrollView mapsRoot;
 
     // OSMDroid
     private MyLocationNewOverlay myLocationOverlay;
@@ -116,12 +119,14 @@ public class MapsFragment extends Fragment {
         osmMap                     = view.findViewById(R.id.osmMapView);
         legendRow                  = view.findViewById(R.id.legendRow);
         topRegionRow               = view.findViewById(R.id.topRegionRow);
-        categoryBreakdownContainer = view.findViewById(R.id.categoryBreakdownContainer);
         filterBadgeRow             = view.findViewById(R.id.filterBadgeRow);
         tvFilterBadge              = view.findViewById(R.id.tvFilterBadge);
         btnResetFilter             = view.findViewById(R.id.btnResetFilter);
         tvFilterPeriod             = view.findViewById(R.id.tvFilterPeriod);
         tvFilterArea               = view.findViewById(R.id.tvFilterArea);
+        tvDetailContent            = view.findViewById(R.id.tvDetailContent);
+        mapsRoot = view.findViewById(R.id.mapsRoot);
+        detailMarkerCard = view.findViewById(R.id.detailMarkerCard);
         if (tvFilterPeriod != null) tvFilterPeriod.setText(activePeriodFilter);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
@@ -448,7 +453,44 @@ public class MapsFragment extends Fragment {
                 getResources(), createPinBitmap(nama, color)));
         osmMap.getOverlays().add(marker);
         fetchAddressAsync(lat, lng, marker);
+
+        marker.setOnMarkerClickListener((m, mapView) -> {
+
+            String alamat = "-";
+
+            if (m.getRelatedObject() != null) {
+                alamat = m.getRelatedObject().toString();
+            }
+
+            String detail =
+                    "Jenis Sampah : " + nama + "\n\n" +
+                            "Kategori : " + kat + "\n\n" +
+                            "Alamat : " + alamat + "\n\n" +
+                            "RT/RW : " + rt + " / " + rw + "\n\n" +
+                            "Total Scan Area : " + totalArea + "\n\n" +
+                            "Dominan : " + dominanArea;
+
+            if (tvDetailContent != null) {
+                tvDetailContent.setText(detail);
+            }
+            if (tvDetailContent != null) {
+                tvDetailContent.setText(detail);
+            }
+
+            if (mapsRoot != null && detailMarkerCard != null) {
+                mapsRoot.post(() ->
+                        mapsRoot.smoothScrollTo(
+                                0,
+                                detailMarkerCard.getTop()
+                        )
+                );
+            }
+
+            return true;
+        });
     }
+
+
 
 
     // ─── Canvas: lingkaran berwarna + ikon sampah ────────────────────────────
@@ -846,6 +888,7 @@ public class MapsFragment extends Fragment {
                 if (current != null) {
                     String updated = current.replaceFirst("Alamat:.*?(\\n|$)", "Alamat: " + finalAddress + "\n");
                     marker.setSnippet(updated);
+                    marker.setRelatedObject(finalAddress);
                 }
                 osmMap.invalidate();
             });

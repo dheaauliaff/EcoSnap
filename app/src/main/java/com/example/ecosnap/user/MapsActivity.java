@@ -2,6 +2,7 @@ package com.example.ecosnap.user;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,9 +33,16 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.widget.TextView;
+import android.widget.LinearLayout;
+import androidx.core.widget.NestedScrollView;
+
 public class MapsActivity extends AppCompatActivity {
 
+    TextView tvDetailContent;
     MapView mapView;
+    LinearLayout detailMarkerCard;
+    NestedScrollView mapsRoot;
     BottomNavigationView bottomNav;
     FirebaseAuth mAuth;
     String rwId = "";
@@ -46,10 +54,12 @@ public class MapsActivity extends AppCompatActivity {
         Configuration.getInstance().setUserAgentValue(getPackageName());
 
         // Gunakan layout maps admin karena kelihatannya user maps activity diarahkan ke sana
-        setContentView(R.layout.activity_maps_admin);
+        //setContentView(R.layout.activity_maps_admin);
+        setContentView(R.layout.activity_maps);
 
         mAuth = FirebaseAuth.getInstance();
         mapView = findViewById(R.id.mapView);
+        tvDetailContent = findViewById(R.id.tvDetailContent);
         bottomNav = findViewById(R.id.bottomNav);
 
         if (mapView == null) {
@@ -163,8 +173,8 @@ public class MapsActivity extends AppCompatActivity {
                 // Judul: nama sampah yang terdeteksi
                 String nama = s.getJenisSampah(); // ← nama_sampah dari Supabase
                 String kat  = s.getKategori();
-                marker.setTitle(nama != null ? nama : "Sampah");
-                marker.setSnippet(kat != null ? kat : "-");
+                marker.setTitle("");
+                marker.setSnippet("");
 
                 mapView.getOverlays().add(marker);
                 totalLat += lat;
@@ -179,6 +189,26 @@ public class MapsActivity extends AppCompatActivity {
             mapView.getController().setCenter(new GeoPoint(totalLat / count, totalLng / count));
         }
         mapView.invalidate();
+    }
+
+    private void showMarkerDetail(
+            String jenis,
+            String kategori,
+            String rt,
+            String rw,
+            double lat,
+            double lng) {
+
+        if (tvDetailContent == null) return;
+
+        String detail =
+                "Jenis Sampah : " + jenis +
+                        "\nKategori : " + kategori +
+                        "\nWilayah : " + rt + " / " + rw +
+                        "\nLatitude : " + lat +
+                        "\nLongitude : " + lng;
+
+        tvDetailContent.setText(detail);
     }
 
     @Override
