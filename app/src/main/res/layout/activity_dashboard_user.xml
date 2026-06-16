@@ -97,7 +97,6 @@
                     android:paddingHorizontal="20dp">
 
                     <LinearLayout
-                        android:id="@+id/cardHomeOrganik"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
@@ -167,12 +166,13 @@
 
                     <!-- Organik -->
                     <LinearLayout
-                        android:id="@+id/cardHomeKardus"
+                        android:id="@+id/cardHomeOrganik"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
                         android:background="@drawable/bg_premium_card"
+                        android:foreground="?attr/selectableItemBackground"
                         android:elevation="4dp"
                         android:outlineAmbientShadowColor="#0F000000"
                         android:outlineSpotShadowColor="#0A000000"
@@ -228,12 +228,13 @@
 
                     <!-- Kardus -->
                     <LinearLayout
-                        android:id="@+id/cardHomeKaca"
+                        android:id="@+id/cardHomeKardus"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
                         android:background="@drawable/bg_premium_card"
+                        android:foreground="?attr/selectableItemBackground"
                         android:elevation="4dp"
                         android:outlineAmbientShadowColor="#0F000000"
                         android:outlineSpotShadowColor="#0A000000"
@@ -300,12 +301,13 @@
 
                     <!-- Kaca -->
                     <LinearLayout
-                        android:id="@+id/cardHomeLogam"
+                        android:id="@+id/cardHomeKaca"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
                         android:background="@drawable/bg_premium_card"
+                        android:foreground="?attr/selectableItemBackground"
                         android:elevation="4dp"
                         android:outlineAmbientShadowColor="#0F000000"
                         android:outlineSpotShadowColor="#0A000000"
@@ -361,12 +363,13 @@
 
                     <!-- Logam -->
                     <LinearLayout
-                        android:id="@+id/cardHomeKertas"
+                        android:id="@+id/cardHomeLogam"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
                         android:background="@drawable/bg_premium_card"
+                        android:foreground="?attr/selectableItemBackground"
                         android:elevation="4dp"
                         android:outlineAmbientShadowColor="#0F000000"
                         android:outlineSpotShadowColor="#0A000000"
@@ -433,12 +436,13 @@
 
                     <!-- Kertas -->
                     <LinearLayout
-                        android:id="@+id/cardHomePlastik"
+                        android:id="@+id/cardHomeKertas"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
                         android:background="@drawable/bg_premium_card"
+                        android:foreground="?attr/selectableItemBackground"
                         android:elevation="4dp"
                         android:outlineAmbientShadowColor="#0F000000"
                         android:outlineSpotShadowColor="#0A000000"
@@ -494,11 +498,13 @@
 
                     <!-- Plastik -->
                     <LinearLayout
+                        android:id="@+id/cardHomePlastik"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
                         android:background="@drawable/bg_premium_card"
+                        android:foreground="?attr/selectableItemBackground"
                         android:elevation="4dp"
                         android:outlineAmbientShadowColor="#0F000000"
                         android:outlineSpotShadowColor="#0A000000"

@@ -212,6 +212,7 @@
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
         android:elevation="12dp"
+        android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -219,7 +220,7 @@
             android:id="@+id/btnSimpan"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Simpan Data &amp; Kontribusi"
+            android:text="Simpan Hasil"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
@@ -229,6 +230,46 @@
             app:icon="@drawable/ic_scan"
             app:iconGravity="textStart"
             app:iconTint="#FFFFFF" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnScanLagi"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Scan Lagi"
+                android:textAllCaps="false"
+                android:textColor="#2E7D32"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:cornerRadius="14dp"
+                app:icon="@drawable/ic_camera"
+                app:iconGravity="textStart"
+                app:iconTint="#2E7D32"
+                app:strokeColor="#2E7D32" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnBeranda"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="8dp"
+                android:text="Kembali ke Beranda"
+                android:textAllCaps="false"
+                android:textColor="#2E7D32"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                app:cornerRadius="14dp"
+                app:icon="@drawable/ic_home"
+                app:iconGravity="textStart"
+                app:iconTint="#2E7D32"
+                app:strokeColor="#2E7D32" />
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

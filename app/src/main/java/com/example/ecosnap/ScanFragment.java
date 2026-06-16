@@ -11,6 +11,8 @@ import android.graphics.RectF;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,12 +54,13 @@ public class ScanFragment extends Fragment {
 
     private static final String TAG = "ScanFragment";
 
-    private TextView tvHasil;
+    private TextView tvHasil, tvScanProgress;
     private TFLiteHelper tflite;
     private OverlayView overlayView;
     private PreviewView viewFinder;
     private FloatingActionButton btnCapture, btnGallery, btnReset;
     private ProgressBar progressScan;
+    private View layoutScanProgress;
 
     private Bitmap currentBitmap = null;
     private List<TFLiteHelper.Result> latestDetections = new ArrayList<>();
@@ -67,6 +70,7 @@ public class ScanFragment extends Fragment {
     private long lastAnalysisTime = 0;
     private int frameCount = 0;
     private int fps = 0;
+    private boolean isProcessingCapture = false;
 
     // ── Permission launcher ──
     private final ActivityResultLauncher<String> requestPermissionLauncher =
@@ -109,12 +113,14 @@ public class ScanFragment extends Fragment {
         View view = inflater.inflate(R.layout.activity_scan, container, false);
 
         tvHasil       = view.findViewById(R.id.tvHasil);
+        tvScanProgress = view.findViewById(R.id.tvScanProgress);
         overlayView   = view.findViewById(R.id.overlayView);
         viewFinder    = view.findViewById(R.id.viewFinder);
         btnCapture    = view.findViewById(R.id.btnCapture);
         btnGallery    = view.findViewById(R.id.btnGallery);
         btnReset      = view.findViewById(R.id.btnReset);
         progressScan  = view.findViewById(R.id.progressScan);
+        layoutScanProgress = view.findViewById(R.id.layoutScanProgress);
 
         tflite           = new TFLiteHelper(requireContext());
         analysisExecutor = Executors.newSingleThreadExecutor();
@@ -127,7 +133,10 @@ public class ScanFragment extends Fragment {
                             "Arahkan kamera ke sampah terlebih dahulu",
                             Toast.LENGTH_SHORT).show();
                 } else {
-                    openResult(latestDetections);
+                    isProcessingCapture = true;
+                    showLoading(true, "Menganalisis sampah...");
+                    new Handler(Looper.getMainLooper()).postDelayed(
+                            () -> openResult(latestDetections), 350);
                 }
             });
         }
@@ -152,7 +161,9 @@ public class ScanFragment extends Fragment {
         latestDetections.clear();
         currentBitmap = null;
         if (overlayView != null) overlayView.updateBoxes(new ArrayList<>());
-        if (tvHasil != null) tvHasil.setText("Arahkan kamera ke sampah");
+        isProcessingCapture = false;
+        showLoading(false, "");
+        if (tvHasil != null) tvHasil.setText("Arahkan kamera ke objek sampah untuk memulai deteksi");
         Toast.makeText(getContext(), "Cache scan direset ✓", Toast.LENGTH_SHORT).show();
     }
 
@@ -241,7 +252,7 @@ public class ScanFragment extends Fragment {
                                     finalBitmap.getHeight(), fps);
                             overlayView.updateBoxes(detections); // ← bounding box dulu
                         }
-                        updateResultText(detections);
+                        if (!isProcessingCapture) updateResultText(detections);
                     });
                 }
             }
@@ -265,7 +276,7 @@ public class ScanFragment extends Fragment {
     private void processImageUri(@Nullable Uri uri, List<Uri> allUris) {
         if (uri == null) return;
 
-        showLoading(true);
+        showLoading(true, "Memproses gambar...");
         analysisExecutor.execute(() -> {
             try {
                 Bitmap bitmap = readBitmap(uri);
@@ -273,17 +284,18 @@ public class ScanFragment extends Fragment {
                     currentBitmap = bitmap;
                     List<TFLiteHelper.Result> detections = tflite.detect(bitmap);
                     if (isAdded()) requireActivity().runOnUiThread(() -> {
-                        showLoading(false);
+                        showLoading(false, "");
                         if (!detections.isEmpty()) {
                             openResultMulti(detections, allUris);
                         } else {
+                            updateResultText(detections);
                             Toast.makeText(getContext(),
                                     "Tidak ada sampah terdeteksi", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
             } catch (Exception e) {
-                if (isAdded()) requireActivity().runOnUiThread(() -> showLoading(false));
+                if (isAdded()) requireActivity().runOnUiThread(() -> showLoading(false, ""));
             }
         });
     }
@@ -326,7 +338,11 @@ public class ScanFragment extends Fragment {
             }
 
             startActivity(intent);
+            isProcessingCapture = false;
+            showLoading(false, "");
         } catch (Exception e) {
+            isProcessingCapture = false;
+            showLoading(false, "");
             Log.e(TAG, "Gagal membuka hasil", e);
         }
     }
@@ -364,12 +380,13 @@ public class ScanFragment extends Fragment {
     private void updateResultText(List<TFLiteHelper.Result> detections) {
         if (tvHasil == null) return;
         if (detections.isEmpty()) {
-            tvHasil.setText("Arahkan kamera ke sampah");
+            tvHasil.setText("Arahkan kamera ke objek sampah untuk memulai deteksi");
             return;
         }
         TFLiteHelper.Result dominant = findDominant(detections);
-        tvHasil.setText(String.format(Locale.US, "✅ %s terdeteksi (%.0f%%)",
-                dominant.label, dominant.confidence));
+        tvHasil.setText(String.format(Locale.US,
+                "✓ Objek terdeteksi: %s\nSilakan ambil foto untuk melanjutkan analisis",
+                dominant.label));
     }
 
     private TFLiteHelper.Result findDominant(List<TFLiteHelper.Result> detections) {
@@ -416,9 +433,19 @@ public class ScanFragment extends Fragment {
         }
     }
 
-    private void showLoading(boolean isLoading) {
-        if (progressScan != null)
+    private void showLoading(boolean isLoading, String message) {
+        if (layoutScanProgress != null) {
+            layoutScanProgress.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        }
+        if (progressScan != null) {
             progressScan.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        }
+        if (tvScanProgress != null) {
+            tvScanProgress.setText(message == null ? "" : message);
+        }
+        if (btnCapture != null) btnCapture.setEnabled(!isLoading);
+        if (btnGallery != null) btnGallery.setEnabled(!isLoading);
+        if (btnReset != null) btnReset.setEnabled(!isLoading);
     }
 
     private void putFrozenDetections(Intent intent, List<TFLiteHelper.Result> detections) {

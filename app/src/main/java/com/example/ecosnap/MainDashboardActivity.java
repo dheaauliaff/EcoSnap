@@ -1,5 +1,6 @@
 package com.example.ecosnap;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -31,7 +32,22 @@ public class MainDashboardActivity extends AppCompatActivity {
             navController.addOnDestinationChangedListener((controller, destination, arguments) ->
                     bottomNav.post(this::applyFeaturedScanNav));
         }
+        handleHomeIntent(getIntent());
         bottomNav.post(this::applyFeaturedScanNav);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleHomeIntent(intent);
+    }
+
+    private void handleHomeIntent(Intent intent) {
+        if (intent == null || !intent.getBooleanExtra("open_home", false)) return;
+        if (bottomNav != null) {
+            bottomNav.post(() -> bottomNav.setSelectedItemId(R.id.nav_home));
+        }
     }
 
     private void applyFeaturedScanNav() {

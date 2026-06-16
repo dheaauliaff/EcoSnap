@@ -1,6 +1,7 @@
 package com.example.ecosnap.user;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,6 +21,7 @@ import androidx.core.app.ActivityCompat;
 import com.cloudinary.android.MediaManager;
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.helper.OverlayView;
+import com.example.ecosnap.MainDashboardActivity;
 import com.example.ecosnap.R;
 import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.helper.TFLiteHelper;
@@ -49,7 +51,7 @@ public class ResultActivity extends AppCompatActivity {
     TextView tvTotalObjek, tvKategoriTerbanyak, tvSaran, tvFunfact;
     LinearLayout llDetectedObjects;
     com.example.ecosnap.helper.OverlayView overlayView;
-    MaterialButton btnSimpan;
+    MaterialButton btnSimpan, btnScanLagi, btnBeranda;
 
     Bitmap bitmapHasil;
 
@@ -78,6 +80,8 @@ public class ResultActivity extends AppCompatActivity {
         tvFunfact = findViewById(R.id.tvFunfact);
         overlayView = findViewById(R.id.overlayView);
         btnSimpan = findViewById(R.id.btnSimpan);
+        btnScanLagi = findViewById(R.id.btnScanLagi);
+        btnBeranda = findViewById(R.id.btnBeranda);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -87,6 +91,18 @@ public class ResultActivity extends AppCompatActivity {
 
         if (btnSimpan != null) {
             btnSimpan.setOnClickListener(v -> uploadCloudinary());
+        }
+        if (btnScanLagi != null) {
+            btnScanLagi.setOnClickListener(v -> finish());
+        }
+        if (btnBeranda != null) {
+            btnBeranda.setOnClickListener(v -> {
+                Intent intent = new Intent(this, MainDashboardActivity.class);
+                intent.putExtra("open_home", true);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                finish();
+            });
         }
         // CATATAN: Upload TIDAK dipanggil otomatis di sini
         // agar tidak terjadi double-upload. User harus tekan tombol Simpan.

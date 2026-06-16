@@ -337,7 +337,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
     private void applyCurrentPeriod() {
         List<ScanHistory> filtered = filterByPeriod(cachedScans);
-        hitungStatistik(filtered);
+        hitungStatistik(cachedScans);
         buatGrafik(filtered);
         buatRanking(cachedScans);
     }
@@ -648,14 +648,12 @@ public class DashboardAdminActivity extends AppCompatActivity {
         int organik = 0, anorganik = 0, bukanSampah = 0, recycle = 0;
 
         for (ScanHistory s : data) {
-            if (s.getKategori() != null) {
-                String kat = s.getKategori().toLowerCase().replace(" ", "_");
-                switch (kat) {
-                    case "organik":       organik++;      break;
-                    case "anorganik":     anorganik++;    break;
-                    case "bukan_sampah":  bukanSampah++;  break;
-                    case "recycle":       recycle++;      break;
-                }
+            String kat = normalizeKategori(s);
+            switch (kat) {
+                case "organik":       organik++;      break;
+                case "anorganik":     anorganik++;    break;
+                case "bukan_sampah":  bukanSampah++;  break;
+                case "recycle":       recycle++;      break;
             }
             String rt = WilayahUtils.formatRtId(s.getRtId());
             if (!rt.isEmpty()) {
@@ -669,6 +667,32 @@ public class DashboardAdminActivity extends AppCompatActivity {
         if (tvTotalBukanSampah != null) tvTotalBukanSampah.setText(String.valueOf(bukanSampah));
         if (tvTotalRecycle   != null) tvTotalRecycle.setText(String.valueOf(recycle));
         if (tvTotalRtAktif   != null) tvTotalRtAktif.setText(String.valueOf(registeredRtLabels.size()));
+    }
+
+    private String normalizeKategori(ScanHistory scan) {
+        String kategori = scan != null ? scan.getKategori() : null;
+        String clean = kategori == null ? "" : kategori.toLowerCase(Locale.US)
+                .replace("_", " ")
+                .replace("-", " ")
+                .trim();
+
+        if (clean.contains("bukan")) return "bukan_sampah";
+        if (clean.contains("anorganik")) return "anorganik";
+        if (clean.contains("organik")) return "organik";
+        if (clean.contains("recycle") || clean.contains("daur ulang")) return "recycle";
+
+        String jenis = scan != null ? WilayahUtils.normalizeJenis(scan.getJenisSampah()) : "";
+        if ("Organik".equalsIgnoreCase(jenis)) return "organik";
+        if ("Plastik".equalsIgnoreCase(jenis)) return "anorganik";
+        if ("Kardus".equalsIgnoreCase(jenis)
+                || "Kaca".equalsIgnoreCase(jenis)
+                || "Logam".equalsIgnoreCase(jenis)
+                || "Kertas".equalsIgnoreCase(jenis)) {
+            return "recycle";
+        }
+        if ("Bukan Sampah".equalsIgnoreCase(jenis)) return "bukan_sampah";
+
+        return "";
     }
 
     private void buatGrafik(List<ScanHistory> data) {

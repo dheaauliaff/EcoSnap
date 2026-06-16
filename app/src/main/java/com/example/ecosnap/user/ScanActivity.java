@@ -38,12 +38,13 @@ public class ScanActivity extends AppCompatActivity {
 
     private static final String TAG_IMAGE_FILE = "ecosnap_capture.jpg";
 
-    TextView tvHasil;
+    TextView tvHasil, tvScanProgress;
     TFLiteHelper tflite;
     OverlayView overlayView;
     ImageView viewFinder;
     MaterialButton btnCapture, btnGallery;
     ProgressBar progressScan;
+    View layoutScanProgress;
 
     private Bitmap currentBitmap = null;
     private List<TFLiteHelper.Result> latestDetections = new ArrayList<>();
@@ -70,17 +71,20 @@ public class ScanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scan);
 
         tvHasil = findViewById(R.id.tvHasil);
+        tvScanProgress = findViewById(R.id.tvScanProgress);
         overlayView = findViewById(R.id.overlayView);
         viewFinder = findViewById(R.id.viewFinder);
         btnCapture = findViewById(R.id.btnCapture);
         btnGallery = findViewById(R.id.btnGallery);
         progressScan = findViewById(R.id.progressScan);
+        layoutScanProgress = findViewById(R.id.layoutScanProgress);
 
         tflite = new TFLiteHelper(this);
         analysisExecutor = Executors.newSingleThreadExecutor();
 
         btnCapture.setOnClickListener(v -> openCameraIntent());
         btnGallery.setOnClickListener(v -> openGalleryIntent());
+        tvHasil.setText("Arahkan kamera ke objek sampah untuk memulai deteksi");
     }
 
     private void openGalleryIntent() {
@@ -186,12 +190,13 @@ public class ScanActivity extends AppCompatActivity {
 
     private void updateResultText(List<TFLiteHelper.Result> detections) {
         if (detections.isEmpty()) {
-            tvHasil.setText("Tidak ada objek terdeteksi. Coba gambar lain.");
+            tvHasil.setText("Arahkan kamera ke objek sampah untuk memulai deteksi");
             return;
         }
 
         TFLiteHelper.Result dominant = findDominant(detections);
-        tvHasil.setText(dominant.label + " terdeteksi - " + String.format("%.0f%%", dominant.confidence));
+        tvHasil.setText("✓ Objek terdeteksi: " + dominant.label
+                + "\nSilakan ambil foto untuk melanjutkan analisis");
     }
 
     private void openResult(List<TFLiteHelper.Result> detections) {
@@ -301,7 +306,13 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     private void showLoading(boolean isLoading) {
+        if (layoutScanProgress != null) {
+            layoutScanProgress.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        }
         progressScan.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        if (tvScanProgress != null) {
+            tvScanProgress.setText(isLoading ? "Menganalisis sampah..." : "");
+        }
         btnCapture.setEnabled(!isLoading);
         btnGallery.setEnabled(!isLoading);
     }
