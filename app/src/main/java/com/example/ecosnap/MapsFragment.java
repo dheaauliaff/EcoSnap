@@ -21,8 +21,10 @@ import android.view.animation.DecelerateInterpolator;
 import android.graphics.Typeface;
 import android.view.Gravity;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,9 +57,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -83,6 +87,9 @@ public class MapsFragment extends Fragment {
     private TextView btnResetFilter;
     private View detailMarkerCard;
     private androidx.core.widget.NestedScrollView mapsRoot;
+    private HorizontalScrollView legendScroll;
+    private SeekBar legendScrollBar;
+    private boolean syncingLegendScroll = false;
 
     // OSMDroid
     private MyLocationNewOverlay myLocationOverlay;
@@ -99,7 +106,7 @@ public class MapsFragment extends Fragment {
     private final Map<String, Integer> rtCount = new HashMap<>();
 
     // Filter state
-    private String activeFilter = null;
+    private final Set<String> activeFilters = new LinkedHashSet<>();
     private String activePeriodFilter = "Semua Waktu";
     private String activeRtFilter = "Semua RT";
     private TextView tvFilterPeriod;
@@ -122,6 +129,8 @@ public class MapsFragment extends Fragment {
         filterBadgeRow             = view.findViewById(R.id.filterBadgeRow);
         tvFilterBadge              = view.findViewById(R.id.tvFilterBadge);
         btnResetFilter             = view.findViewById(R.id.btnResetFilter);
+        legendScroll               = view.findViewById(R.id.legendScroll);
+        legendScrollBar            = view.findViewById(R.id.legendScrollBar);
         tvFilterPeriod             = view.findViewById(R.id.tvFilterPeriod);
         tvFilterArea               = view.findViewById(R.id.tvFilterArea);
         tvDetailContent            = view.findViewById(R.id.tvDetailContent);
@@ -142,6 +151,7 @@ public class MapsFragment extends Fragment {
 
         setupMap();
         setupControls(view);
+        setupLegendScrollSync();
         buildLegend();
         buildTopRegions(new ArrayList<>());
         animatePage(view);
@@ -197,9 +207,9 @@ public class MapsFragment extends Fragment {
         // Reset filter
         if (btnResetFilter != null) {
             btnResetFilter.setOnClickListener(v -> {
-                activeFilter = null;
-                if (filterBadgeRow != null) filterBadgeRow.setVisibility(View.GONE);
-                refreshLegendSelection(-1);
+                activeFilters.clear();
+                updateCategoryFilterUi();
+                refreshLegendSelection();
                 refreshMapMarkers();
                 buildCategoryBreakdown();
             });
@@ -393,10 +403,11 @@ public class MapsFragment extends Fragment {
         if (osmMap == null || !isAdded()) return;
         osmMap.getOverlays().removeIf(o -> (o instanceof Marker) || (o instanceof Polygon));
 
-        List<ScanHistory> toShow = (activeFilter == null) ? displayedScans : new ArrayList<>();
-        if (activeFilter != null) {
+        List<ScanHistory> toShow = activeFilters.isEmpty() ? displayedScans : new ArrayList<>();
+        if (!activeFilters.isEmpty()) {
             for (ScanHistory s : displayedScans) {
-                if (activeFilter.equalsIgnoreCase(s.getJenisSampah())) toShow.add(s);
+                String jenis = WilayahUtils.normalizeJenis(s.getJenisSampah());
+                if (containsCategory(jenis)) toShow.add(s);
             }
         }
 
@@ -408,11 +419,13 @@ public class MapsFragment extends Fragment {
         osmMap.invalidate();
     }
 
-    private void refreshLegendSelection(int selectedIdx) {
+    private void refreshLegendSelection() {
         for (int i = 0; i < legendItemViews.size(); i++) {
             View v = legendItemViews.get(i);
-            v.setAlpha(selectedIdx < 0 || i == selectedIdx ? 1f : 0.4f);
-            float scale = (i == selectedIdx) ? 1.08f : 1f;
+            String cat = i < CATEGORIES.length ? CATEGORIES[i] : "";
+            boolean selected = containsCategory(cat);
+            v.setAlpha(activeFilters.isEmpty() || selected ? 1f : 0.4f);
+            float scale = selected ? 1.08f : 1f;
             v.animate().scaleX(scale).scaleY(scale).setDuration(180).start();
         }
     }
@@ -445,27 +458,33 @@ public class MapsFragment extends Fragment {
         marker.setTitle(nama + " — " + rt + " / " + rw);
         String dominanArea = getDominantNearby(lat, lng);
         int totalArea = countNearby(lat, lng);
-        // Alamat diisi async agar InfoWindow tidak menunggu request jaringan.
+        String alamat = scan.getAlamat() != null && !scan.getAlamat().trim().isEmpty()
+                ? scan.getAlamat().trim()
+                : "memuat...";
         marker.setSnippet(String.format(Locale.US,
-                "Jenis: %s | Kategori: %s\nAlamat: memuat...\nWilayah: %s / %s\nArea ini: %d scan | Dominan: %s",
-                nama, kat, rt, rw, totalArea, dominanArea));
+                "Jenis: %s | Kategori: %s\nAlamat: %s\nWilayah: %s / %s\nArea ini: %d scan | Dominan: %s",
+                nama, kat, alamat, rt, rw, totalArea, dominanArea));
         marker.setIcon(new android.graphics.drawable.BitmapDrawable(
                 getResources(), createPinBitmap(nama, color)));
         osmMap.getOverlays().add(marker);
-        fetchAddressAsync(lat, lng, marker);
+        if ("memuat...".equals(alamat)) {
+            fetchAddressAsync(lat, lng, marker);
+        } else {
+            marker.setRelatedObject(alamat);
+        }
 
         marker.setOnMarkerClickListener((m, mapView) -> {
 
-            String alamat = "-";
+            String alamatDetail = alamat;
 
             if (m.getRelatedObject() != null) {
-                alamat = m.getRelatedObject().toString();
+                alamatDetail = m.getRelatedObject().toString();
             }
 
             String detail =
                     "Jenis Sampah : " + nama + "\n\n" +
                             "Kategori : " + kat + "\n\n" +
-                            "Alamat : " + alamat + "\n\n" +
+                            "Alamat : " + alamatDetail + "\n\n" +
                             "RT/RW : " + rt + " / " + rw + "\n\n" +
                             "Total Scan Area : " + totalArea + "\n\n" +
                             "Dominan : " + dominanArea;
@@ -617,10 +636,12 @@ public class MapsFragment extends Fragment {
 
         // Jika filter aktif: tampilkan hanya kategori itu
         Map<String, Integer> counts;
-        if (activeFilter != null) {
+        if (!activeFilters.isEmpty()) {
             counts = new HashMap<>();
-            int c = globalCategoryCount.getOrDefault(activeFilter, 0);
-            counts.put(activeFilter, c);
+            for (String filter : activeFilters) {
+                int c = globalCategoryCount.getOrDefault(filter, 0);
+                counts.put(filter, c);
+            }
         } else {
             counts = globalCategoryCount;
         }
@@ -718,8 +739,6 @@ public class MapsFragment extends Fragment {
 
         for (int i = 0; i < CATEGORIES.length; i++) {
             final String cat = CATEGORIES[i];
-            final int idx = i;
-
             View item      = inflater.inflate(R.layout.item_legend_category, legendRow, false);
             FrameLayout circle   = item.findViewById(R.id.legendCircle);
             ImageView icon       = item.findViewById(R.id.ivLegendIcon);
@@ -750,21 +769,99 @@ public class MapsFragment extends Fragment {
 
             // Click: toggle filter peta ke kategori ini
             item.setOnClickListener(v -> {
-                if (cat.equals(activeFilter)) {
-                    // Klik lagi → reset
-                    activeFilter = null;
-                    if (filterBadgeRow != null) filterBadgeRow.setVisibility(View.GONE);
-                    refreshLegendSelection(-1);
+                if (containsCategory(cat)) {
+                    removeCategory(cat);
                 } else {
-                    activeFilter = cat;
-                    if (tvFilterBadge != null) tvFilterBadge.setText("Filter aktif: " + cat);
-                    if (filterBadgeRow != null) filterBadgeRow.setVisibility(View.VISIBLE);
-                    refreshLegendSelection(idx);
+                    activeFilters.add(cat);
                 }
+                updateCategoryFilterUi();
+                refreshLegendSelection();
                 refreshMapMarkers();
                 buildCategoryBreakdown();
             });
         }
+        refreshLegendSelection();
+        if (legendScroll != null) legendScroll.post(this::updateLegendScrollBarFromScroll);
+    }
+
+    private void setupLegendScrollSync() {
+        if (legendScroll == null || legendScrollBar == null) return;
+
+        legendScroll.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (!syncingLegendScroll) {
+                updateLegendScrollBarFromScroll();
+            }
+        });
+
+        legendScrollBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (!fromUser || legendScroll == null) return;
+                int maxScroll = getLegendMaxScroll();
+                syncingLegendScroll = true;
+                legendScroll.scrollTo(Math.round(maxScroll * (progress / 1000f)), 0);
+                syncingLegendScroll = false;
+            }
+
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        legendScroll.post(this::updateLegendScrollBarFromScroll);
+    }
+
+    private void updateLegendScrollBarFromScroll() {
+        if (legendScroll == null || legendScrollBar == null) return;
+        int maxScroll = getLegendMaxScroll();
+        legendScrollBar.setVisibility(maxScroll > 0 ? View.VISIBLE : View.GONE);
+        if (maxScroll <= 0) {
+            legendScrollBar.setProgress(0);
+            return;
+        }
+        syncingLegendScroll = true;
+        legendScrollBar.setProgress(Math.round((legendScroll.getScrollX() * 1000f) / maxScroll));
+        syncingLegendScroll = false;
+    }
+
+    private int getLegendMaxScroll() {
+        if (legendScroll == null || legendScroll.getChildCount() == 0) return 0;
+        return Math.max(0, legendScroll.getChildAt(0).getWidth() - legendScroll.getWidth());
+    }
+
+    private void updateCategoryFilterUi() {
+        if (filterBadgeRow != null) {
+            filterBadgeRow.setVisibility(activeFilters.isEmpty() ? View.GONE : View.VISIBLE);
+        }
+        if (tvFilterBadge == null) return;
+        if (activeFilters.size() == 1) {
+            tvFilterBadge.setText("Filter aktif: " + activeFilters.iterator().next());
+        } else if (!activeFilters.isEmpty()) {
+            tvFilterBadge.setText("Filter aktif: " + activeFilters.size() + " kategori");
+        }
+    }
+
+    private boolean containsCategory(String category) {
+        String key = normalizeCategoryKey(category);
+        for (String selected : activeFilters) {
+            if (normalizeCategoryKey(selected).equals(key)) return true;
+        }
+        return false;
+    }
+
+    private void removeCategory(String category) {
+        String key = normalizeCategoryKey(category);
+        String matched = null;
+        for (String selected : activeFilters) {
+            if (normalizeCategoryKey(selected).equals(key)) {
+                matched = selected;
+                break;
+            }
+        }
+        if (matched != null) activeFilters.remove(matched);
+    }
+
+    private String normalizeCategoryKey(String category) {
+        return category == null ? "" : category.trim().toLowerCase(Locale.US);
     }
 
     // ─── Top RT ───────────────────────────────────────────────────────────────

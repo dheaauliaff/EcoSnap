@@ -627,37 +627,7 @@
             </LinearLayout>
 
             <!-- RANKING RT SECTION -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="🏆 Ranking RT Terbanyak"
-                    android:textColor="#212121"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/layoutRanking"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_premium_card"
-                android:elevation="4dp"
-                android:orientation="vertical"
-                android:padding="16dp" />
-
-            <!-- Padding bottom -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="32dp" />
 
         </LinearLayout>
     </ScrollView>

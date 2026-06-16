@@ -79,6 +79,9 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
         // Tanggal
         h.tvTanggal.setText(formatDate(item.getCreatedAt()));
 
+        String alamat = safe(item.getAlamat());
+        h.tvAlamat.setText("Lokasi: " + alamat);
+
         // Confidence
         Float conf = item.getAkurasi();
         if (conf != null && conf > 0) {
@@ -121,6 +124,7 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
             intent.putExtra("confidence", item.getAkurasi() != null ? item.getAkurasi() : 0f);
             intent.putExtra("tanggal", item.getCreatedAt());
             intent.putExtra("imageUrl", item.getFotoUrl());
+            intent.putExtra("alamat", item.getAlamat());
             context.startActivity(intent);
         });
     }
@@ -132,7 +136,7 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivThumbnail;
-        TextView tvNamaSampah, tvKategori, tvWilayah, tvTanggal, tvConfidence, tvUserInfo;
+        TextView tvNamaSampah, tvKategori, tvWilayah, tvTanggal, tvConfidence, tvAlamat, tvUserInfo;
 
         ViewHolder(@NonNull View v) {
             super(v);
@@ -142,6 +146,7 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
             tvWilayah     = v.findViewById(R.id.tvWilayah);
             tvTanggal     = v.findViewById(R.id.tvTanggal);
             tvConfidence  = v.findViewById(R.id.tvConfidence);
+            tvAlamat      = v.findViewById(R.id.tvAlamat);
             tvUserInfo    = v.findViewById(R.id.tvUserInfo);
         }
     }

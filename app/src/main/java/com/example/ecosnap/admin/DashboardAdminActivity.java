@@ -22,6 +22,7 @@ import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.ScanHistory;
 import com.example.ecosnap.WilayahUtils;
 import com.example.ecosnap.model.User;
+import com.example.ecosnap.user.HistoryActivity;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -98,7 +99,6 @@ public class DashboardAdminActivity extends AppCompatActivity {
         btnMinggu = findViewById(R.id.btnMinggu);
         btnBulan = findViewById(R.id.btnBulan);
         btnTahun = findViewById(R.id.btnTahun);
-        layoutRanking = findViewById(R.id.layoutRanking);
         barChart = findViewById(R.id.barChart);
         bottomNav = findViewById(R.id.bottomNav);
         btnLihatPeta = findViewById(R.id.btnLihatPeta);
@@ -109,6 +109,14 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AdminMapsActivity.class));
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             });
+        }
+        setupCategoryHistoryCard(findViewById(R.id.cardOrganik), "Organik");
+        setupCategoryHistoryCard(findViewById(R.id.cardAnorganik), "Anorganik");
+        setupCategoryHistoryCard(findViewById(R.id.cardRecycle), "Recycle");
+        setupCategoryHistoryCard(findViewById(R.id.cardBukanSampah), "Bukan Sampah");
+        View cardTotalScan = findViewById(R.id.cardTotalScan);
+        if (cardTotalScan != null) {
+            cardTotalScan.setOnClickListener(v -> openAdminHistory(""));
         }
 
         loadDataAdmin();
@@ -166,6 +174,22 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private void setupCategoryHistoryCard(View card, String kategori) {
+        if (card == null) return;
+        card.setOnClickListener(v -> openAdminHistory(kategori));
+    }
+
+    private void openAdminHistory(String kategori) {
+        Intent intent = new Intent(this, HistoryActivity.class);
+        intent.putExtra("admin_view", true);
+        if (kategori != null && !kategori.isEmpty()) {
+            intent.putExtra("category_filter", kategori);
+            intent.putExtra("filter_mode", "kategori");
+        }
+        startActivity(intent);
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
     @Override

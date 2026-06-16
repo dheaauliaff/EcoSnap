@@ -102,6 +102,18 @@
                 android:textSize="11sp" />
         </LinearLayout>
 
+        <!-- Alamat Pengambilan Foto -->
+        <TextView
+            android:id="@+id/tvAlamat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Alamat pengambilan foto"
+            android:textColor="#757575"
+            android:textSize="11sp" />
+
         <!-- User info (admin mode only) -->
         <TextView
             android:id="@+id/tvUserInfo"

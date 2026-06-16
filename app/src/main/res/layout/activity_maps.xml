@@ -348,6 +348,7 @@
                 android:textSize="12sp" />
 
             <HorizontalScrollView
+                android:id="@+id/legendScroll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -360,6 +361,20 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal" />
             </HorizontalScrollView>
+
+            <SeekBar
+                android:id="@+id/legendScrollBar"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginTop="4dp"
+                android:max="1000"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                android:progress="0"
+                android:progressDrawable="@drawable/progress_legend_scroll"
+                android:splitTrack="false"
+                android:thumb="@drawable/thumb_legend_scroll"
+                android:thumbOffset="0dp" />
         </LinearLayout>
 
         <!-- Detail Breakdown Per Jenis Sampah -->

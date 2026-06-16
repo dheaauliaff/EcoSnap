@@ -81,6 +81,12 @@ public class HomeFragment extends Fragment {
         tvHomeLogam = view.findViewById(R.id.tvHomeLogam);
         tvHomeKertas = view.findViewById(R.id.tvHomeKertas);
         tvHomePlastik = view.findViewById(R.id.tvHomePlastik);
+        setupCategoryCard(view.findViewById(R.id.cardHomeOrganik), "Organik");
+        setupCategoryCard(view.findViewById(R.id.cardHomeKardus), "Kardus");
+        setupCategoryCard(view.findViewById(R.id.cardHomeKaca), "Kaca");
+        setupCategoryCard(view.findViewById(R.id.cardHomeLogam), "Logam");
+        setupCategoryCard(view.findViewById(R.id.cardHomeKertas), "Kertas");
+        setupCategoryCard(view.findViewById(R.id.cardHomePlastik), "Plastik");
 
         // Scan Terakhir views
         rvScanTerakhir = view.findViewById(R.id.rvScanTerakhir);
@@ -112,6 +118,16 @@ public class HomeFragment extends Fragment {
         }
 
         return view;
+    }
+
+    private void setupCategoryCard(View card, String jenis) {
+        if (card == null) return;
+        card.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), HistoryActivity.class);
+            intent.putExtra("category_filter", jenis);
+            intent.putExtra("filter_mode", "jenis");
+            startActivity(intent);
+        });
     }
 
     @Override

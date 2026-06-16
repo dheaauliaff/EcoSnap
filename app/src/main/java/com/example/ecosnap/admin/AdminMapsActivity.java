@@ -22,9 +22,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,14 +60,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+
 
 public class AdminMapsActivity extends AppCompatActivity {
 
@@ -85,6 +91,9 @@ public class AdminMapsActivity extends AppCompatActivity {
     TextView btnResetFilter;
     TextView tvWilayahAdmin;
     NestedScrollView scrollView;
+    HorizontalScrollView legendScroll;
+    SeekBar legendScrollBar;
+    boolean syncingLegendScroll = false;
 
     // OSMDroid
     private MyLocationNewOverlay myLocationOverlay;
@@ -101,7 +110,7 @@ public class AdminMapsActivity extends AppCompatActivity {
     final Map<String, Integer> rtCount = new HashMap<>();
 
     // Active filter (null = no filter = show all)
-    String activeFilter = null;
+    final Set<String> activeFilters = new LinkedHashSet<>();
     String activeRtFilter = "Semua RT";
     List<ScanHistory> displayedScans = new ArrayList<>();
 
@@ -125,6 +134,8 @@ public class AdminMapsActivity extends AppCompatActivity {
         filterBadgeRow = findViewById(R.id.filterBadgeRow);
         tvFilterBadge = findViewById(R.id.tvFilterBadge);
         btnResetFilter = findViewById(R.id.btnResetFilter);
+        legendScroll = findViewById(R.id.legendScroll);
+        legendScrollBar = findViewById(R.id.legendScrollBar);
         tvWilayahAdmin = findViewById(R.id.tvWilayahAdmin);
         //ini baruu yaa
         tvDetailContent = findViewById(R.id.tvDetailContent);
@@ -141,6 +152,7 @@ public class AdminMapsActivity extends AppCompatActivity {
 
         setupMap();
         setupControls();
+        setupLegendScrollSync();
         buildLegend();
         buildTopRegions(new ArrayList<>());
         animatePage();
@@ -148,9 +160,9 @@ public class AdminMapsActivity extends AppCompatActivity {
         // Reset filter button
         if (btnResetFilter != null) {
             btnResetFilter.setOnClickListener(v -> {
-                activeFilter = null;
-                filterBadgeRow.setVisibility(View.GONE);
-                refreshLegendSelection(-1);
+                activeFilters.clear();
+                updateCategoryFilterUi();
+                refreshLegendSelection();
                 refreshMapMarkers();
                 buildCategoryBreakdown();
             });
@@ -411,16 +423,16 @@ public class AdminMapsActivity extends AppCompatActivity {
 
     /**
      * Clears and re-draws map markers.
-     * If activeFilter != null, only draws markers for that category.
+     * If category filters are active, only draws markers for those categories.
      */
     private void refreshMapMarkers() {
         if (mapView == null) return;
         mapView.getOverlays().removeIf(o -> (o instanceof Marker) || (o instanceof Polygon));
 
-        List<ScanHistory> toShow = (activeFilter == null) ? displayedScans : new ArrayList<>();
-        if (activeFilter != null) {
+        List<ScanHistory> toShow = activeFilters.isEmpty() ? displayedScans : new ArrayList<>();
+        if (!activeFilters.isEmpty()) {
             for (ScanHistory s : displayedScans) {
-                if (activeFilter.equalsIgnoreCase(WilayahUtils.normalizeJenis(s.getJenisSampah()))) {
+                if (containsCategory(WilayahUtils.normalizeJenis(s.getJenisSampah()))) {
                     toShow.add(s);
                 }
             }
@@ -463,19 +475,25 @@ public class AdminMapsActivity extends AppCompatActivity {
         marker.setPosition(new GeoPoint(lat, lng));
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         marker.setTitle("");
-        marker.setSnippet("");
+        marker.setSnippet("Alamat: " + alamat + "\n");
         marker.setIcon(new BitmapDrawable(getResources(), createPinBitmap(nama, color)));
         mapView.getOverlays().add(marker);
         if ("memuat...".equals(alamat)) {
             fetchAddressAsync(lat, lng, marker);
+        } else {
+            marker.setRelatedObject(alamat);
         }
             //BARU
         marker.setOnMarkerClickListener((m, mapView) -> {
+            String alamatDetail = alamat;
+            if (m.getRelatedObject() != null) {
+                alamatDetail = m.getRelatedObject().toString();
+            }
 
             showMarkerDetail(
                     nama,
                     kat,
-                    alamat,
+                    alamatDetail,
                     rt,
                     rw,
                     totalArea,
@@ -500,8 +518,6 @@ public class AdminMapsActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         for (int i = 0; i < CATEGORIES.length; i++) {
             final String cat = CATEGORIES[i];
-            final int idx = i;
-
             View item = inflater.inflate(R.layout.item_legend_category, legendRow, false);
             FrameLayout circle = item.findViewById(R.id.legendCircle);
             ImageView icon = item.findViewById(R.id.ivLegendIcon);
@@ -532,35 +548,86 @@ public class AdminMapsActivity extends AppCompatActivity {
 
             // Click: filter map to this category (toggle)
             item.setOnClickListener(v -> {
-                if (cat.equals(activeFilter)) {
-                    // Toggle off — reset to show all
-                    activeFilter = null;
-                    filterBadgeRow.setVisibility(View.GONE);
-                    refreshLegendSelection(-1);
+                if (containsCategory(cat)) {
+                    removeCategory(cat);
                 } else {
-                    activeFilter = cat;
-                    tvFilterBadge.setText("Filter aktif: " + cat);
-                    filterBadgeRow.setVisibility(View.VISIBLE);
-                    refreshLegendSelection(idx);
+                    activeFilters.add(cat);
                 }
+                updateCategoryFilterUi();
+                refreshLegendSelection();
                 refreshMapMarkers();
                 buildCategoryBreakdown();
             });
         }
+        refreshLegendSelection();
+        if (legendScroll != null) legendScroll.post(this::updateLegendScrollBarFromScroll);
     }
 
-    /** Highlights selected legend item; dims unselected ones */
-    private void refreshLegendSelection(int selectedIdx) {
+    /** Highlights selected legend items; dims unselected ones */
+    private void refreshLegendSelection() {
         for (int i = 0; i < legendItemViews.size(); i++) {
             View v = legendItemViews.get(i);
-            if (selectedIdx < 0) {
-                v.setAlpha(1f);
-            } else {
-                v.setAlpha(i == selectedIdx ? 1f : 0.4f);
-            }
-            // Scale pop effect on selected
-            float scale = (i == selectedIdx) ? 1.08f : 1f;
+            String cat = i < CATEGORIES.length ? CATEGORIES[i] : "";
+            boolean selected = containsCategory(cat);
+            v.setAlpha(activeFilters.isEmpty() || selected ? 1f : 0.4f);
+            float scale = selected ? 1.08f : 1f;
             v.animate().scaleX(scale).scaleY(scale).setDuration(180).start();
+        }
+    }
+
+    private void setupLegendScrollSync() {
+        if (legendScroll == null || legendScrollBar == null) return;
+
+        legendScroll.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (!syncingLegendScroll) {
+                updateLegendScrollBarFromScroll();
+            }
+        });
+
+        legendScrollBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (!fromUser || legendScroll == null) return;
+                int maxScroll = getLegendMaxScroll();
+                syncingLegendScroll = true;
+                legendScroll.scrollTo(Math.round(maxScroll * (progress / 1000f)), 0);
+                syncingLegendScroll = false;
+            }
+
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        legendScroll.post(this::updateLegendScrollBarFromScroll);
+    }
+
+    private void updateLegendScrollBarFromScroll() {
+        if (legendScroll == null || legendScrollBar == null) return;
+        int maxScroll = getLegendMaxScroll();
+        legendScrollBar.setVisibility(maxScroll > 0 ? View.VISIBLE : View.GONE);
+        if (maxScroll <= 0) {
+            legendScrollBar.setProgress(0);
+            return;
+        }
+        syncingLegendScroll = true;
+        legendScrollBar.setProgress(Math.round((legendScroll.getScrollX() * 1000f) / maxScroll));
+        syncingLegendScroll = false;
+    }
+
+    private int getLegendMaxScroll() {
+        if (legendScroll == null || legendScroll.getChildCount() == 0) return 0;
+        return Math.max(0, legendScroll.getChildAt(0).getWidth() - legendScroll.getWidth());
+    }
+
+    private void updateCategoryFilterUi() {
+        if (filterBadgeRow != null) {
+            filterBadgeRow.setVisibility(activeFilters.isEmpty() ? View.GONE : View.VISIBLE);
+        }
+        if (tvFilterBadge == null) return;
+        if (activeFilters.size() == 1) {
+            tvFilterBadge.setText("Filter aktif: " + activeFilters.iterator().next());
+        } else if (!activeFilters.isEmpty()) {
+            tvFilterBadge.setText("Filter aktif: " + activeFilters.size() + " kategori");
         }
     }
 
@@ -585,10 +652,12 @@ public class AdminMapsActivity extends AppCompatActivity {
         // Which counts to use: all or filtered
         Map<String, Integer> counts;
         int totalForPct;
-        if (activeFilter != null) {
+        if (!activeFilters.isEmpty()) {
             counts = new HashMap<>();
-            int c = globalCategoryCount.getOrDefault(activeFilter, 0);
-            counts.put(activeFilter, c);
+            for (String filter : activeFilters) {
+                int c = globalCategoryCount.getOrDefault(filter, 0);
+                counts.put(filter, c);
+            }
             totalForPct = totalReports;
         } else {
             counts = globalCategoryCount;
@@ -848,6 +917,30 @@ public class AdminMapsActivity extends AppCompatActivity {
         return dom;
     }
 
+    private boolean containsCategory(String category) {
+        String key = normalizeCategoryKey(category);
+        for (String selected : activeFilters) {
+            if (normalizeCategoryKey(selected).equals(key)) return true;
+        }
+        return false;
+    }
+
+    private void removeCategory(String category) {
+        String key = normalizeCategoryKey(category);
+        String matched = null;
+        for (String selected : activeFilters) {
+            if (normalizeCategoryKey(selected).equals(key)) {
+                matched = selected;
+                break;
+            }
+        }
+        if (matched != null) activeFilters.remove(matched);
+    }
+
+    private String normalizeCategoryKey(String category) {
+        return category == null ? "" : category.trim().toLowerCase(java.util.Locale.US);
+    }
+
     private String getDominantNearby(double lat, double lng) {
         Map<String, Integer> nearby = new HashMap<>();
         float[] result = new float[1];
@@ -888,6 +981,7 @@ public class AdminMapsActivity extends AppCompatActivity {
                     String updated = current.replaceFirst("Alamat:.*?(\\n|$)", "Alamat: " + finalAddress + "\n");
                     boolean wasOpen = marker.isInfoWindowShown();
                     marker.setSnippet(updated);
+                    marker.setRelatedObject(finalAddress);
                     if (wasOpen) {
                         marker.closeInfoWindow();
                         marker.showInfoWindow();
