@@ -45,71 +45,72 @@
       --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
       --c-organik:#16a34a; --c-plastik:#ea580c; --c-kertas:#ca8a04;
       --c-kaca:#0891b2; --c-kardus:#2563eb; --c-logam:#7c3aed;
-      --sidebar-w: 240px; --sidebar-collapsed: 60px;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
     body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-1);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
-    /* SIDEBAR */
-    .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--green-900);display:flex;flex-direction:column;z-index:100;overflow:hidden;transition:width .22s cubic-bezier(.4,0,.2,1)}
-    .sidebar.collapsed{width:var(--sidebar-collapsed)}
-    .sidebar.collapsed .logo-text,.sidebar.collapsed .nav-label-text,.sidebar.collapsed .nav-section-label,.sidebar.collapsed .sync-text,.sidebar.collapsed .last-sync{display:none}
-    .sidebar.collapsed .nav-item{justify-content:center;padding:10px 0}
-    .sidebar.collapsed .sidebar-logo{justify-content:center;padding:18px 0 14px}
-    .sidebar.collapsed .sidebar-footer{padding:12px 0;display:flex;flex-direction:column;align-items:center}
-    .sidebar-logo{padding:18px 20px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08);position:relative}
-    .sidebar-toggle{position:absolute;right:-10px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;background:var(--green-500);border:2px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:9px;box-shadow:var(--shadow-sm);z-index:10;transition:all .22s;line-height:1}
-    .sidebar.collapsed .sidebar-toggle{transform:translateY(-50%) scaleX(-1)}
-    .logo-icon{width:34px;height:34px;background:rgba(255,255,255,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid rgba(255,255,255,.15);flex-shrink:0}
-    .logo-text{overflow:hidden}
-    .logo-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#fff;white-space:nowrap;letter-spacing:-.2px}
-    .logo-sub{font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;font-weight:500;white-space:nowrap}
-    .sidebar-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;overflow-x:hidden}
-    .nav-section-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.28);font-weight:600;padding:12px 10px 4px;white-space:nowrap}
-    .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);cursor:pointer;transition:background .15s,color .15s;color:rgba(255,255,255,.60);font-size:13px;font-weight:500;border:none;background:none;width:100%;text-align:left;text-decoration:none;white-space:nowrap;overflow:hidden}
-    .nav-item:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.90)}
-    .nav-item.active{background:rgba(255,255,255,.14);color:#fff;font-weight:600}
-    .nav-item.active .nav-icon{background:rgba(255,255,255,.18)}
-    .nav-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;background:rgba(255,255,255,.06);flex-shrink:0}
-    .sidebar-footer{padding:12px 16px 16px;border-top:1px solid rgba(255,255,255,.08)}
-    .sync-status{display:flex;align-items:center;gap:7px;font-size:11px;color:rgba(255,255,255,.45)}
-    .sync-text{white-space:nowrap;overflow:hidden;font-size:11px}
-    .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green-500);box-shadow:0 0 0 2px rgba(76,175,80,.25);animation:pulse-dot 2s infinite;flex-shrink:0}
-    .sync-dot.offline{background:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,.25)}
-    @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
-    .last-sync{font-size:10px;color:rgba(255,255,255,.25);margin-top:2px;white-space:nowrap}
+    /* MAIN — full width, no sidebar offset */
+    .main{min-height:100vh;display:flex;flex-direction:column;width:100%;overflow-x:hidden}
 
-    /* MAIN */
-    .main{margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column;width:calc(100vw - var(--sidebar-w));max-width:calc(100vw - var(--sidebar-w));overflow-x:hidden;transition:margin-left .22s cubic-bezier(.4,0,.2,1),width .22s cubic-bezier(.4,0,.2,1),max-width .22s cubic-bezier(.4,0,.2,1)}
-    .sidebar.collapsed ~ .main{margin-left:var(--sidebar-collapsed);width:calc(100vw - var(--sidebar-collapsed));max-width:calc(100vw - var(--sidebar-collapsed))}
-
-    /* TOPBAR */
-    .topbar{position:sticky;top:0;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;z-index:50;gap:12px}
+    /* HEADER BAR */
+    .topbar{position:sticky;top:0;background:var(--green-900);backdrop-filter:blur(16px);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;z-index:50;gap:16px}
+    .topbar-brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+    .topbar-brand-icon{width:30px;height:30px;background:rgba(255,255,255,.15);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;border:1px solid rgba(255,255,255,.2)}
+    .topbar-brand-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:15px;color:#fff;letter-spacing:-.3px}
+    .topbar-brand-sub{font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;font-weight:500;margin-top:1px}
     .topbar-left{min-width:0;flex:1;overflow:hidden}
     .topbar-left h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text-1);letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .topbar-left .topbar-sub{font-size:11px;color:var(--text-3);white-space:nowrap}
     .topbar-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
-    .btn-refresh{display:flex;align-items:center;gap:5px;background:var(--green-900);color:#fff;border:none;border-radius:var(--r-sm);padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;font-family:'Inter',sans-serif;white-space:nowrap}
-    .btn-refresh:hover{background:var(--green-700)}
-    .btn-refresh:active{transform:scale(.97)}
-    .btn-refresh svg{flex-shrink:0}
-    .btn-refresh.loading svg{animation:spin .7s linear infinite}
+
+    /* SYNC STATUS IN TOPBAR */
+    .topbar-sync{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.55)}
+    .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green-500);box-shadow:0 0 0 2px rgba(76,175,80,.25);animation:pulse-dot 2s infinite;flex-shrink:0}
+    .sync-dot.offline{background:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,.25)}
+    @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+
+    /* TAB NAV */
+    .tab-nav{position:sticky;top:56px;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:49;height:48px}
+    .tab-nav-tabs{display:flex;align-items:center;gap:2px}
+    .tab-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;border:none;background:none;font-size:13px;font-weight:500;color:var(--text-3);cursor:pointer;transition:background .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease;font-family:'Inter',sans-serif;white-space:nowrap}
+    .tab-btn:hover{background:var(--green-50);color:var(--text-2);transform:translateY(-1px)}
+    .tab-btn.active{background:var(--green-900);color:#fff;font-weight:600;box-shadow:0 8px 18px rgba(27,94,32,.18)}
+    .tab-nav-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+    .topbar .btn-refresh{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:var(--r-sm);padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;font-family:'Inter',sans-serif;white-space:nowrap}
+    .topbar .btn-refresh:hover{background:rgba(255,255,255,.25)}
+    .topbar .btn-refresh:active{transform:scale(.97)}
+    .topbar .btn-refresh svg{flex-shrink:0}
+    .topbar .btn-refresh.loading svg{animation:spin .7s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .filter-chip{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 10px;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;transition:border-color .15s;flex-shrink:0}
-    .filter-chip:hover{border-color:var(--green-500)}
-    .filter-chip select{border:none;outline:none;background:transparent;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;font-family:'Inter',sans-serif;max-width:90px}
+    /* modal btn-refresh (green) */
+    .btn-refresh{display:inline-flex;align-items:center;gap:5px;background:var(--green-900);color:#fff;border:none;border-radius:var(--r-sm);padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:background .18s ease,transform .18s ease,box-shadow .18s ease;font-family:'Inter',sans-serif;white-space:nowrap;text-decoration:none}
+    .btn-refresh:hover{background:var(--green-700);transform:translateY(-1px);box-shadow:0 8px 18px rgba(27,94,32,.18)}
+    .topbar .filter-chip{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--r-sm);padding:5px 10px;font-size:12px;font-weight:500;color:rgba(255,255,255,.85);cursor:pointer;transition:border-color .18s ease,background .18s ease,transform .18s ease;flex-shrink:0}
+    .topbar .filter-chip:hover{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.16);transform:translateY(-1px)}
+    .topbar .filter-chip select{border:none;outline:none;background:transparent;font-size:12px;font-weight:500;color:rgba(255,255,255,.9);cursor:pointer;font-family:'Inter',sans-serif;max-width:90px}
+    .topbar .filter-chip select option{color:var(--text-1);background:#fff}
+    /* Card-context filter chips */
+    .filter-chip{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 10px;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;flex-shrink:0}
+    .filter-chip:hover{border-color:var(--green-500);box-shadow:0 8px 18px rgba(27,94,32,.08);transform:translateY(-1px)}
+    .filter-chip select,.filter-chip input{border:none;outline:none;background:transparent;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;font-family:'Inter',sans-serif;max-width:90px}
 
     /* CONTENT */
-    .content{padding:24px 28px;flex:1;min-width:0;overflow-x:hidden}
-    .section{display:none}
-    .section.active{display:block}
+    .content{padding:28px 32px;flex:1;min-width:0;overflow-x:hidden;max-width:1600px;margin:0 auto;width:100%}
+
+    /* SECTION HEADERS — each section visible, with divider */
+    .section{display:block;margin-bottom:40px}
+    .section-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--border)}
+    .section-icon{width:36px;height:36px;background:var(--green-900);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+    .section-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;color:var(--text-1);letter-spacing:-.3px}
+    .section-subtitle{font-size:12px;color:var(--text-3);margin-top:2px}
 
     /* KPI */
     .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
-    .kpi-card{background:var(--surface);border-radius:var(--r-md);padding:20px 22px;border:1px solid var(--border);position:relative;overflow:hidden;transition:border-color .15s,box-shadow .15s}
-    .kpi-card:hover{border-color:var(--border-2);box-shadow:var(--shadow-sm)}
-    .kpi-card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--kpi-color,var(--green-500));border-radius:0 2px 2px 0}
+    .kpi-card{background:var(--surface);border-radius:var(--r-md);padding:20px 22px;border:1px solid var(--border);position:relative;overflow:hidden;transition:border-color .22s ease,box-shadow .22s ease,transform .22s ease}
+    .kpi-card:hover{border-color:var(--border-2);box-shadow:0 14px 32px rgba(27,94,32,.11);transform:translateY(-4px)}
+    .kpi-card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--kpi-color,var(--green-500));border-radius:0 2px 2px 0;transition:width .22s ease}
+    .kpi-card:hover::after{width:5px}
     .kpi-card.green{--kpi-color:var(--green-500)}
     .kpi-card.orange{--kpi-color:#f97316}
     .kpi-card.blue{--kpi-color:#3b82f6}
@@ -125,8 +126,8 @@
     /* CARDS */
     .chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:16px}
     .chart-grid.three-col{grid-template-columns:minmax(0,60%) minmax(0,40%)}
-    .card{background:var(--surface);border-radius:var(--r-md);border:1px solid var(--border);overflow:hidden;transition:border-color .15s}
-    .card:hover{border-color:var(--border-2)}
+    .card{background:var(--surface);border-radius:var(--r-md);border:1px solid var(--border);overflow:hidden;transition:border-color .22s ease,box-shadow .22s ease,transform .22s ease}
+    .card:hover{border-color:var(--border-2);box-shadow:0 12px 30px rgba(27,94,32,.08);transform:translateY(-2px)}
     .card-header{padding:16px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
     .card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--text-1);letter-spacing:-.1px}
     .card-subtitle{font-size:11px;color:var(--text-3);margin-top:2px}
@@ -151,15 +152,17 @@
     .chart-canvas-wrap{position:relative;height:210px}
     #map{height:460px;width:100%;border-radius:0 0 var(--r-md) var(--r-md)}
     .map-controls{display:flex;gap:6px;flex-wrap:wrap}
-    .map-btn{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .15s}
-    .map-btn.active,.map-btn:hover{background:var(--green-900);color:#fff;border-color:var(--green-900)}
+    .map-btn{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
+    .map-btn.active,.map-btn:hover{background:var(--green-900);color:#fff;border-color:var(--green-900);transform:translateY(-1px);box-shadow:0 8px 18px rgba(27,94,32,.16)}
 
     /* TABLES */
     .rank-table,.scan-table{width:100%;border-collapse:collapse}
     .rank-table th,.scan-table th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);font-weight:600;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap}
     .rank-table td,.scan-table td{padding:11px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
     .rank-table tr:last-child td,.scan-table tr:last-child td{border-bottom:none}
+    .rank-table td,.scan-table td{transition:background .18s ease,transform .18s ease}
     .rank-table tr:hover td,.scan-table tr:hover td{background:var(--green-50)}
+    .rank-table tr:hover td:first-child,.scan-table tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--green-500)}
     .scan-table th{padding:10px 20px;position:sticky;top:0;z-index:2}
     .scan-table td{padding:11px 20px}
     .rank-medal{font-size:18px}
@@ -171,6 +174,9 @@
     .rank-bar-fill{height:100%;background:var(--green-500);border-radius:2px;transition:width .5s ease}
     .kategori-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
     .thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;background:var(--green-100);border:1px solid var(--border)}
+    .thumb-wrap{position:relative;display:inline-block;width:40px;height:40px;flex-shrink:0}
+    .thumb-wrap .thumb-dl{position:absolute;inset:0;background:rgba(17,24,20,.55);border-radius:8px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;cursor:pointer;text-decoration:none;color:#fff;font-size:16px}
+    .thumb-wrap:hover .thumb-dl{opacity:1}
     .thumb-placeholder{width:40px;height:40px;border-radius:8px;background:var(--green-50);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px}
     .confidence-bar-wrap{display:flex;align-items:center;gap:6px}
     .confidence-bar{width:56px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
@@ -181,6 +187,25 @@
     @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
     .skeleton-text{height:12px;margin:5px 0}
     .skeleton-val{height:30px;width:70px}
+    .animate-up{animation:fade-slide-up .52s cubic-bezier(.2,.8,.2,1) both}
+    .delay-1{animation-delay:.08s}
+    .delay-2{animation-delay:.16s}
+    .delay-3{animation-delay:.24s}
+    @keyframes fade-slide-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes soft-pop{0%{transform:scale(.96);opacity:.72}100%{transform:scale(1);opacity:1}}
+    .kpi-value,.donut-center-value,.rank-count{animation:soft-pop .38s cubic-bezier(.2,.8,.2,1) both}
+    .rank-bar-fill,.stat-prog-fill,.confidence-fill{animation:bar-grow .65s cubic-bezier(.2,.8,.2,1) both;transform-origin:left center}
+    @keyframes bar-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+    .cat-card,.timeline-item{animation:fade-slide-up .45s cubic-bezier(.2,.8,.2,1) both}
+    .cat-card{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease,background .18s ease}
+    .cat-card:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(27,94,32,.08);background:#fff}
+    .timeline-icon{transition:transform .2s ease,box-shadow .2s ease}
+    .timeline-item:hover .timeline-icon{transform:scale(1.08);box-shadow:0 0 0 4px rgba(76,175,80,.12)}
+    .thumb{transition:transform .2s ease,filter .2s ease}
+    .thumb-wrap:hover .thumb{transform:scale(1.04);filter:saturate(1.08)}
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;scroll-behavior:auto !important;transition-duration:.01ms !important}
+    }
     .empty-state{text-align:center;padding:40px 20px;color:var(--text-3)}
     .empty-icon{font-size:40px;margin-bottom:10px}
     .empty-title{font-size:14px;font-weight:600;color:var(--text-2)}
@@ -230,7 +255,6 @@
     .stat-pct{width:32px;text-align:right;font-size:11px;color:var(--text-3)}
 
     /* RESPONSIVE */
-    /* RESPONSIVE & LAYOUT POLISH */
     .mobile-brand {
       display: none;
     }
@@ -256,39 +280,37 @@
     }
 
     @media (max-width: 768px) {
-      .sidebar {
-        display: none !important;
-      }
       .main {
         margin-left: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
-        padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
       }
       .topbar {
-        flex-direction: column;
-        align-items: flex-start;
-        height: auto !important;
-        padding: 16px !important;
-        gap: 12px !important;
+        padding: 0 16px;
+        height: 52px;
       }
-      .topbar-left {
-        width: 100%;
+      .tab-nav {
+        padding: 0 8px;
+        top: 52px;
+        overflow-x: auto;
+        height: auto;
+        min-height: 44px;
+        flex-wrap: nowrap;
       }
-      .mobile-brand {
-        display: flex !important;
+      .tab-nav-tabs {
+        gap: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 6px 0;
+        flex-shrink: 0;
       }
-      .topbar-right {
-        width: 100%;
-        justify-content: space-between;
-        gap: 10px;
+      .tab-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+        flex-shrink: 0;
       }
-      .topbar-right .filter-chip {
-        flex: 1;
-      }
-      .topbar-right .filter-chip select {
-        max-width: none;
-        width: 100%;
+      .tab-nav-actions {
+        display: none;
       }
       .content {
         padding: 16px;
@@ -296,16 +318,13 @@
       #map {
         height: 320px !important;
       }
-      .bottom-nav {
-        display: flex !important;
-      }
       .cat-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       }
+      .topbar-brand-sub { display: none; }
     }
 
     @media (max-width: 640px) {
-      /* Card Header Stacking for filters & actions */
       .card-header {
         flex-direction: column;
         align-items: stretch !important;
@@ -327,7 +346,6 @@
         max-width: none;
       }
       
-      /* Map Controls segmented controls */
       .map-controls {
         width: 100%;
         display: flex;
@@ -339,11 +357,10 @@
         padding: 6px 0;
       }
 
-      /* Responsive Tables - hide columns on mobile */
-      .scan-table th:nth-child(3), .scan-table td:nth-child(3), /* Kategori */
-      .scan-table th:nth-child(4), .scan-table td:nth-child(4), /* Wilayah */
-      .scan-table th:nth-child(5), .scan-table td:nth-child(5), /* RT */
-      .scan-table th:nth-child(7), .scan-table td:nth-child(7) { /* Waktu */
+      .scan-table th:nth-child(3), .scan-table td:nth-child(3),
+      .scan-table th:nth-child(4), .scan-table td:nth-child(4),
+      .scan-table th:nth-child(5), .scan-table td:nth-child(5),
+      .scan-table th:nth-child(7), .scan-table td:nth-child(7) {
         display: none !important;
       }
       .scan-table th, .scan-table td {
@@ -353,7 +370,6 @@
         display: none !important;
       }
       
-      /* Hide porsi column in rank table on mobile */
       .rank-table th:nth-child(4), .rank-table td:nth-child(4),
       .rank-table th:nth-child(5), .rank-table td:nth-child(5) {
         display: none !important;
@@ -362,7 +378,6 @@
         padding: 10px 12px !important;
       }
       
-      /* Pagination Stacking */
       .table-pagination {
         flex-direction: column;
         gap: 10px;
@@ -370,7 +385,6 @@
         padding: 14px 16px;
       }
       
-      /* Donut Chart Responsive */
       .donut-wrap {
         flex-direction: column;
         align-items: center;
@@ -411,54 +425,6 @@
       .cat-count {
         font-size: 20px;
       }
-    }
-
-    /* BOTTOM NAV (MOBILE) */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0; left: 0;
-      width: 100%;
-      height: calc(64px + env(safe-area-inset-bottom, 0px));
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-top: 1px solid rgba(228, 237, 229, 0.8);
-      display: none;
-      justify-content: space-around;
-      align-items: center;
-      z-index: 150;
-      box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
-      padding: 0 4px;
-    }
-    .bottom-nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: none;
-      border: none;
-      color: var(--text-3);
-      font-size: 10px;
-      font-weight: 500;
-      flex: 1;
-      height: 100%;
-      cursor: pointer;
-      gap: 4px;
-      transition: all 0.2s ease;
-      font-family: 'Inter', sans-serif;
-      position: relative;
-    }
-    .bottom-nav-item.active {
-      color: var(--green-700);
-      font-weight: 700;
-    }
-    .bottom-nav-icon {
-      font-size: 20px;
-      transition: transform 0.2s ease;
-    }
-    .bottom-nav-item.active .bottom-nav-icon {
-      transform: scale(1.18);
     }
 
     /* CURSOR FOR CLICKABLE ROWS */
@@ -619,87 +585,57 @@
 </head>
 <body>
 
-<!-- ══════════════ SIDEBAR ══════════════ -->
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-icon">🌿</div>
-    <div class="logo-text">
-      <div class="logo-name">EcoSnap</div>
-      <div class="logo-sub">Dashboard Admin</div>
+<!-- ══════════════ HEADER BAR ══════════════ -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-brand-icon">🌿</div>
+    <div>
+      <div class="topbar-brand-name">EcoSnap Dashboard</div>
+      <div class="topbar-brand-sub">Monitoring Sampah Real-Time</div>
     </div>
-    <div class="sidebar-toggle" onclick="toggleSidebar()" title="Kecilkan/Perbesar sidebar">◀</div>
   </div>
-
-  <nav class="sidebar-nav">
-    <div class="nav-section-label">Menu Utama</div>
-
-    <button class="nav-item active" onclick="showSection('overview')" id="nav-overview">
-      <div class="nav-icon">📊</div>
-      <span>Overview</span>
-    </button>
-    <button class="nav-item" onclick="showSection('statistik')" id="nav-statistik">
-      <div class="nav-icon">📈</div>
-      <span>Statistik</span>
-    </button>
-    <button class="nav-item" onclick="showSection('peta')" id="nav-peta">
-      <div class="nav-icon">🗺️</div>
-      <span>Peta Sebaran</span>
-    </button>
-
-    <div class="nav-section-label">Data</div>
-    <button class="nav-item" onclick="showSection('riwayat')" id="nav-riwayat">
-      <div class="nav-icon">🗂️</div>
-      <span>Riwayat Scan</span>
-    </button>
-    <button class="nav-item" onclick="showSection('ranking')" id="nav-ranking">
-      <div class="nav-icon">🏆</div>
-      <span>Ranking Wilayah</span>
-    </button>
-  </nav>
-
-  <div class="sidebar-footer">
-    <div class="sync-status">
+  <div class="topbar-right">
+    <div class="topbar-sync">
       <div class="sync-dot" id="syncDot"></div>
-      <span class="sync-text" id="syncLabel">Terhubung ke Supabase</span>
+      <span id="syncLabel" style="white-space:nowrap">Terhubung</span>
+      <span id="lastSync" style="opacity:.6;font-size:10px;white-space:nowrap"></span>
     </div>
-    <div class="last-sync" id="lastSync">Memuat data…</div>
+    <div class="filter-chip" aria-label="Data semua user">
+      <span>👥</span>
+      <span style="white-space:nowrap">Semua Data</span>
+    </div>
   </div>
-</aside>
+</div>
+
+<!-- ══════════════ TAB NAV ══════════════ -->
+<div class="tab-nav">
+  <div class="tab-nav-tabs">
+    <button class="tab-btn active" onclick="scrollToSection('overview')" id="tab-overview">📊 Overview</button>
+    <button class="tab-btn" onclick="scrollToSection('statistik')" id="tab-statistik">📈 Statistik</button>
+    <button class="tab-btn" onclick="scrollToSection('peta')" id="tab-peta">🗺️ Peta Sebaran</button>
+    <button class="tab-btn" onclick="scrollToSection('riwayat')" id="tab-riwayat">🗂️ Riwayat Scan</button>
+    <button class="tab-btn" onclick="scrollToSection('ranking')" id="tab-ranking">🏆 Ranking</button>
+  </div>
+  <div class="tab-nav-actions" style="font-size:11px;color:var(--text-3);">
+    EcoSnap · Cimahi
+  </div>
+</div>
 
 <!-- ══════════════ MAIN ══════════════ -->
 <main class="main">
-
-  <!-- Top Bar -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="mobile-brand" style="display:none; align-items:center; gap:6px; margin-bottom:4px;">
-        <span style="font-size:14px;">🌿</span>
-        <span style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:12px; color:var(--green-700); letter-spacing:-0.2px; text-transform:uppercase;">EcoSnap</span>
-      </div>
-      <h1 id="pageTitle">Overview Dashboard</h1>
-      <div class="topbar-sub" id="pageSubtitle">Monitoring real-time data sampah EcoSnap</div>
-    </div>
-    <div class="topbar-right">
-      <div class="filter-chip">
-        <span>📍</span>
-        <select id="filterRt" onchange="applyFilter()">
-          <option value="">Semua RT</option>
-        </select>
-      </div>
-      <button class="btn-refresh" id="btnRefresh" onclick="loadData()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0018.49 15"/>
-        </svg>
-        Refresh
-      </button>
-    </div>
-  </div>
 
   <!-- ══════════ CONTENT ══════════ -->
   <div class="content">
 
     <!-- ───────────── OVERVIEW ───────────── -->
-    <div class="section active" id="section-overview">
+    <div class="section" id="section-overview">
+      <div class="section-header">
+        <div class="section-icon">📊</div>
+        <div>
+          <div class="section-title">Overview Dashboard</div>
+          <div class="section-subtitle">Monitoring real-time data sampah EcoSnap</div>
+        </div>
+      </div>
 
       <!-- KPI Cards -->
       <div class="kpi-grid">
@@ -710,13 +646,13 @@
           <div class="kpi-icon">♻️</div>
         </div>
         <div class="kpi-card orange animate-up delay-1">
-          <div class="kpi-label">RT Aktif</div>
+          <div class="kpi-label">RT/RW Aktif</div>
           <div class="kpi-value" id="kpiRt"><span class="skeleton skeleton-val"></span></div>
           <div class="kpi-change"><span class="kpi-trend neutral" id="kpiRtTrend">memuat…</span></div>
           <div class="kpi-icon">🏘️</div>
         </div>
         <div class="kpi-card blue animate-up delay-2">
-          <div class="kpi-label">Rata-rata Scan / RT</div>
+          <div class="kpi-label">Rata-rata Scan / RT/RW</div>
           <div class="kpi-value" id="kpiAvgRt"><span class="skeleton skeleton-val"></span></div>
           <div class="kpi-change"><span class="kpi-trend neutral" id="kpiAvgRtSub">memuat…</span></div>
           <div class="kpi-icon">📈</div>
@@ -776,8 +712,8 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Scan per RT</div>
-              <div class="card-subtitle">Total item sampah per wilayah RT</div>
+              <div class="card-title">Scan per RT/RW</div>
+              <div class="card-subtitle">Total item sampah per kombinasi RW dan RT</div>
             </div>
           </div>
           <div class="card-body">
@@ -806,6 +742,13 @@
 
     <!-- ───────────── STATISTIK ───────────── -->
     <div class="section" id="section-statistik">
+      <div class="section-header">
+        <div class="section-icon">📈</div>
+        <div>
+          <div class="section-title">Statistik Sampah</div>
+          <div class="section-subtitle">Analisis komposisi dan tren data</div>
+        </div>
+      </div>
       <div class="chart-grid animate-up" style="margin-bottom:20px">
         <!-- Category breakdown -->
         <div class="card">
@@ -867,6 +810,13 @@
 
     <!-- ───────────── PETA ───────────── -->
     <div class="section" id="section-peta">
+      <div class="section-header">
+        <div class="section-icon">🗺️</div>
+        <div>
+          <div class="section-title">Peta Sebaran</div>
+          <div class="section-subtitle">Visualisasi lokasi GPS titik scan</div>
+        </div>
+      </div>
       <div class="card animate-up" style="margin-bottom:20px">
         <div class="card-header" style="padding-bottom:16px">
           <div>
@@ -897,7 +847,7 @@
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>RT</th>
+                    <th>RW / RT</th>
                     <th>Total Scan</th>
                     <th>Dominan</th>
                     <th>Porsi</th>
@@ -914,8 +864,8 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Distribusi per RT</div>
-              <div class="card-subtitle">Pie chart lokasi scan per RT</div>
+              <div class="card-title">Distribusi per RT/RW</div>
+              <div class="card-subtitle">Pie chart lokasi scan per kombinasi RW dan RT</div>
             </div>
           </div>
           <div class="card-body">
@@ -929,6 +879,13 @@
 
     <!-- ───────────── RIWAYAT SCAN ───────────── -->
     <div class="section" id="section-riwayat">
+      <div class="section-header">
+        <div class="section-icon">🗂️</div>
+        <div>
+          <div class="section-title">Riwayat Scan</div>
+          <div class="section-subtitle">Semua data scan dengan filter dan pencarian</div>
+        </div>
+      </div>
       <div class="card animate-up">
         <div class="card-header" style="padding-bottom:16px">
           <div>
@@ -965,7 +922,7 @@
                   <th onclick="sortTable('nama_sampah')" style="cursor:pointer">Jenis ↕</th>
                   <th onclick="sortTable('kategori')" style="cursor:pointer">Kategori ↕</th>
                   <th onclick="sortTable('wilayah')" style="cursor:pointer">Wilayah ↕</th>
-                  <th>RT</th>
+                  <th>RW / RT</th>
                   <th onclick="sortTable('confidence')" style="cursor:pointer">Akurasi ↕</th>
                   <th onclick="sortTable('created_at')" style="cursor:pointer">Waktu ↕</th>
                 </tr>
@@ -989,29 +946,36 @@
 
     <!-- ───────────── RANKING ───────────── -->
     <div class="section" id="section-ranking">
+      <div class="section-header">
+        <div class="section-icon">🏆</div>
+        <div>
+          <div class="section-title">Ranking Wilayah</div>
+          <div class="section-subtitle">Peringkat kombinasi RW dan RT berdasarkan aktivitas scan</div>
+        </div>
+      </div>
       <div class="kpi-grid animate-up" style="margin-bottom:20px">
         <div class="kpi-card green">
-          <div class="kpi-label">RT Terbanyak Scan</div>
+          <div class="kpi-label">RT/RW Terbanyak Scan</div>
           <div class="kpi-value" style="font-size:20px;letter-spacing:0" id="rankTopRt">-</div>
           <div class="kpi-change"><span class="kpi-trend up" id="rankTopRtCount">-</span></div>
           <div class="kpi-icon">🥇</div>
         </div>
         <div class="kpi-card orange">
-          <div class="kpi-label">RT Akurasi Tertinggi</div>
+          <div class="kpi-label">RT/RW Akurasi Tertinggi</div>
           <div class="kpi-value" style="font-size:20px;letter-spacing:0" id="rankTopRtConf">-</div>
           <div class="kpi-change"><span class="kpi-trend up" id="rankTopRtConfVal">-</span></div>
           <div class="kpi-icon">🏅</div>
         </div>
         <div class="kpi-card blue">
-          <div class="kpi-label">RT Paling Aktif</div>
+          <div class="kpi-label">RT/RW Paling Aktif</div>
           <div class="kpi-value" style="font-size:20px;letter-spacing:0" id="rankActiveRt">-</div>
           <div class="kpi-change"><span class="kpi-trend neutral" id="rankActiveRtSub">-</span></div>
           <div class="kpi-icon">⚡</div>
         </div>
         <div class="kpi-card purple">
-          <div class="kpi-label">Total RT Aktif</div>
+          <div class="kpi-label">Total RT/RW Aktif</div>
           <div class="kpi-value" id="rankTotalRt">-</div>
-          <div class="kpi-change"><span class="kpi-trend neutral">RT berpartisipasi</span></div>
+          <div class="kpi-change"><span class="kpi-trend neutral">RT/RW terdata</span></div>
           <div class="kpi-icon">📍</div>
         </div>
       </div>
@@ -1021,8 +985,8 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Ranking RT — Jumlah Scan</div>
-              <div class="card-subtitle">Urutan RT berdasarkan total scan terbanyak</div>
+              <div class="card-title">Ranking RT/RW — Jumlah Scan</div>
+              <div class="card-subtitle">Urutan kombinasi RW dan RT berdasarkan total scan terbanyak</div>
             </div>
             <span class="card-badge">Top 10</span>
           </div>
@@ -1031,7 +995,7 @@
               <thead>
                 <tr>
                   <th style="width:50px">#</th>
-                  <th>RT / Wilayah</th>
+                  <th>RW / RT</th>
                   <th>Total Scan</th>
                   <th>Porsi</th>
                 </tr>
@@ -1045,8 +1009,8 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Ranking RT — Grafik Scan</div>
-              <div class="card-subtitle">Visualisasi grafik total scan per RT</div>
+              <div class="card-title">Ranking RT/RW — Grafik Scan</div>
+              <div class="card-subtitle">Visualisasi grafik total scan per kombinasi RW dan RT</div>
             </div>
           </div>
           <div class="card-body">
@@ -1058,31 +1022,8 @@
       </div>
     </div><!-- /ranking -->
 
+  </div><!-- /content -->
 </main>
-
-<!-- BOTTOM NAV FOR MOBILE -->
-<nav class="bottom-nav">
-  <button class="bottom-nav-item active" onclick="showSection('overview')" id="bottom-nav-overview">
-    <div class="bottom-nav-icon">📊</div>
-    <span class="bottom-nav-label">Overview</span>
-  </button>
-  <button class="bottom-nav-item" onclick="showSection('statistik')" id="bottom-nav-statistik">
-    <div class="bottom-nav-icon">📈</div>
-    <span class="bottom-nav-label">Statistik</span>
-  </button>
-  <button class="bottom-nav-item" onclick="showSection('peta')" id="bottom-nav-peta">
-    <div class="bottom-nav-icon">🗺️</div>
-    <span class="bottom-nav-label">Peta</span>
-  </button>
-  <button class="bottom-nav-item" onclick="showSection('riwayat')" id="bottom-nav-riwayat">
-    <div class="bottom-nav-icon">🗂️</div>
-    <span class="bottom-nav-label">Riwayat</span>
-  </button>
-  <button class="bottom-nav-item" onclick="showSection('ranking')" id="bottom-nav-ranking">
-    <div class="bottom-nav-icon">🏆</div>
-    <span class="bottom-nav-label">Ranking</span>
-  </button>
-</nav>
 
 <!-- MODAL DETAIL SCAN -->
 <div class="modal-overlay" id="detailModal" onclick="closeDetailModal(event)">
@@ -1103,7 +1044,7 @@
             <span class="detail-val" id="modalWilayah">-</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">🏘️ RT</span>
+            <span class="detail-label">🏘️ RW / RT</span>
             <span class="detail-val" id="modalRt">-</span>
           </div>
           <div class="detail-row">
@@ -1127,7 +1068,7 @@
           <a id="modalMapLink" href="#" target="_blank" class="btn-refresh" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
             🗺️ Buka di Google Maps
           </a>
-          <a id="modalDownloadLink" href="#" target="_blank" download class="btn-refresh" style="text-decoration:none; display:none; align-items:center; gap:6px;">
+          <a id="modalDownloadLink" href="#" download onclick="downloadImage(this.href, this.getAttribute('download'), event)" class="btn-refresh" style="text-decoration:none; display:none; align-items:center; gap:6px;">
             ⬇️ Download Foto
           </a>
           <button class="filter-chip" onclick="closeDetailModal()" style="height:34px; line-height:22px; font-weight:600;">
@@ -1146,6 +1087,16 @@
 const SUPABASE_URL = 'https://xluhvldbiavkxklxyxkv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdWh2bGRiaWF2a3hrbHh5eGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMzQxNzksImV4cCI6MjA5MTcxMDE3OX0.m2bpOYQxZIE0GlMtI-QTaYjupCDNeAUp5_cMbUHcR3M';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+if (window.Chart) {
+  Chart.defaults.animation = {
+    duration: 750,
+    easing: 'easeOutQuart'
+  };
+  if (Chart.defaults.transitions?.active?.animation) {
+    Chart.defaults.transitions.active.animation.duration = 220;
+  }
+}
 
 /* ════════════════════════════════════════════
    STATE
@@ -1169,47 +1120,79 @@ const CAT_COLORS = {
   'Kardus':  '#2196F3',
   'Logam':   '#9C27B0',
 };
+
+const AREA_COLORS = [
+  '#2E7D32', '#F97316', '#2563EB', '#D946EF',
+  '#0891B2', '#CA8A04', '#DC2626', '#7C3AED',
+  '#16A34A', '#EA580C', '#0F766E', '#DB2777',
+  '#4F46E5', '#65A30D', '#B45309', '#BE123C'
+];
+
+function getChartColors(labels) {
+  return labels.map((_, i) => AREA_COLORS[i % AREA_COLORS.length]);
+}
+
 const CAT_ICONS = {
   'Organik': '🌿', 'Plastik': '🧴', 'Kertas': '📄',
   'Kaca': '🫙', 'Kardus': '📦', 'Logam': '🔩',
 };
 
 /* ════════════════════════════════════════════
-   NAVIGATION
+   NAVIGATION — scroll-based, one page
 ════════════════════════════════════════════ */
 const SECTION_TITLES = {
   overview:  ['Overview Dashboard',     'Monitoring real-time data sampah EcoSnap'],
   statistik: ['Statistik Sampah',       'Analisis komposisi dan tren data'],
   peta:      ['Peta Sebaran',           'Visualisasi lokasi GPS titik scan'],
   riwayat:   ['Riwayat Scan',           'Semua data scan dengan filter dan pencarian'],
-  ranking:   ['Ranking Wilayah',        'Peringkat RT berdasarkan aktivitas scan'],
+  ranking:   ['Ranking Wilayah',        'Peringkat kombinasi RW dan RT berdasarkan aktivitas scan'],
 };
 
+function scrollToSection(name) {
+  const el = document.getElementById('section-' + name);
+  if (!el) return;
+  // offset: header (56) + tab nav (48) + small breathing room
+  const offset = 56 + 48 + 12;
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setActiveTab(name);
+
+  // Init peta map if scrolling to peta section
+  if (name === 'peta') setTimeout(initMap, 300);
+}
+
+function setActiveTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tab-' + name);
+  if (btn) btn.classList.add('active');
+}
+
+// Keep active tab in sync while scrolling
+function initScrollSpy() {
+  const sections = ['overview', 'statistik', 'peta', 'riwayat', 'ranking'];
+  const offset = 56 + 48 + 24;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const name = entry.target.id.replace('section-', '');
+        setActiveTab(name);
+      }
+    });
+  }, {
+    rootMargin: `-${offset}px 0px -60% 0px`,
+    threshold: 0
+  });
+
+  sections.forEach(name => {
+    const el = document.getElementById('section-' + name);
+    if (el) observer.observe(el);
+  });
+}
+
+// Keep legacy showSection calls working (for any residual references)
 function showSection(name) {
-  currentSection = name;
-  
-  // Reset scroll position to top of page
-  window.scrollTo(0, 0);
-  document.body.scrollTop = 0;
-  document.documentElement.scrollTop = 0;
-
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('section-' + name).classList.add('active');
-  
-  // Update desktop sidebar active class
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('nav-' + name).classList.add('active');
-  
-  // Update mobile bottom nav active class
-  document.querySelectorAll('.bottom-nav-item').forEach(n => n.classList.remove('active'));
-  const bNav = document.getElementById('bottom-nav-' + name);
-  if (bNav) bNav.classList.add('active');
-
-  const [title, sub] = SECTION_TITLES[name] || ['EcoSnap', ''];
-  document.getElementById('pageTitle').textContent = title;
-  document.getElementById('pageSubtitle').textContent = sub;
-
-  if (name === 'peta') setTimeout(initMap, 50);
+  scrollToSection(name);
 }
 
 /* ════════════════════════════════════════════
@@ -1238,7 +1221,7 @@ function showDetail(id, createdAt) {
 
   document.getElementById('modalJenis').textContent = item.nama_sampah || '-';
   document.getElementById('modalWilayah').textContent = item.wilayah || '-';
-  document.getElementById('modalRt').textContent = formatRt(item.rt_id);
+  document.getElementById('modalRt').textContent = getAreaLabel(item);
   document.getElementById('modalAlamat').textContent = item.alamat || '-';
   document.getElementById('modalAkurasi').textContent = conf != null ? `${conf.toFixed(1)}%` : '-';
   document.getElementById('modalWaktu').textContent = time;
@@ -1258,6 +1241,7 @@ function showDetail(id, createdAt) {
   if (item.image_url) {
     downloadLink.href = item.image_url;
     downloadLink.setAttribute('download', `ecosnap-${item.id || item.created_at || 'foto'}.jpg`);
+    downloadLink.onclick = event => downloadImage(downloadLink.href, downloadLink.getAttribute('download'), event);
     downloadLink.style.display = 'inline-flex';
   } else {
     downloadLink.style.display = 'none';
@@ -1279,29 +1263,81 @@ function closeDetailModal(event) {
 }
 
 /* ════════════════════════════════════════════
-   LOAD DATA FROM SUPABASE
+   DOWNLOAD IMAGE
 ════════════════════════════════════════════ */
-async function loadData() {
-  const btn = document.getElementById('btnRefresh');
-  btn.classList.add('loading');
-  document.getElementById('syncDot').classList.remove('offline');
+function triggerDownload(href, filename) {
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = filename || 'ecosnap-foto.jpg';
+  a.rel = 'noopener';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+async function downloadImage(url, filename, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const safeFilename = (filename || 'ecosnap-foto.jpg').replace(/[\\/:*?"<>|]+/g, '-');
 
   try {
+    const response = await fetch(url, { mode: 'cors' });
+    if (!response.ok) throw new Error(`Download gagal: ${response.status}`);
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    triggerDownload(blobUrl, safeFilename);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  } catch (err) {
+    console.warn('Fallback download dipakai:', err);
+    triggerDownload(url, safeFilename);
+  }
+}
+
+/* ════════════════════════════════════════════
+   LOAD DATA FROM SUPABASE
+════════════════════════════════════════════ */
+async function fetchAllScanHistory() {
+  const pageSize = 1000;
+  let from = 0;
+  let rows = [];
+
+  while (true) {
     const { data, error } = await sb
       .from('scan_history')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(from, from + pageSize - 1);
 
     if (error) throw error;
 
-    allData = data || [];
+    const batch = data || [];
+    rows = rows.concat(batch);
+    if (batch.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return rows;
+}
+
+async function loadData() {
+  const btn = document.getElementById('btnRefresh');
+  btn?.classList.add('loading');
+  document.getElementById('syncDot').classList.remove('offline');
+
+  try {
+    allData = await fetchAllScanHistory();
     buildFilters();
     applyFilter();
 
     const now = new Date();
     document.getElementById('lastSync').textContent =
-      'Update: ' + now.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    document.getElementById('syncLabel') && (document.getElementById('syncLabel').textContent = 'Terhubung ke Supabase');
+      now.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    document.getElementById('syncLabel') && (document.getElementById('syncLabel').textContent = 'Terhubung');
 
   } catch (err) {
     console.error(err);
@@ -1309,35 +1345,42 @@ async function loadData() {
     document.getElementById('lastSync').textContent = 'Gagal terhubung';
     document.getElementById('syncLabel') && (document.getElementById('syncLabel').textContent = 'Koneksi gagal');
   } finally {
-    btn.classList.remove('loading');
+    btn?.classList.remove('loading');
   }
 }
 
 /* ════════════════════════════════════════════
-   BUILD FILTERS (RW / RT dropdown)
+   BUILD FILTERS (all users)
 ════════════════════════════════════════════ */
 function buildFilters() {
-  const rtSel = document.getElementById('filterRt');
-  const rtSet = new Set();
-
-  allData.forEach(d => {
-    const rt = normalizeRt(d.rt_id);
-    if (rt) rtSet.add(rt);
-  });
-
-  rtSel.innerHTML = '<option value="">Semua RT</option>';
-  [...rtSet].sort().forEach(rt => {
-    rtSel.innerHTML += `<option value="${rt}">${rt}</option>`;
-  });
+  // Dashboard ini selalu menampilkan gabungan scan dari semua user.
 }
 
 function applyFilter() {
-  const rt = document.getElementById('filterRt').value;
-  filteredData = allData.filter(d =>
-    (!rt || normalizeRt(d.rt_id) === rt)
-  );
+  filteredData = [...allData];
   currentPage = 1;
   renderAll();
+}
+
+function getAreaLabel(item) {
+  const rw = formatRw(item?.rw_id);
+  const rt = formatRt(item?.rt_id);
+  const hasRw = rw !== '-';
+  const hasRt = rt !== '-';
+  if (hasRw && hasRt) return `${rw} · ${rt}`;
+  if (hasRt) return rt;
+  if (hasRw) return rw;
+  return item?.wilayah || item?.alamat || 'Wilayah tidak diketahui';
+}
+
+function groupByArea(arr) {
+  const grouped = {};
+  arr.forEach(item => {
+    const label = getAreaLabel(item);
+    if (!grouped[label]) grouped[label] = { label, items: [] };
+    grouped[label].items.push(item);
+  });
+  return Object.values(grouped);
 }
 
 /* ════════════════════════════════════════════
@@ -1368,8 +1411,8 @@ function renderKPI() {
   const d = filteredData;
   const total = d.length;
 
-  // Count unique RT
-  const rtSet = new Set(d.map(x => normalizeRt(x.rt_id)).filter(Boolean));
+  // Count unique RW/RT combinations from the full dataset.
+  const areaGroups = groupByArea(d);
 
   // Dominant
   const catMap = {};
@@ -1380,13 +1423,13 @@ function renderKPI() {
   document.getElementById('kpiTotalTrend').textContent = `${total} item terekap`;
   document.getElementById('kpiTotalTrend').className = 'kpi-trend up';
 
-  document.getElementById('kpiRt').textContent = rtSet.size;
-  document.getElementById('kpiRtTrend').textContent = `${rtSet.size} RT melaporkan`;
+  document.getElementById('kpiRt').textContent = areaGroups.length;
+  document.getElementById('kpiRtTrend').textContent = `${areaGroups.length} RT/RW terdata`;
 
-  // Average scans per RT
-  const avgRt = rtSet.size > 0 ? (total / rtSet.size).toFixed(1) : 0;
+  // Average scans per RW/RT combination
+  const avgRt = areaGroups.length > 0 ? (total / areaGroups.length).toFixed(1) : 0;
   document.getElementById('kpiAvgRt').textContent = avgRt;
-  document.getElementById('kpiAvgRtSub').textContent = `Rata-rata dari ${rtSet.size} RT`;
+  document.getElementById('kpiAvgRtSub').textContent = `Rata-rata dari ${areaGroups.length} RT/RW`;
 
   if (dom) {
     const pct = total > 0 ? Math.round(dom[1]*100/total) : 0;
@@ -1396,7 +1439,7 @@ function renderKPI() {
   }
 
   // Ranking KPI
-  const rtArr = [...Object.entries(groupBy(d, 'rt_id'))].sort((a,b)=>b[1]-a[1]);
+  const rtArr = areaGroups.map(g => [g.label, g.items.length]).sort((a,b)=>b[1]-a[1]);
 
   if (rtArr[0]) {
     document.getElementById('rankTopRt').textContent = rtArr[0][0];
@@ -1407,7 +1450,7 @@ function renderKPI() {
   const rtConfMap = {};
   const rtConfCount = {};
   d.forEach(x => {
-    const rt = normalizeRt(x.rt_id);
+    const rt = getAreaLabel(x);
     if (rt && x.confidence != null) {
       const conf = parseConf(x.confidence);
       if (conf != null) {
@@ -1430,7 +1473,7 @@ function renderKPI() {
 
   document.getElementById('rankActiveRt').textContent = rtArr[0] ? rtArr[0][0] : '-';
   document.getElementById('rankActiveRtSub').textContent = rtArr[0] ? rtArr[0][1] + ' scan' : '-';
-  document.getElementById('rankTotalRt').textContent = rtSet.size;
+  document.getElementById('rankTotalRt').textContent = areaGroups.length;
 }
 
 /* ════════════════════════════════════════════
@@ -1524,11 +1567,10 @@ function renderTrendChart() {
    RT BAR CHART
 ════════════════════════════════════════════ */
 function renderRtBarChart() {
-  const rtMap = groupBy(filteredData, 'rt_id');
-  const rtArr = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  const labels = rtArr.map(([k])=> k || 'N/A');
-  const values = rtArr.map(([,v])=>v);
-  const colors = labels.map((_,i)=>`hsl(${130+i*12},55%,${42+i*3}%)`);
+  const rtArr = groupByArea(filteredData).sort((a,b)=>b.items.length-a.items.length).slice(0,10);
+  const labels = rtArr.map(g=>g.label || 'N/A');
+  const values = rtArr.map(g=>g.items.length);
+  const colors = getChartColors(labels);
 
   const ctx = document.getElementById('chartRt').getContext('2d');
   if (chartRt) chartRt.destroy();
@@ -1618,17 +1660,16 @@ function renderMonthlyChart() {
    RT PIE CHART
 ════════════════════════════════════════════ */
 function renderRtPieChart() {
-  const rtMap = groupBy(filteredData,'rt_id');
-  const arr = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const labels = arr.map(([k])=> k || 'N/A');
-  const values = arr.map(([,v])=>v);
-  const colors = labels.map((_,i)=>`hsl(${120+i*20},50%,${45+i*4}%)`);
+  const arr = groupByArea(filteredData).sort((a,b)=>b.items.length-a.items.length).slice(0,8);
+  const labels = arr.map(g=>g.label || 'N/A');
+  const values = arr.map(g=>g.items.length);
+  const colors = getChartColors(labels);
 
   const ctx = document.getElementById('chartRtPie').getContext('2d');
   if (chartRtPie) chartRtPie.destroy();
   chartRtPie = new Chart(ctx, {
     type: 'pie',
-    data: { labels, datasets:[{data:values, backgroundColor:colors, borderWidth:3, borderColor:'#fff'}] },
+    data: { labels, datasets:[{data:values, backgroundColor:colors, borderWidth:3, borderColor:'#fff', hoverBorderColor:'#111814', hoverBorderWidth:3}] },
     options: {
       responsive:true, maintainAspectRatio:false,
       plugins: { legend:{ position: window.innerWidth < 640 ? 'bottom' : 'right', labels:{font:{size:11},color:'#4A6B4C',boxWidth:12,padding:10} } }
@@ -1640,11 +1681,10 @@ function renderRtPieChart() {
    RANK RT CHART
 ════════════════════════════════════════════ */
 function renderRankRtChart() {
-  const rtMap = groupBy(filteredData,'rt_id');
-  const arr = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const labels = arr.map(([k])=> k || 'N/A');
-  const values = arr.map(([,v])=>v);
-  const colors = labels.map((_,i)=>`hsl(${125+i*10},55%,${42+i*3}%)`);
+  const arr = groupByArea(filteredData).sort((a,b)=>b.items.length-a.items.length).slice(0,8);
+  const labels = arr.map(g=>g.label || 'N/A');
+  const values = arr.map(g=>g.items.length);
+  const colors = getChartColors(labels);
 
   const ctx = document.getElementById('chartRankRt').getContext('2d');
   if (chartRankRt) chartRankRt.destroy();
@@ -1682,7 +1722,7 @@ function renderRecentTimeline() {
         <div class="timeline-content">
           <div class="timeline-title">${d.nama_sampah||'Unknown'}</div>
           <div class="timeline-time">${time}</div>
-          <div class="timeline-detail">${d.wilayah||'-'} · ${formatRt(d.rt_id)}</div>
+          <div class="timeline-detail">${d.wilayah||'-'} · ${getAreaLabel(d)}</div>
         </div>
       </div>`;
   }).join('');
@@ -1805,7 +1845,10 @@ function renderTable() {
     const time  = d.created_at ? new Date(d.created_at).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
 
     const thumb = d.image_url
-      ? `<img src="${d.image_url}" class="thumb" alt="foto" onerror="this.style.display='none';this.nextSibling.style.display='flex'" /><div class="thumb-placeholder" style="display:none">${icon}</div>`
+      ? `<div class="thumb-wrap">
+          <img src="${d.image_url}" class="thumb" alt="foto" onerror="this.parentElement.innerHTML='<div class=\\'thumb-placeholder\\'>${icon}</div>'" />
+          <a class="thumb-dl" href="${d.image_url}" download="ecosnap-${d.id||d.created_at||'foto'}.jpg" onclick="downloadImage(this.href, this.getAttribute('download'), event)" title="Download foto">⬇️</a>
+         </div>`
       : `<div class="thumb-placeholder">${icon}</div>`;
 
     return `<tr onclick="showDetail('${d.id || ''}', '${d.created_at || ''}')">
@@ -1813,12 +1856,12 @@ function renderTable() {
       <td>
         <b style="color:var(--text-1)">${d.nama_sampah||'-'}</b>
         <div class="mobile-subtext" style="display:none;font-size:11px;color:var(--text-3);margin-top:2px">
-          ${formatRt(d.rt_id)} · ${time}
+          ${getAreaLabel(d)} · ${time}
         </div>
       </td>
       <td><span class="kategori-pill" style="background:${color}22;color:${color}">${icon} ${d.kategori||d.nama_sampah||'-'}</span></td>
       <td style="color:var(--text-2)">${d.wilayah||'-'}</td>
-      <td style="font-size:12px;color:var(--text-3)">${formatRt(d.rt_id)}</td>
+      <td style="font-size:12px;color:var(--text-3)">${getAreaLabel(d)}</td>
       <td>${conf!=null?`<div class="confidence-bar-wrap"><div class="confidence-bar"><div class="confidence-fill" style="width:${Math.min(conf,100)}%"></div></div><span style="font-size:12px;font-weight:600;color:var(--text-1)">${conf.toFixed(1)}%</span></div>`:'-'}</td>
       <td style="font-size:12px;color:var(--text-3);white-space:nowrap">${time}</td>
     </tr>`;
@@ -1842,9 +1885,8 @@ function nextPage() {
 ════════════════════════════════════════════ */
 function renderRanking() {
   const medals = ['🥇','🥈','🥉'];
-  const rtMap  = groupBy(filteredData,'rt_id');
-  const rtArr  = Object.entries(rtMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  const maxRT  = rtArr[0]?.[1]||1;
+  const rtArr  = groupByArea(filteredData).sort((a,b)=>b.items.length-a.items.length).slice(0,10);
+  const maxRT  = rtArr[0]?.items.length||1;
 
   const tbody = document.getElementById('rankingRtBody');
   if (!rtArr.length) {
@@ -1852,10 +1894,12 @@ function renderRanking() {
     return;
   }
 
-  tbody.innerHTML = rtArr.map(([rt,cnt],i)=>{
+  tbody.innerHTML = rtArr.map((g,i)=>{
+    const rt = g.label;
+    const cnt = g.items.length;
     const pct = Math.round(cnt*100/maxRT);
-    // dominant per RT
-    const rtItems = filteredData.filter(d=>normalizeRt(d.rt_id)===rt&&d.nama_sampah);
+    // dominant per RW/RT combination
+    const rtItems = g.items.filter(d=>d.nama_sampah);
     const dominMap = {};
     rtItems.forEach(d=>dominMap[d.nama_sampah]=(dominMap[d.nama_sampah]||0)+1);
     const dom = Object.entries(dominMap).sort((a,b)=>b[1]-a[1])[0];
@@ -1881,16 +1925,7 @@ function renderRanking() {
    RT TABLE (bawah peta)
 ════════════════════════════════════════════ */
 function renderRtTable() {
-  // group by rt_id
-  const grouped = {};
-  filteredData.forEach(d => {
-    if (!d.rt_id) return;
-    const key = normalizeRt(d.rt_id);
-    if (!key) return;
-    if (!grouped[key]) grouped[key] = { rt:key, items:[] };
-    grouped[key].items.push(d);
-  });
-  const arr = Object.values(grouped).sort((a,b)=>b.items.length-a.items.length);
+  const arr = groupByArea(filteredData).sort((a,b)=>b.items.length-a.items.length);
   const max = arr[0]?.items.length||1;
 
   const tbody = document.getElementById('rtTableBody');
@@ -1908,7 +1943,7 @@ function renderRtTable() {
     return `<tr>
       <td style="font-weight:700;color:var(--eco-dark)">${i+1}</td>
       <td>
-        <div class="rank-name">${g.rt}</div>
+        <div class="rank-name">${g.label}</div>
       </td>
       <td><span class="rank-count">${cnt}</span></td>
       <td>${dom?`<span class="kategori-pill" style="background:${CAT_COLORS[dom[0]]||'#eee'}22;color:${CAT_COLORS[dom[0]]||'#555'}">${CAT_ICONS[dom[0]]||''} ${dom[0]}</span>`:'-'}</td>
@@ -1985,7 +2020,7 @@ function updateMapPins() {
       });
       const time = d.created_at ? new Date(d.created_at).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '-';
       const conf = d.confidence!=null ? (parseConf(d.confidence).toFixed(1)+'%') : '-';
-      const rt = formatRt(d.rt_id);
+      const rt = getAreaLabel(d);
       const rw = formatRw(d.rw_id);
       const alamat = d.alamat || '-';
       const totalArea = countNearby(d.latitude, d.longitude);
@@ -2000,7 +2035,7 @@ function updateMapPins() {
         <div class="popup-row"><span>Akurasi</span><b>${conf}</b></div>
         <div class="popup-row"><span>Waktu</span><b>${time}</b></div>
         ${d.image_url?`<img src="${d.image_url}" style="width:100%;border-radius:8px;margin-top:8px;object-fit:cover;max-height:120px" onerror="this.style.display='none'" />`:''}
-        ${d.image_url?`<a href="${d.image_url}" target="_blank" download style="display:inline-flex;margin-top:8px;color:#2E7D32;font-size:12px;font-weight:700;text-decoration:none">Download foto</a>`:''}
+        ${d.image_url?`<a href="${d.image_url}" download="ecosnap-${d.id||d.created_at||'foto'}.jpg" onclick="downloadImage(this.href, this.getAttribute('download'), event)" style="display:inline-flex;margin-top:8px;color:#2E7D32;font-size:12px;font-weight:700;text-decoration:none">Download foto</a>`:''}
         <div><span class="popup-badge">${d.kategori||d.nama_sampah||'Sampah'}</span></div>`;
       L.marker([d.latitude,d.longitude],{icon:markerIcon}).bindPopup(popup,{maxWidth:220}).addTo(pinGroup);
     });
@@ -2009,7 +2044,7 @@ function updateMapPins() {
     // Group by RT and show circle marker per RT
     const rtGroups = {};
     withCoords.forEach(d=>{
-      const key=normalizeRt(d.rt_id)||'Unknown';
+      const key=getAreaLabel(d)||'Unknown';
       if(!rtGroups[key]) rtGroups[key]={items:[],lat:0,lng:0};
       rtGroups[key].items.push(d);
       rtGroups[key].lat+=d.latitude;
@@ -2101,19 +2136,13 @@ function dominantNearby(lat, lng) {
 /* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
-function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  sidebar.classList.toggle('collapsed');
-  // Trigger resize agar chart menyesuaikan
-  setTimeout(() => {
-    window.dispatchEvent(new Event('resize'));
-    if (mapInited && leafletMap) leafletMap.invalidateSize();
-  }, 280);
-}
 
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
   setInterval(loadData, 60000);
+  initScrollSpy();
+  // Init map after a short delay since peta section is always visible
+  setTimeout(initMap, 800);
 });
 </script>
 </body>
