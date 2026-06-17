@@ -29,6 +29,7 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.components.YAxis;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
@@ -727,7 +728,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
         );
         dataSet.setValueTextColor(Color.parseColor("#333333"));
         dataSet.setValueTextSize(10f);
-        dataSet.setValueFormatter(WilayahUtils.integerValueFormatter());
+        dataSet.setValueFormatter(compactScanValueFormatter());
 
         BarData barData = new BarData(dataSet);
         barData.setBarWidth(0.6f);
@@ -736,6 +737,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
         barChart.getDescription().setEnabled(false);
         barChart.getLegend().setEnabled(false);
         barChart.setFitBars(true);
+        barChart.setExtraOffsets(maxValue >= 1000 ? 10f : 6f, 8f, 10f, 4f);
 
         XAxis xAxis = barChart.getXAxis();
         xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
@@ -746,15 +748,58 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
         YAxis leftAxis = barChart.getAxisLeft();
         leftAxis.setTextColor(Color.parseColor("#333333"));
+        leftAxis.setTextSize(10f);
         leftAxis.setAxisMinimum(0f);
-        leftAxis.setAxisMaximum(Math.max(5f, maxValue + 1f));
-        leftAxis.setLabelCount(6, true);
-        leftAxis.setGranularity(1f);
+        leftAxis.setAxisMaximum(calculateChartAxisMax(maxValue));
+        leftAxis.setLabelCount(5, false);
+        leftAxis.setGranularity(maxValue >= 1000 ? 1000f : 1f);
         leftAxis.setGranularityEnabled(true);
-        leftAxis.setValueFormatter(WilayahUtils.integerValueFormatter());
+        leftAxis.setValueFormatter(compactScanValueFormatter());
         barChart.getAxisRight().setEnabled(false);
         barChart.animateY(800);
         barChart.invalidate();
+    }
+
+    private ValueFormatter compactScanValueFormatter() {
+        return new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return formatCompactScanCount(value);
+            }
+        };
+    }
+
+    private String formatCompactScanCount(float value) {
+        int rounded = Math.round(value);
+        if (rounded < 1000) return String.valueOf(rounded);
+
+        float thousands = rounded / 1000f;
+        if (rounded % 1000 == 0 || thousands >= 10f) {
+            return String.format(Locale.US, "%.0f rb", thousands);
+        }
+        return String.format(Locale.US, "%.1f rb", thousands).replace(".", ",");
+    }
+
+    private float calculateChartAxisMax(int maxValue) {
+        if (maxValue <= 5) return 10f;
+        if (maxValue <= 10) return 20f;
+        if (maxValue <= 20) return 30f;
+        if (maxValue <= 50) return 75f;
+        if (maxValue <= 100) return 150f;
+        if (maxValue < 1000) {
+            int step = maxValue <= 500 ? 100 : 250;
+            return ((maxValue / step) + 1) * step;
+        }
+
+        int step;
+        if (maxValue <= 5000) {
+            step = 1000;
+        } else if (maxValue <= 20000) {
+            step = 5000;
+        } else {
+            step = 10000;
+        }
+        return ((maxValue / step) + 1) * step;
     }
 
     private String normalizeJenisKey(String jenisSampah) {

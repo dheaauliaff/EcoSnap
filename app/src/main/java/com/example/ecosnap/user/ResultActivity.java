@@ -7,9 +7,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.transition.AutoTransition;
+import android.transition.TransitionManager;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -48,8 +51,9 @@ import retrofit2.*;
 public class ResultActivity extends AppCompatActivity {
 
     ImageView imgHasil;
-    TextView tvTotalObjek, tvKategoriTerbanyak, tvSaran, tvFunfact;
-    LinearLayout llDetectedObjects;
+    TextView tvTotalObjek, tvKategoriTerbanyak, tvJenisSampah, tvKategoriSampah,
+            tvAkurasiScan, tvTanggalScan, tvSaran, tvFunfact, btnToggleActions;
+    LinearLayout llDetectedObjects, actionButtonsContent, btnSimpanContainer;
     com.example.ecosnap.helper.OverlayView overlayView;
     MaterialButton btnSimpan, btnScanLagi, btnBeranda;
 
@@ -75,6 +79,10 @@ public class ResultActivity extends AppCompatActivity {
         imgHasil = findViewById(R.id.imgHasil);
         tvTotalObjek = findViewById(R.id.tvTotalObjek);
         tvKategoriTerbanyak = findViewById(R.id.tvKategoriTerbanyak);
+        tvJenisSampah = findViewById(R.id.tvJenisSampah);
+        tvKategoriSampah = findViewById(R.id.tvKategoriSampah);
+        tvAkurasiScan = findViewById(R.id.tvAkurasiScan);
+        tvTanggalScan = findViewById(R.id.tvTanggalScan);
         llDetectedObjects = findViewById(R.id.llDetectedObjects);
         tvSaran = findViewById(R.id.tvSaran);
         tvFunfact = findViewById(R.id.tvFunfact);
@@ -82,12 +90,16 @@ public class ResultActivity extends AppCompatActivity {
         btnSimpan = findViewById(R.id.btnSimpan);
         btnScanLagi = findViewById(R.id.btnScanLagi);
         btnBeranda = findViewById(R.id.btnBeranda);
+        btnToggleActions = findViewById(R.id.btnToggleActions);
+        actionButtonsContent = findViewById(R.id.actionButtonsContent);
+        btnSimpanContainer = findViewById(R.id.btnSimpanContainer);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         ambilLokasi();
         initCloudinary();
         loadIntentData();
+        setupActionPanel();
 
         if (btnSimpan != null) {
             btnSimpan.setOnClickListener(v -> uploadCloudinary());
@@ -179,6 +191,7 @@ public class ResultActivity extends AppCompatActivity {
 
             if (tvSaran != null) tvSaran.setText(safe(saran));
             if (tvFunfact != null) tvFunfact.setText(safe(funfact));
+            updateScanSummary(primaryNama, primaryKategori, primaryConfidence);
 
             List<TFLiteHelper.Result> frozenResults = readFrozenDetections();
 
@@ -202,6 +215,14 @@ public class ResultActivity extends AppCompatActivity {
         if (tvTotalObjek != null) tvTotalObjek.setText(String.valueOf(list.size()));
 
         if (list.isEmpty()) return;
+
+        TFLiteHelper.Result dominant = findDominantResult(list);
+        if (dominant != null) {
+            primaryNama = safe(dominant.label);
+            primaryConfidence = dominant.confidence;
+            primaryKategori = getKategoriForLabel(dominant.label);
+            updateScanSummary(primaryNama, primaryKategori, primaryConfidence);
+        }
 
         HashMap<String, Integer> counts = new HashMap<>();
         for (TFLiteHelper.Result r : list) {
@@ -249,6 +270,73 @@ public class ResultActivity extends AppCompatActivity {
                 llDetectedObjects.addView(view);
             }
         }
+    }
+
+    private void setupActionPanel() {
+        if (btnToggleActions == null || actionButtonsContent == null) return;
+
+        btnToggleActions.setOnClickListener(v -> toggleActionPanel());
+    }
+
+    private void toggleActionPanel() {
+        boolean expand = actionButtonsContent.getVisibility() != View.VISIBLE;
+        if (btnSimpanContainer != null) {
+            AutoTransition transition = new AutoTransition();
+            transition.setDuration(220);
+            TransitionManager.beginDelayedTransition((ViewGroup) btnSimpanContainer, transition);
+        }
+
+        if (expand) {
+            actionButtonsContent.setVisibility(View.VISIBLE);
+            actionButtonsContent.setAlpha(0f);
+            actionButtonsContent.setTranslationY(24f);
+            actionButtonsContent.animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setDuration(220)
+                    .start();
+            btnToggleActions.setText("v");
+        } else {
+            actionButtonsContent.animate()
+                    .alpha(0f)
+                    .translationY(24f)
+                    .setDuration(180)
+                    .withEndAction(() -> {
+                        actionButtonsContent.setVisibility(View.GONE);
+                        actionButtonsContent.setAlpha(1f);
+                        actionButtonsContent.setTranslationY(0f);
+                    })
+                    .start();
+            btnToggleActions.setText("^");
+        }
+    }
+
+    private void updateScanSummary(String jenis, String kategori, float confidence) {
+        String safeJenis = safe(jenis);
+        String safeKategori = safe(kategori);
+
+        if (tvJenisSampah != null) tvJenisSampah.setText(safeJenis);
+        if (tvKategoriSampah != null) {
+            tvKategoriSampah.setText(safeKategori);
+            tvKategoriSampah.getBackground().setTint(getColorForLabel(safeJenis));
+        }
+        if (tvAkurasiScan != null) {
+            tvAkurasiScan.setText(String.format(Locale.US, "%.0f%%", confidence));
+        }
+        if (tvTanggalScan != null) {
+            tvTanggalScan.setText(new java.text.SimpleDateFormat("dd MMM yyyy", new Locale("id", "ID"))
+                    .format(new Date()));
+        }
+    }
+
+    private TFLiteHelper.Result findDominantResult(List<TFLiteHelper.Result> list) {
+        TFLiteHelper.Result dominant = null;
+        for (TFLiteHelper.Result result : list) {
+            if (dominant == null || result.confidence > dominant.confidence) {
+                dominant = result;
+            }
+        }
+        return dominant;
     }
 
     private int getIconForLabel(String label) {

@@ -82,88 +82,175 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- STATISTIC SUMMARY CARDS -->
+            <!-- SCAN SUMMARY CARDS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:orientation="horizontal"
-                android:weightSum="2"
-                android:baselineAligned="false">
+                android:orientation="vertical">
 
-                <!-- Total Objek -->
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="110dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:background="@drawable/bg_premium_card"
-                    android:elevation="4dp"
-                    android:outlineAmbientShadowColor="#0F000000"
-                    android:outlineSpotShadowColor="#0A000000"
-                    android:gravity="center"
-                    android:orientation="vertical">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Total Objek"
-                        android:textColor="#757575"
-                        android:textSize="13sp" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="92dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_premium_card"
+                        android:elevation="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:outlineAmbientShadowColor="#0F000000"
+                        android:outlineSpotShadowColor="#0A000000"
+                        android:paddingHorizontal="14dp">
 
-                    <TextView
-                        android:id="@+id/tvTotalObjek"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="#2E7D32"
-                        android:textSize="32sp"
-                        android:textStyle="bold"
-                        android:layout_marginTop="2dp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Jenis Sampah"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="objek terdeteksi"
-                        android:textColor="#999999"
-                        android:textSize="11sp" />
+                        <TextView
+                            android:id="@+id/tvJenisSampah"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="-"
+                            android:textColor="#1B5E20"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="92dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_premium_card"
+                        android:elevation="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:outlineAmbientShadowColor="#0F000000"
+                        android:outlineSpotShadowColor="#0A000000"
+                        android:paddingHorizontal="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kategori"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvKategoriSampah"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/bg_label_pill"
+                            android:backgroundTint="#FF9800"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="7dp"
+                            android:text="-"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
                 </LinearLayout>
 
-                <!-- Kategori Terbanyak -->
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="110dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/bg_premium_card"
-                    android:elevation="4dp"
-                    android:outlineAmbientShadowColor="#0F000000"
-                    android:outlineSpotShadowColor="#0A000000"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="8dp">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Kategori Terbanyak"
-                        android:textColor="#757575"
-                        android:textSize="13sp" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="92dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_premium_card"
+                        android:elevation="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:outlineAmbientShadowColor="#0F000000"
+                        android:outlineSpotShadowColor="#0A000000"
+                        android:paddingHorizontal="14dp">
 
-                    <TextView
-                        android:id="@+id/tvKategoriTerbanyak"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="-"
-                        android:textColor="#FFFFFF"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:paddingHorizontal="14dp"
-                        android:paddingVertical="8dp"
-                        android:background="@drawable/bg_label_pill"
-                        android:backgroundTint="#FF9800" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Akurasi"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvAkurasiScan"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="0%"
+                            android:textColor="#2E7D32"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="92dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_premium_card"
+                        android:elevation="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:outlineAmbientShadowColor="#0F000000"
+                        android:outlineSpotShadowColor="#0A000000"
+                        android:paddingHorizontal="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tanggal Scan"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvTanggalScan"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="-"
+                            android:textColor="#1B5E20"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvTotalObjek"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvKategoriTerbanyak"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <!-- DETECTED OBJECTS LIST -->
@@ -216,10 +303,31 @@
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <TextView
+            android:id="@+id/btnToggleActions"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="^"
+            android:textColor="#2E7D32"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/actionButtonsContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSimpan"
             android:layout_width="match_parent"
             android:layout_height="56dp"
+            android:layout_marginTop="8dp"
             android:text="Simpan Hasil"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
@@ -269,6 +377,7 @@
                 app:iconGravity="textStart"
                 app:iconTint="#2E7D32"
                 app:strokeColor="#2E7D32" />
+        </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

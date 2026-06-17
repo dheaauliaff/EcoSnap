@@ -101,29 +101,41 @@ public class LoginActivity extends AppCompatActivity {
                 : "";
 
         if (email.isEmpty()) {
-            Toast.makeText(this, "Masukkan email dulu untuk reset password", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Masukkan email dulu untuk reset password",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Email tidak valid", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Email tidak valid",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
         mAuth.sendPasswordResetEmail(email)
                 .addOnCompleteListener(task -> {
+
                     if (task.isSuccessful()) {
-                        Toast.makeText(this,
-                                "Link reset password dikirim ke: " + email,
-                                Toast.LENGTH_LONG).show();
-                    } else {
-                        String msg = task.getException() != null
-                                ? task.getException().getMessage()
-                                : "Unknown error";
 
                         Toast.makeText(this,
-                                "Reset password gagal: " + msg,
+                                "Email reset berhasil dikirim",
                                 Toast.LENGTH_LONG).show();
+
+                    } else {
+
+                        Exception e = task.getException();
+
+                        Toast.makeText(this,
+                                e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+
+                        android.util.Log.e(
+                                "RESET_PASSWORD",
+                                "Error",
+                                e
+                        );
                     }
                 });
     }
