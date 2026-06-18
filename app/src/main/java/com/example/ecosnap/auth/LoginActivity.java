@@ -25,6 +25,7 @@ import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
+    //deklarasi variabel yang ada di xml nya
     TextInputEditText etEmail, etPassword;
     MaterialButton btnLogin;
     FirebaseAuth mAuth;

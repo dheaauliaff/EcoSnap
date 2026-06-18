@@ -136,6 +136,10 @@ public class MapsFragment extends Fragment {
         tvDetailContent            = view.findViewById(R.id.tvDetailContent);
         mapsRoot = view.findViewById(R.id.mapsRoot);
         detailMarkerCard = view.findViewById(R.id.detailMarkerCard);
+        View btnCloseDetail = view.findViewById(R.id.btnCloseDetail);
+        if (btnCloseDetail != null) {
+            btnCloseDetail.setOnClickListener(v -> hideMarkerDetail());
+        }
         if (tvFilterPeriod != null) tvFilterPeriod.setText(activePeriodFilter);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
@@ -401,6 +405,7 @@ public class MapsFragment extends Fragment {
 
     private void refreshMapMarkers() {
         if (osmMap == null || !isAdded()) return;
+        hideMarkerDetail();
         osmMap.getOverlays().removeIf(o -> (o instanceof Marker) || (o instanceof Polygon));
 
         List<ScanHistory> toShow = activeFilters.isEmpty() ? displayedScans : new ArrayList<>();
@@ -492,21 +497,25 @@ public class MapsFragment extends Fragment {
             if (tvDetailContent != null) {
                 tvDetailContent.setText(detail);
             }
-            if (tvDetailContent != null) {
-                tvDetailContent.setText(detail);
-            }
 
-            if (mapsRoot != null && detailMarkerCard != null) {
-                mapsRoot.post(() ->
-                        mapsRoot.smoothScrollTo(
-                                0,
-                                detailMarkerCard.getTop()
-                        )
-                );
-            }
+            showMarkerDetail();
 
             return true;
         });
+    }
+
+    private void showMarkerDetail() {
+        if (detailMarkerCard != null) {
+            detailMarkerCard.setVisibility(View.VISIBLE);
+            detailMarkerCard.setAlpha(0f);
+            detailMarkerCard.animate().alpha(1f).setDuration(160L).start();
+        }
+    }
+
+    private void hideMarkerDetail() {
+        if (detailMarkerCard != null) {
+            detailMarkerCard.setVisibility(View.GONE);
+        }
     }
 
 

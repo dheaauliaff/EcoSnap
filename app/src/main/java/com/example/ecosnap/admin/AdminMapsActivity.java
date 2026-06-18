@@ -141,6 +141,10 @@ public class AdminMapsActivity extends AppCompatActivity {
         tvDetailContent = findViewById(R.id.tvDetailContent);
         detailMarkerCard = findViewById(R.id.detailMarkerCard);
         scrollView = findViewById(R.id.scrollViewMaps);
+        View btnCloseDetail = findViewById(R.id.btnCloseDetail);
+        if (btnCloseDetail != null) {
+            btnCloseDetail.setOnClickListener(v -> hideMarkerDetail());
+        }
 
         // Request location permission
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -427,6 +431,7 @@ public class AdminMapsActivity extends AppCompatActivity {
      */
     private void refreshMapMarkers() {
         if (mapView == null) return;
+        hideMarkerDetail();
         mapView.getOverlays().removeIf(o -> (o instanceof Marker) || (o instanceof Polygon));
 
         List<ScanHistory> toShow = activeFilters.isEmpty() ? displayedScans : new ArrayList<>();
@@ -760,10 +765,16 @@ public class AdminMapsActivity extends AppCompatActivity {
 
         tvDetailContent.setText(detail);
 
-        if (scrollView != null && detailMarkerCard != null) {
-            scrollView.post(() ->
-                    scrollView.smoothScrollTo(0, detailMarkerCard.getTop())
-            );
+        if (detailMarkerCard != null) {
+            detailMarkerCard.setVisibility(View.VISIBLE);
+            detailMarkerCard.setAlpha(0f);
+            detailMarkerCard.animate().alpha(1f).setDuration(160L).start();
+        }
+    }
+
+    private void hideMarkerDetail() {
+        if (detailMarkerCard != null) {
+            detailMarkerCard.setVisibility(View.GONE);
         }
     }
 

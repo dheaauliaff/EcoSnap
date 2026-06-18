@@ -462,25 +462,42 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
     private void showYearPicker() {
         List<String> years = getAvailableYears();
-        if (years.isEmpty()) {
-            years.add("2026");
-        }
-
         String[] labels = years.toArray(new String[0]);
-        int checked = 0;
-        for (int i = 0; i < years.size(); i++) {
-            if (years.get(i).equals(selectedYearKey)) checked = i;
-        }
 
-        new AlertDialog.Builder(this)
-                .setTitle("Pilih tahun")
-                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
-                    selectedYearKey = years.get(which);
-                    customYearSelected = true;
-                    dialog.dismiss();
-                    applyCurrentPeriod();
-                })
-                .show();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog_year_wheel, null);
+
+        NumberPicker picker = view.findViewById(R.id.yearPicker);
+        picker.setMinValue(0);
+        picker.setMaxValue(labels.length - 1);
+        picker.setDisplayedValues(labels);
+        picker.setWrapSelectorWheel(false);
+
+        int selectedIndex = 0;
+        for (int i = 0; i < years.size(); i++) {
+            if (years.get(i).equals(selectedYearKey)) {
+                selectedIndex = i;
+                break;
+            }
+        }
+        picker.setValue(selectedIndex);
+
+        builder.setView(view);
+        AlertDialog dialog = builder.create();
+
+        view.findViewById(R.id.btnOk).setOnClickListener(v -> {
+            selectedYearKey = years.get(picker.getValue());
+            customYearSelected = true;
+            applyCurrentPeriod();
+
+            Toast.makeText(this,
+                    "Tahun: " + selectedYearKey,
+                    Toast.LENGTH_SHORT).show();
+
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     private String getDefaultMonthKey() {
@@ -510,15 +527,12 @@ public class DashboardAdminActivity extends AppCompatActivity {
     }
 
     private List<String> getAvailableYears() {
-        Set<String> years = new LinkedHashSet<>();
-        List<String> sorted = new ArrayList<>();
-        for (ScanHistory s : cachedScans) {
-            String date = extractDate(s.getCreatedAt());
-            if (date.length() >= 4) sorted.add(date.substring(0, 4));
+        List<String> years = new ArrayList<>();
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        for (int i = 0; i < 5; i++) {
+            years.add(String.valueOf(currentYear - i));
         }
-        Collections.sort(sorted);
-        years.addAll(sorted);
-        return new ArrayList<>(years);
+        return years;
     }
 
     private String extractDate(String createdAt) {

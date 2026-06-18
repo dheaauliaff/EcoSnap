@@ -2,6 +2,7 @@ package com.example.ecosnap.user;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,9 +59,14 @@ public class MapsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_maps);
 
         mAuth = FirebaseAuth.getInstance();
-        mapView = findViewById(R.id.mapView);
+        mapView = findViewById(R.id.osmMapView);
         tvDetailContent = findViewById(R.id.tvDetailContent);
+        detailMarkerCard = findViewById(R.id.detailMarkerCard);
         bottomNav = findViewById(R.id.bottomNav);
+        View btnCloseDetail = findViewById(R.id.btnCloseDetail);
+        if (btnCloseDetail != null) {
+            btnCloseDetail.setOnClickListener(v -> hideMarkerDetail());
+        }
 
         if (mapView == null) {
             Toast.makeText(this, "Error: MapView not found in layout", Toast.LENGTH_LONG).show();
@@ -175,6 +181,18 @@ public class MapsActivity extends AppCompatActivity {
                 String kat  = s.getKategori();
                 marker.setTitle("");
                 marker.setSnippet("");
+                marker.setOnMarkerClickListener((m, map) -> {
+                    showMarkerDetail(
+                            nama,
+                            kat,
+                            WilayahUtils.formatRtId(s.getRtId()),
+                            WilayahUtils.formatRwId(s.getRwId()),
+                            lat,
+                            lng
+                    );
+                    map.getController().animateTo(new GeoPoint(lat, lng));
+                    return true;
+                });
 
                 mapView.getOverlays().add(marker);
                 totalLat += lat;
@@ -209,6 +227,17 @@ public class MapsActivity extends AppCompatActivity {
                         "\nLongitude : " + lng;
 
         tvDetailContent.setText(detail);
+        if (detailMarkerCard != null) {
+            detailMarkerCard.setVisibility(View.VISIBLE);
+            detailMarkerCard.setAlpha(0f);
+            detailMarkerCard.animate().alpha(1f).setDuration(160L).start();
+        }
+    }
+
+    private void hideMarkerDetail() {
+        if (detailMarkerCard != null) {
+            detailMarkerCard.setVisibility(View.GONE);
+        }
     }
 
     @Override
