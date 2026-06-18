@@ -1,7 +1,10 @@
 package com.example.ecosnap.user;
 
 import android.os.Bundle;
+import android.graphics.drawable.GradientDrawable;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,6 +35,11 @@ public class DetailScanActivity extends AppCompatActivity {
         TextView tvDetailSaran    = findViewById(R.id.tvDetailSaran);
         TextView tvDetailFunfact  = findViewById(R.id.tvDetailFunfact);
         TextView tvDetailDampak   = findViewById(R.id.tvDetailDampak);
+        TextView tvDetectionName  = findViewById(R.id.tvDetectionName);
+        TextView tvDetectionPercent = findViewById(R.id.tvDetectionPercent);
+        View viewDetectionDot     = findViewById(R.id.viewDetectionDot);
+        View viewDetectionFill    = findViewById(R.id.viewDetectionFill);
+        View viewDetectionEmpty   = findViewById(R.id.viewDetectionEmpty);
         ImageView btnBack         = findViewById(R.id.btnBack);
 
         btnBack.setOnClickListener(v -> finish());
@@ -50,6 +58,7 @@ public class DetailScanActivity extends AppCompatActivity {
 
         // Isi data ke UI
         tvDetailNama.setText(safe(nama));
+        tvDetailNama.setTextColor(getJenisColor(nama));
 
         tvDetailKategori.setText(safe(kategori));
         tvDetailKategori.getBackground().setTint(getKategoriColor(kategori));
@@ -61,6 +70,15 @@ public class DetailScanActivity extends AppCompatActivity {
         }
 
         tvDetailTanggal.setText(formatDate(tanggal));
+        bindDetectionBreakdown(
+                tvDetectionName,
+                tvDetectionPercent,
+                viewDetectionDot,
+                viewDetectionFill,
+                viewDetectionEmpty,
+                nama,
+                confidence
+        );
 
         // Load gambar dari Cloudinary
         if (imageUrl != null && !imageUrl.isEmpty()) {
@@ -274,6 +292,74 @@ public class DetailScanActivity extends AppCompatActivity {
             case "bukan sampah":  return 0xFFFF5252;
             default:              return 0xFF9E9E9E;
         }
+    }
+
+    private void bindDetectionBreakdown(
+            TextView tvName,
+            TextView tvPercent,
+            View dot,
+            View fill,
+            View empty,
+            String nama,
+            float confidence
+    ) {
+        int percent = Math.round(clamp(confidence, 0f, 100f));
+        int color = getJenisColor(nama);
+
+        if (tvName != null) {
+            tvName.setText(safe(nama));
+        }
+        if (tvPercent != null) {
+            tvPercent.setText(percent > 0 ? percent + "%" : "-");
+            tvPercent.setTextColor(color);
+        }
+        if (dot != null) {
+            dot.setBackground(makeRoundedDrawable(color, dp(99)));
+        }
+        if (fill != null && empty != null) {
+            fill.setBackground(makeRoundedDrawable(color, dp(4)));
+            LinearLayout.LayoutParams fillParams = new LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    Math.max(percent, 0)
+            );
+            LinearLayout.LayoutParams emptyParams = new LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    Math.max(100 - percent, 0)
+            );
+            fill.setLayoutParams(fillParams);
+            empty.setLayoutParams(emptyParams);
+        }
+    }
+
+    private int getJenisColor(String nama) {
+        if (nama == null) return 0xFF9E9E9E;
+        String clean = nama.toLowerCase(Locale.US).replace("_", " ").trim();
+        if (clean.contains("organik")) return 0xFF4CAF50;
+        if (clean.contains("plastik")) return 0xFFFF9800;
+        if (clean.contains("kertas")) return 0xFFFFC107;
+        if (clean.contains("kardus")) return 0xFF2196F3;
+        if (clean.contains("kaca")) return 0xFF00BCD4;
+        if (clean.contains("logam")) return 0xFF9C27B0;
+        if (clean.contains("bukan")) return 0xFFFF5252;
+        return 0xFF9E9E9E;
+    }
+
+    private GradientDrawable makeRoundedDrawable(int color, float radius) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setColor(color);
+        drawable.setCornerRadius(radius);
+        return drawable;
+    }
+
+    private float clamp(float value, float min, float max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private int dp(float value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private String formatDate(String isoDate) {

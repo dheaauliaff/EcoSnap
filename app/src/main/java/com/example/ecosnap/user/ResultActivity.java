@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.graphics.RectF;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
@@ -214,6 +216,11 @@ public class ResultActivity extends AppCompatActivity {
     private void populateDetectedList(List<TFLiteHelper.Result> list) {
         if (tvTotalObjek != null) tvTotalObjek.setText(String.valueOf(list.size()));
 
+        if (llDetectedObjects != null) {
+            llDetectedObjects.removeAllViews();
+            buildDetectionBars(list);
+        }
+
         if (list.isEmpty()) return;
 
         TFLiteHelper.Result dominant = findDominantResult(list);
@@ -243,33 +250,121 @@ public class ResultActivity extends AppCompatActivity {
             tvKategoriTerbanyak.getBackground().setTint(getColorForLabel(maxLabel));
         }
 
-        if (llDetectedObjects != null) {
-            llDetectedObjects.removeAllViews();
-            LayoutInflater inflater = LayoutInflater.from(this);
+    }
 
-            for (int i = 0; i < Math.min(list.size(), 7); i++) {
-                TFLiteHelper.Result r = list.get(i);
-                View view = inflater.inflate(R.layout.item_detected_object, llDetectedObjects, false);
+    private void buildDetectionBars(List<TFLiteHelper.Result> list) {
+        if (llDetectedObjects == null) return;
 
-                TextView tvNamaObjek = view.findViewById(R.id.tvNamaObjek);
-                TextView tvKategoriObjek = view.findViewById(R.id.tvKategoriObjek);
-                TextView tvAkurasi = view.findViewById(R.id.tvAkurasi);
-                ImageView ivIcon = view.findViewById(R.id.ivIcon);
+        TextView title = new TextView(this);
+        title.setText("Komposisi Deteksi");
+        title.setTextColor(0xFF1B5E20);
+        title.setTextSize(16f);
+        title.setTypeface(null, Typeface.BOLD);
+        llDetectedObjects.addView(title);
 
-                int icon = getIconForLabel(r.label);
-                int color = getColorForLabel(r.label);
+        TextView subtitle = new TextView(this);
+        subtitle.setText("Persentase sesuai objek sampah yang terdeteksi");
+        subtitle.setTextColor(0xFF757575);
+        subtitle.setTextSize(12f);
+        LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        subtitleParams.setMargins(0, dp(4), 0, dp(12));
+        subtitle.setLayoutParams(subtitleParams);
+        llDetectedObjects.addView(subtitle);
 
-                tvNamaObjek.setText((i + 1) + ". " + r.label);
-                tvKategoriObjek.setText(getKategoriForLabel(r.label));
-                tvKategoriObjek.getBackground().setTint(color);
-                tvAkurasi.setText(String.format(Locale.US, "%.0f%%", r.confidence));
-
-                ivIcon.setImageResource(icon);
-                ivIcon.setColorFilter(color);
-
-                llDetectedObjects.addView(view);
-            }
+        if (list == null || list.isEmpty()) {
+            TextView empty = new TextView(this);
+            empty.setText("Belum ada objek terdeteksi.");
+            empty.setTextColor(0xFF9E9E9E);
+            empty.setTextSize(13f);
+            llDetectedObjects.addView(empty);
+            return;
         }
+
+        int limit = Math.min(list.size(), 7);
+        for (int i = 0; i < limit; i++) {
+            TFLiteHelper.Result result = list.get(i);
+            addDetectionBar(result.label, result.confidence);
+        }
+    }
+
+    private void addDetectionBar(String label, float confidence) {
+        int color = getColorForLabel(label);
+        int percent = Math.round(clamp(confidence, 0f, 100f));
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        rowParams.setMargins(0, dp(8), 0, dp(8));
+        row.setLayoutParams(rowParams);
+
+        LinearLayout labelRow = new LinearLayout(this);
+        labelRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        labelRow.setOrientation(LinearLayout.HORIZONTAL);
+
+        View dot = new View(this);
+        LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dp(10), dp(10));
+        dotParams.setMarginEnd(dp(10));
+        dot.setLayoutParams(dotParams);
+        dot.setBackground(makeRoundedDrawable(color, dp(99)));
+
+        TextView tvLabel = new TextView(this);
+        tvLabel.setText(safe(label));
+        tvLabel.setTextColor(0xFF212121);
+        tvLabel.setTextSize(14f);
+        tvLabel.setTypeface(null, Typeface.BOLD);
+        tvLabel.setLayoutParams(new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+        ));
+
+        TextView tvPercent = new TextView(this);
+        tvPercent.setText(percent + "%");
+        tvPercent.setTextColor(color);
+        tvPercent.setTextSize(14f);
+        tvPercent.setTypeface(null, Typeface.BOLD);
+
+        labelRow.addView(dot);
+        labelRow.addView(tvLabel);
+        labelRow.addView(tvPercent);
+
+        LinearLayout progressTrack = new LinearLayout(this);
+        progressTrack.setOrientation(LinearLayout.HORIZONTAL);
+        progressTrack.setWeightSum(100);
+        progressTrack.setBackground(makeRoundedDrawable(0xFFEEEEEE, dp(4)));
+        LinearLayout.LayoutParams trackParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(12)
+        );
+        trackParams.setMargins(0, dp(8), 0, 0);
+        progressTrack.setLayoutParams(trackParams);
+
+        View fill = new View(this);
+        fill.setBackground(makeRoundedDrawable(color, dp(4)));
+        fill.setLayoutParams(new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                Math.max(percent, 0)
+        ));
+
+        View empty = new View(this);
+        empty.setLayoutParams(new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                Math.max(100 - percent, 0)
+        ));
+
+        progressTrack.addView(fill);
+        progressTrack.addView(empty);
+        row.addView(labelRow);
+        row.addView(progressTrack);
+        llDetectedObjects.addView(row);
     }
 
     private void setupActionPanel() {
@@ -315,13 +410,17 @@ public class ResultActivity extends AppCompatActivity {
         String safeJenis = safe(jenis);
         String safeKategori = safe(kategori);
 
-        if (tvJenisSampah != null) tvJenisSampah.setText(safeJenis);
+        if (tvJenisSampah != null) {
+            tvJenisSampah.setText(safeJenis);
+            tvJenisSampah.setTextColor(getColorForLabel(safeJenis));
+        }
         if (tvKategoriSampah != null) {
             tvKategoriSampah.setText(safeKategori);
             tvKategoriSampah.getBackground().setTint(getColorForLabel(safeJenis));
         }
         if (tvAkurasiScan != null) {
             tvAkurasiScan.setText(String.format(Locale.US, "%.0f%%", confidence));
+            tvAkurasiScan.setTextColor(getColorForLabel(safeJenis));
         }
         if (tvTanggalScan != null) {
             tvTanggalScan.setText(new java.text.SimpleDateFormat("dd MMM yyyy", new Locale("id", "ID"))
@@ -374,6 +473,22 @@ public class ResultActivity extends AppCompatActivity {
 
     private String safe(String text) {
         return (text == null || text.isEmpty()) ? "-" : text;
+    }
+
+    private GradientDrawable makeRoundedDrawable(int color, float radius) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setColor(color);
+        drawable.setCornerRadius(radius);
+        return drawable;
+    }
+
+    private float clamp(float value, float min, float max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private int dp(float value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private void ambilLokasi() {

@@ -38,14 +38,21 @@
             android:textColor="#1B5E20" />
     </LinearLayout>
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
-        android:paddingHorizontal="20dp"
+        android:fillViewport="true"
+        android:clipToPadding="false"
         android:paddingBottom="24dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toTopOf="@id/btnSimpanContainer">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+            android:paddingBottom="24dp">
 
             <!-- IMAGE CARD -->
             <LinearLayout
@@ -258,8 +265,11 @@
                 android:id="@+id/llDetectedObjects"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:orientation="vertical" />
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_premium_card"
+                android:elevation="4dp"
+                android:orientation="vertical"
+                android:padding="18dp" />
 
             <!-- INFO AND DETAIL REMOVED FROM HERE, MOVED TO FAB -->
 
@@ -276,7 +286,8 @@
                 android:layout_height="wrap_content"
                 android:visibility="gone" />
 
-    </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- FLOATING INFO BUTTON -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
