@@ -610,9 +610,9 @@
 <!-- ══════════════ TAB NAV ══════════════ -->
 <div class="tab-nav">
   <div class="tab-nav-tabs">
-    <button class="tab-btn active" onclick="scrollToSection('overview')" id="tab-overview">📊 Overview</button>
+    <button class="tab-btn active" onclick="scrollToSection('peta')" id="tab-peta">🗺️ Peta Sebaran</button>
+    <button class="tab-btn" onclick="scrollToSection('overview')" id="tab-overview">📊 Overview</button>
     <button class="tab-btn" onclick="scrollToSection('statistik')" id="tab-statistik">📈 Statistik</button>
-    <button class="tab-btn" onclick="scrollToSection('peta')" id="tab-peta">🗺️ Peta Sebaran</button>
     <button class="tab-btn" onclick="scrollToSection('riwayat')" id="tab-riwayat">🗂️ Riwayat Scan</button>
     <button class="tab-btn" onclick="scrollToSection('ranking')" id="tab-ranking">🏆 Ranking</button>
   </div>
@@ -626,6 +626,76 @@
 
   <!-- ══════════ CONTENT ══════════ -->
   <div class="content">
+
+    <!-- ───────────── PETA ───────────── -->
+    <div class="section" id="section-peta">
+      <div class="section-header">
+        <div class="section-icon">🗺️</div>
+        <div>
+          <div class="section-title">Peta Sebaran</div>
+          <div class="section-subtitle">Visualisasi lokasi GPS titik scan</div>
+        </div>
+      </div>
+      <div class="card animate-up" style="margin-bottom:20px">
+        <div class="card-header" style="padding-bottom:16px">
+          <div>
+            <div class="card-title">Peta Sebaran Titik Scan</div>
+            <div class="card-subtitle">Lokasi GPS setiap laporan sampah — klik titik untuk detail</div>
+          </div>
+          <div class="map-controls">
+            <button class="map-btn active" id="btnRw" onclick="setMapMode('rw')">🗺️ Kesimpulan per RW</button>
+            <button class="map-btn" id="btnPin" onclick="setMapMode('pin')">📍 Titik</button>
+            <button class="map-btn" id="btnHeat" onclick="setMapMode('heat')">🔥 Heatmap</button>
+            <button class="map-btn" id="btnCluster" onclick="setMapMode('cluster')">🫧 Cluster RT</button>
+          </div>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <!-- Summary bawah peta -->
+      <div class="chart-grid animate-up delay-1">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Agregat per RT</div>
+              <div class="card-subtitle">Total scan dan dominan sampah</div>
+            </div>
+          </div>
+          <div class="card-body no-padding">
+            <div style="overflow-x:auto;max-height:300px;overflow-y:auto">
+              <table class="rank-table" id="rtTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>RW / RT</th>
+                    <th>Total Scan</th>
+                    <th>Dominan</th>
+                    <th>Porsi</th>
+                  </tr>
+                </thead>
+                <tbody id="rtTableBody">
+                  <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Memuat…</div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Distribusi per RT/RW</div>
+              <div class="card-subtitle">Pie chart lokasi scan per kombinasi RW dan RT</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-canvas-wrap" style="height:260px">
+              <canvas id="chartRtPie"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /peta -->
 
     <!-- ───────────── OVERVIEW ───────────── -->
     <div class="section" id="section-overview">
@@ -807,75 +877,6 @@
         </div>
       </div>
     </div><!-- /statistik -->
-
-    <!-- ───────────── PETA ───────────── -->
-    <div class="section" id="section-peta">
-      <div class="section-header">
-        <div class="section-icon">🗺️</div>
-        <div>
-          <div class="section-title">Peta Sebaran</div>
-          <div class="section-subtitle">Visualisasi lokasi GPS titik scan</div>
-        </div>
-      </div>
-      <div class="card animate-up" style="margin-bottom:20px">
-        <div class="card-header" style="padding-bottom:16px">
-          <div>
-            <div class="card-title">Peta Sebaran Titik Scan</div>
-            <div class="card-subtitle">Lokasi GPS setiap laporan sampah — klik titik untuk detail</div>
-          </div>
-          <div class="map-controls">
-            <button class="map-btn active" id="btnPin" onclick="setMapMode('pin')">📍 Titik</button>
-            <button class="map-btn" id="btnHeat" onclick="setMapMode('heat')">🔥 Heatmap</button>
-            <button class="map-btn" id="btnCluster" onclick="setMapMode('cluster')">🫧 Cluster</button>
-          </div>
-        </div>
-        <div id="map"></div>
-      </div>
-
-      <!-- Summary bawah peta -->
-      <div class="chart-grid animate-up delay-1">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Agregat per RT</div>
-              <div class="card-subtitle">Total scan dan dominan sampah</div>
-            </div>
-          </div>
-          <div class="card-body no-padding">
-            <div style="overflow-x:auto;max-height:300px;overflow-y:auto">
-              <table class="rank-table" id="rtTable">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>RW / RT</th>
-                    <th>Total Scan</th>
-                    <th>Dominan</th>
-                    <th>Porsi</th>
-                  </tr>
-                </thead>
-                <tbody id="rtTableBody">
-                  <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Memuat…</div></div></td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Distribusi per RT/RW</div>
-              <div class="card-subtitle">Pie chart lokasi scan per kombinasi RW dan RT</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="chart-canvas-wrap" style="height:260px">
-              <canvas id="chartRtPie"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div><!-- /peta -->
 
     <!-- ───────────── RIWAYAT SCAN ───────────── -->
     <div class="section" id="section-riwayat">
@@ -1107,10 +1108,10 @@ let currentPage  = 1;
 const PAGE_SIZE  = 20;
 let sortKey      = 'created_at';
 let sortDir      = 'desc';
-let mapMode      = 'pin';
+let mapMode      = 'rw';
 let leafletMap, heatLayer, pinGroup;
 let chartTrend, chartDonut, chartRt, chartHBar, chartMonthly, chartRtPie, chartRankRt;
-let currentSection = 'overview';
+let currentSection = 'peta';
 
 const CAT_COLORS = {
   'Organik': '#4CAF50',
@@ -2040,6 +2041,30 @@ function updateMapPins() {
       L.marker([d.latitude,d.longitude],{icon:markerIcon}).bindPopup(popup,{maxWidth:220}).addTo(pinGroup);
     });
 
+  
+  } else if (mapMode==='rw') {
+    // Group by RW and show summary
+    const rwGroups = {};
+    withCoords.forEach(d=>{
+      const key=formatRw(d.rw_id)||'Unknown RW';
+      if(!rwGroups[key]) rwGroups[key]={items:[],lat:0,lng:0,rts:new Set()};
+      rwGroups[key].items.push(d);
+      rwGroups[key].lat+=d.latitude;
+      rwGroups[key].lng+=d.longitude;
+      if(getAreaLabel(d)) rwGroups[key].rts.add(getAreaLabel(d));
+    });
+    Object.entries(rwGroups).forEach(([rw,g])=>{
+      const n=g.items.length;
+      const lat=g.lat/n, lng=g.lng/n;
+      const r=Math.min(20+Math.sqrt(n)*4,60);
+      const dominMap={};
+      g.items.forEach(d=>{ if(d.nama_sampah) dominMap[d.nama_sampah]=(dominMap[d.nama_sampah]||0)+1; });
+      const dom=Object.entries(dominMap).sort((a,b)=>b[1]-a[1])[0];
+      const color=dom?CAT_COLORS[dom[0]]:'#4CAF50';
+      L.circleMarker([lat,lng],{radius:r,fillColor:color,color:'#fff',weight:2,fillOpacity:.8})
+        .bindPopup(`<div class="popup-title">Kesimpulan ${rw}</div><div class="popup-row"><span>Cakupan</span><b>${g.rts.size} RT Aktif</b></div><div class="popup-row"><span>Total Laporan</span><b>${n}</b></div><div class="popup-row"><span>Sampah Dominan</span><b>${dom?`${CAT_ICONS[dom[0]]||''} ${dom[0]}`:'-'}</b></div><div><span class="popup-badge">Ringkasan RW</span></div>`)
+        .addTo(pinGroup);
+    });
   } else if (mapMode==='cluster') {
     // Group by RT and show circle marker per RT
     const rtGroups = {};
