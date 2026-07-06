@@ -16,6 +16,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.example.ecosnap.R;
 import com.example.ecosnap.ScanHistory;
+import com.example.ecosnap.WilayahUtils;
 import com.example.ecosnap.user.DetailScanActivity;
 
 import java.text.ParseException;
@@ -66,14 +67,8 @@ public class RiwayatScanAdapter extends RecyclerView.Adapter<RiwayatScanAdapter.
         }
         h.tvKategori.setTextColor(getKategoriTextColor(kategori));
 
-        // Wilayah
-        String wilayah = "";
-        if (item.getRwId() != null && !item.getRwId().isEmpty()) {
-            wilayah = item.getRwId();
-        }
-        if (item.getRtId() != null && !item.getRtId().isEmpty()) {
-            wilayah += (wilayah.isEmpty() ? "" : " / ") + item.getRtId();
-        }
+        // Wilayah admin baru: rw_id lama ditampilkan sebagai RT.
+        String wilayah = WilayahUtils.formatScanAreaLabel(item.getRwId(), item.getRtId());
         h.tvWilayah.setText(wilayah.isEmpty() ? "-" : wilayah);
 
         // Tanggal

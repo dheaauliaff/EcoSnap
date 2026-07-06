@@ -104,6 +104,7 @@ public class MapsFragment extends Fragment {
     private final List<ScanHistory> displayedScans = new ArrayList<>();
     private final Map<String, Integer> globalCategoryCount = new HashMap<>();
     private final Map<String, Integer> rtCount = new HashMap<>();
+    private final List<String> registeredRtLabels = new ArrayList<>();
 
     // Filter state
     private final Set<String> activeFilters = new LinkedHashSet<>();
@@ -186,14 +187,7 @@ public class MapsFragment extends Fragment {
                 androidx.appcompat.widget.PopupMenu popup = new androidx.appcompat.widget.PopupMenu(getContext(), btnFilterArea);
                 popup.getMenu().add("Semua RT");
 
-                List<String> rts = new ArrayList<>();
-                for (ScanHistory s : allScans) {
-                    String rt = WilayahUtils.formatRtId(s.getRtId());
-                    if (!rt.isEmpty() && !rts.contains(rt)) {
-                        rts.add(rt);
-                    }
-                }
-                Collections.sort(rts);
+                List<String> rts = getDropdownRtLabels();
                 for (String r : rts) {
                     popup.getMenu().add(r);
                 }
@@ -312,7 +306,7 @@ public class MapsFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     User user = response.body().get(0);
                     userRwId = user.getRwId() != null ? user.getRwId() : "";
-                    loadAllScansForUserRw(api);
+                    loadRegisteredRtUsers(api);
                 } else {
                     handleLoadError("Gagal memuat profil user");
                 }
@@ -323,6 +317,38 @@ public class MapsFragment extends Fragment {
                 if (isAdded()) handleLoadError("Tidak dapat terhubung ke server");
             }
         });
+    }
+
+    private void loadRegisteredRtUsers(ApiService api) {
+        registeredRtLabels.clear();
+        if (userRwId == null || userRwId.trim().isEmpty()) {
+            loadAllScansForUserRw(api);
+            return;
+        }
+
+        api.getUserByRwId("eq." + userRwId, "eq.user").enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    registeredRtLabels.addAll(WilayahUtils.getRegisteredRtList(response.body(), userRwId));
+                }
+                loadAllScansForUserRw(api);
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                if (!isAdded()) return;
+                loadAllScansForUserRw(api);
+            }
+        });
+    }
+
+    private List<String> getDropdownRtLabels() {
+        if (!registeredRtLabels.isEmpty()) {
+            return new ArrayList<>(registeredRtLabels);
+        }
+        return WilayahUtils.getScanRtList(allScans, userRwId);
     }
 
     private void loadAllScansForUserRw(ApiService api) {
@@ -381,13 +407,18 @@ public class MapsFragment extends Fragment {
         globalCategoryCount.clear();
         rtCount.clear();
 
+        for (String rt : registeredRtLabels) {
+            rtCount.put(rt, 0);
+        }
+
         for (ScanHistory s : displayedScans) {
             String nama = WilayahUtils.normalizeJenis(s.getJenisSampah());
             String rt   = WilayahUtils.formatRtId(s.getRtId());
             if (nama != null) globalCategoryCount.put(nama,
                     globalCategoryCount.getOrDefault(nama, 0) + 1);
-            if (!rt.isEmpty()) rtCount.put(rt,
-                    rtCount.getOrDefault(rt, 0) + 1);
+            if (!rt.isEmpty()) {
+                rtCount.put(rt, rtCount.getOrDefault(rt, 0) + 1);
+            }
         }
 
         refreshMapMarkers();

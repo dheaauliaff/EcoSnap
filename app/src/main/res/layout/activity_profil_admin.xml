@@ -342,7 +342,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Daftar RT di Wilayah Ini"
+                android:text="Daftar Warga di Wilayah Ini"
                 android:textColor="#1B5E20"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -413,7 +413,7 @@
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginHorizontal="16dp"/>
 
-                <!-- Tombol Riwayat Semua User -->
+                <!-- Tombol Riwayat Semua Warga -->
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
@@ -446,7 +446,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Riwayat Scan Semua User"
+                                android:text="Riwayat Scan Semua Warga"
                                 android:textColor="#424242"
                                 android:textSize="14sp" />
                             <TextView

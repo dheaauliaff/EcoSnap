@@ -172,14 +172,14 @@
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- KODE AKSES RW -->
+            <!-- KODE AKSES ADMIN -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:hint="Kode RW "
-                app:helperText="Silakan hubungi RW untuk memperoleh kode akses"
+                app:helperText="Silakan hubungi admin RW untuk memperoleh kode akses"
                 app:boxBackgroundColor="#FFFFFF"
                 app:boxCornerRadiusBottomEnd="20dp"
                 app:boxCornerRadiusBottomStart="20dp"

@@ -72,6 +72,10 @@ public class ScanFragment extends Fragment {
     private int fps = 0;
     private boolean isProcessingCapture = false;
 
+    // Reusable rotated bitmap buffer to prevent massive memory allocations
+    private Bitmap rotatedBitmapBuffer = null;
+    private android.graphics.Canvas rotatedBitmapCanvas = null;
+
     // ── Permission launcher ──
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -216,7 +220,10 @@ public class ScanFragment extends Fragment {
     // ─── Frame analysis — bounding box muncul dulu ───────────────────────────
 
     private void processImageProxy(ImageProxy image) {
-        if (tflite == null) { image.close(); return; }
+        if (isProcessingCapture || tflite == null) {
+            image.close();
+            return;
+        }
 
         frameCount++;
         long now = System.currentTimeMillis();
@@ -230,18 +237,14 @@ public class ScanFragment extends Fragment {
             Bitmap bitmap = image.toBitmap();
             if (bitmap != null) {
                 int rotation = image.getImageInfo().getRotationDegrees();
+                Bitmap rotated = bitmap;
                 if (rotation != 0) {
-                    Matrix matrix = new Matrix();
-                    matrix.postRotate(rotation);
-                    Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0,
-                            bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                    if (rotated != bitmap) bitmap.recycle();
-                    bitmap = rotated;
+                    rotated = getRotatedBitmapBuffer(bitmap, rotation);
+                    bitmap.recycle(); // Immediately recycle the raw frame bitmap
                 }
+                final Bitmap finalBitmap = rotated;
 
-                final Bitmap finalBitmap = bitmap;
                 List<TFLiteHelper.Result> detections = tflite.detect(finalBitmap);
-                // Simpan deteksi & frame terbaru — bounding box tampil otomatis via overlayView
                 latestDetections = detections;
                 currentBitmap    = finalBitmap;
 
@@ -250,7 +253,7 @@ public class ScanFragment extends Fragment {
                         if (overlayView != null) {
                             overlayView.setFrameInfo(finalBitmap.getWidth(),
                                     finalBitmap.getHeight(), fps);
-                            overlayView.updateBoxes(detections); // ← bounding box dulu
+                            overlayView.updateBoxes(detections);
                         }
                         if (!isProcessingCapture) updateResultText(detections);
                     });
@@ -261,6 +264,38 @@ public class ScanFragment extends Fragment {
         } finally {
             image.close();
         }
+    }
+
+    private Bitmap getRotatedBitmapBuffer(Bitmap source, int rotation) {
+        int w = source.getWidth();
+        int h = source.getHeight();
+        int targetW = (rotation == 90 || rotation == 270) ? h : w;
+        int targetH = (rotation == 90 || rotation == 270) ? w : h;
+
+        if (rotatedBitmapBuffer == null || rotatedBitmapBuffer.getWidth() != targetW || rotatedBitmapBuffer.getHeight() != targetH) {
+            if (rotatedBitmapBuffer != null) {
+                rotatedBitmapBuffer.recycle();
+            }
+            rotatedBitmapBuffer = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888);
+            rotatedBitmapCanvas = new android.graphics.Canvas(rotatedBitmapBuffer);
+        }
+
+        rotatedBitmapCanvas.drawColor(android.graphics.Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR);
+        rotatedBitmapCanvas.save();
+        if (rotation == 90) {
+            rotatedBitmapCanvas.translate(targetW, 0);
+            rotatedBitmapCanvas.rotate(90);
+        } else if (rotation == 180) {
+            rotatedBitmapCanvas.translate(targetW, targetH);
+            rotatedBitmapCanvas.rotate(180);
+        } else if (rotation == 270) {
+            rotatedBitmapCanvas.translate(0, targetH);
+            rotatedBitmapCanvas.rotate(270);
+        }
+        rotatedBitmapCanvas.drawBitmap(source, 0, 0, null);
+        rotatedBitmapCanvas.restore();
+
+        return rotatedBitmapBuffer;
     }
 
     // ─── Gallery multi-select ─────────────────────────────────────────────────
@@ -478,5 +513,10 @@ public class ScanFragment extends Fragment {
         super.onDestroyView();
         if (analysisExecutor != null) analysisExecutor.shutdown();
         if (tflite != null) tflite.close();
+        if (rotatedBitmapBuffer != null) {
+            rotatedBitmapBuffer.recycle();
+            rotatedBitmapBuffer = null;
+            rotatedBitmapCanvas = null;
+        }
     }
 }

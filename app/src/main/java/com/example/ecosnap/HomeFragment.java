@@ -155,7 +155,7 @@ public class HomeFragment extends Fragment {
                 if (isAdded() && response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     User user = response.body().get(0);
                     if (tvNamaUser    != null) tvNamaUser.setText(user.getNama());
-                    if (tvWilayahUser != null) tvWilayahUser.setText(user.getRtId() + " - " + user.getRwId());
+                    if (tvWilayahUser != null) tvWilayahUser.setText(WilayahUtils.formatWargaBadge(user.getRwId()));
                     loadStatistikScan(uid);
                     loadCategoryStats(uid);
                     loadRecentScans(uid);

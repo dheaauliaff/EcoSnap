@@ -440,7 +440,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
+                        android:layout_marginEnd="8dp"
                         android:background="@drawable/bg_premium_card"
                         android:foreground="?attr/selectableItemBackground"
                         android:elevation="4dp"
@@ -475,7 +475,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Kertas"
-                                android:textColor="#212121"
+                                android:textColor="@color/text_primary"
                                 android:textSize="14sp" />
                             <TextView
                                 android:id="@+id/tvHomeKertas"
@@ -491,7 +491,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="items"
-                                android:textColor="#757575"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp" />
                         </LinearLayout>
                     </LinearLayout>
@@ -502,7 +502,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="6dp"
+                        android:layout_marginStart="8dp"
                         android:background="@drawable/bg_premium_card"
                         android:foreground="?attr/selectableItemBackground"
                         android:elevation="4dp"
@@ -537,7 +537,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Plastik"
-                                android:textColor="#212121"
+                                android:textColor="@color/text_primary"
                                 android:textSize="14sp" />
                             <TextView
                                 android:id="@+id/tvHomePlastik"
@@ -553,12 +553,12 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="items"
-                                android:textColor="#757575"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp" />
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
-                </LinearLayout>
+            </LinearLayout>
 
             <!-- 5️⃣ SCAN TERAKHIR (LIST) -->
             <LinearLayout
@@ -573,16 +573,16 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Scan Terakhir"
-                    android:textColor="#212121"
-                    android:textSize="16sp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvLihatSemua"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Lihat semua \u203A"
-                    android:textColor="#2E7D32"
+                    android:text="Lihat semua \u203a"
+                    android:textColor="@color/colorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:clickable="true"
@@ -597,7 +597,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Belum ada riwayat scan"
-                android:textColor="#757575"
+                android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 android:gravity="center"
                 android:visibility="gone" />

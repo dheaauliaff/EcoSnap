@@ -77,6 +77,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
     boolean customYearSelected = false;
     final List<ScanHistory> cachedScans = new ArrayList<>();
     final List<String> registeredRtLabels = new ArrayList<>();
+    int registeredWargaCount = 0;
 
     // RT tracking
     final Map<String, Integer> rtCount = new HashMap<>();
@@ -242,7 +243,12 @@ public class DashboardAdminActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     User admin = response.body().get(0);
                     if (tvNamaAdmin != null) tvNamaAdmin.setText(admin.getNama());
-                    if (tvWilayahAdmin != null) tvWilayahAdmin.setText(admin.getWilayah());
+                    if (tvWilayahAdmin != null) {
+                        String areaSource = admin.getRwId() != null && !admin.getRwId().trim().isEmpty()
+                                ? admin.getRwId()
+                                : admin.getWilayah();
+                        tvWilayahAdmin.setText(WilayahUtils.formatAdminAreaFromLegacyRw(areaSource));
+                    }
                     rwId = admin.getRwId() != null ? admin.getRwId() : "";
                     loadRegisteredRtUsers(api);
                     loadStatistik();
@@ -257,13 +263,18 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
     private void loadRegisteredRtUsers(ApiService api) {
         registeredRtLabels.clear();
-        api.getAllUsers().enqueue(new Callback<List<User>>() {
+        registeredWargaCount = 0;
+        if (rwId == null || rwId.trim().isEmpty()) {
+            if (tvTotalRtAktif != null) tvTotalRtAktif.setText("0");
+            return;
+        }
+
+        api.getUserByRwId("eq." + rwId, "eq.user").enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     for (User user : response.body()) {
-                        if (!"user".equalsIgnoreCase(user.getRole())) continue;
-                        if (!WilayahUtils.isMatchingRw(user.getRwId(), rwId)) continue;
+                        registeredWargaCount++;
                         String rt = WilayahUtils.formatRtId(user.getRtId());
                         if (!rt.isEmpty() && !registeredRtLabels.contains(rt)) {
                             registeredRtLabels.add(rt);
@@ -271,7 +282,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
                     }
                     Collections.sort(registeredRtLabels);
                     if (tvTotalRtAktif != null) {
-                        tvTotalRtAktif.setText(String.valueOf(registeredRtLabels.size()));
+                        tvTotalRtAktif.setText(String.valueOf(registeredWargaCount));
                     }
                     applyCurrentPeriod();
                 }
@@ -279,6 +290,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
+                registeredWargaCount = 0;
                 if (tvTotalRtAktif != null) tvTotalRtAktif.setText("0");
             }
         });
@@ -681,7 +693,7 @@ public class DashboardAdminActivity extends AppCompatActivity {
         if (tvTotalAnorganik != null) tvTotalAnorganik.setText(String.valueOf(anorganik));
         if (tvTotalBukanSampah != null) tvTotalBukanSampah.setText(String.valueOf(bukanSampah));
         if (tvTotalRecycle   != null) tvTotalRecycle.setText(String.valueOf(recycle));
-        if (tvTotalRtAktif   != null) tvTotalRtAktif.setText(String.valueOf(registeredRtLabels.size()));
+        if (tvTotalRtAktif   != null) tvTotalRtAktif.setText(String.valueOf(registeredWargaCount));
     }
 
     private String normalizeKategori(ScanHistory scan) {
@@ -904,4 +916,5 @@ public class DashboardAdminActivity extends AppCompatActivity {
         startActivity(new Intent(this, LoginActivity.class));
         finish();
     }
+
 }

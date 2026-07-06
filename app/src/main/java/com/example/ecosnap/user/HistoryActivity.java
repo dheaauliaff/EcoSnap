@@ -213,7 +213,7 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private String buildSubtitle() {
-        String base = isAdminView ? "Semua pengguna dalam RW ini" : "Riwayat kamu";
+        String base = isAdminView ? "Semua warga dalam RT ini" : "Riwayat kamu";
         if (categoryFilter.isEmpty()) return base;
         return base + " - " + categoryFilter;
     }

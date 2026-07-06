@@ -32,8 +32,10 @@ public class OverlayView extends View {
     private int sourceHeight = 0;
     private int analyzerFps = 0;
     private boolean scannerChrome = false;
-    private Bitmap offscreenBuffer;
-    private Canvas offscreenCanvas;
+
+    // Reusable buffers to minimize memory allocations on every frame draw
+    private final Map<String, Integer> classCounts = new HashMap<>();
+    private final List<RectF> occupiedLabels = new ArrayList<>();
 
     private final float cornerRadius;
     private final float strokeWidth;
@@ -43,7 +45,6 @@ public class OverlayView extends View {
 
     public OverlayView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setLayerType(LAYER_TYPE_SOFTWARE, null);
 
         cornerRadius = dp(18);
         strokeWidth = dp(5);
@@ -116,21 +117,16 @@ public class OverlayView extends View {
             return;
         }
 
-        ensureBuffer(width, height);
-        offscreenBuffer.eraseColor(Color.TRANSPARENT);
-
         boolean scannerMode = scannerChrome && sourceWidth > 0 && sourceHeight > 0;
         if (scannerMode) {
-            drawScannerGuide(offscreenCanvas, width, height);
+            drawScannerGuide(canvas, width, height);
         }
-        DrawSummary summary = drawDetections(offscreenCanvas, width, height, scannerMode);
+        DrawSummary summary = drawDetections(canvas, width, height, scannerMode);
         if (scannerMode) {
-            drawHud(offscreenCanvas, summary, width);
-            drawStatusChips(offscreenCanvas, summary, width, height);
-            drawSummaryChip(offscreenCanvas, summary, width);
+            drawHud(canvas, summary, width);
+            drawStatusChips(canvas, summary, width, height);
+            drawSummaryChip(canvas, summary, width);
         }
-
-        canvas.drawBitmap(offscreenBuffer, 0, 0, bitmapPaint);
 
         if (summary.hasLocked) {
             postInvalidateDelayed(120);
@@ -141,8 +137,9 @@ public class OverlayView extends View {
         DrawSummary summary = new DrawSummary();
         RectF hudRect = scannerMode ? getHudRect(width) : new RectF();
         float hudBottom = scannerMode ? hudRect.bottom : 0f;
-        Map<String, Integer> classCounts = new HashMap<>();
-        List<RectF> occupiedLabels = new ArrayList<>();
+        
+        classCounts.clear();
+        occupiedLabels.clear();
 
         for (TFLiteHelper.Result r : results) {
             if (r.rect == null) continue;
@@ -294,16 +291,6 @@ public class OverlayView extends View {
         canvas.drawLine(left, bottom, left, bottom - len, roiPaint);
         canvas.drawLine(right, bottom, right - len, bottom, roiPaint);
         canvas.drawLine(right, bottom, right, bottom - len, roiPaint);
-    }
-
-    private void ensureBuffer(int width, int height) {
-        if (offscreenBuffer == null || offscreenBuffer.getWidth() != width || offscreenBuffer.getHeight() != height) {
-            if (offscreenBuffer != null) {
-                offscreenBuffer.recycle();
-            }
-            offscreenBuffer = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            offscreenCanvas = new Canvas(offscreenBuffer);
-        }
     }
 
     private RectF getHudRect(int width) {

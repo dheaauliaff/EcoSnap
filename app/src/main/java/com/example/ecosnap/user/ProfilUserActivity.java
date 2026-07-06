@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.auth.LoginActivity;
 import com.example.ecosnap.R;
+import com.example.ecosnap.WilayahUtils;
 import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.ScanHistory;
 import com.example.ecosnap.model.User;
@@ -114,11 +115,9 @@ public class ProfilUserActivity extends AppCompatActivity {
 
                     String nama = safe(user.getNama());
                     String hp = safe(user.getNomorHp());
-                    String wilayah = safe(user.getWilayah());
                     String role = safe(user.getRole());
-
-                    String rw = safe(user.getRwId());
-                    String rt = safe(user.getRtId());
+                    String wilayah = WilayahUtils.formatScanAreaLabel(user.getRwId(), user.getRtId());
+                    String headerRole = "user".equalsIgnoreCase(role) ? "Warga" : capitalize(role);
 
                     String inisial = nama.equals("-")
                             ? "U"
@@ -126,12 +125,12 @@ public class ProfilUserActivity extends AppCompatActivity {
 
                     tvAvatarInisial.setText(inisial);
                     tvNamaProfil.setText(nama);
-                    tvRoleProfil.setText(capitalize(role));
-                    tvInfoWilayahHeader.setText(rw + " / " + rt);
+                    tvRoleProfil.setText(headerRole);
+                    tvInfoWilayahHeader.setText(wilayah.isEmpty() ? "-" : wilayah);
 
                     tvInfoNama.setText(nama);
                     tvInfoNomorHp.setText(hp);
-                    tvInfoWilayah.setText(wilayah);
+                    tvInfoWilayah.setText(wilayah.isEmpty() ? "-" : wilayah);
                     tvInfoRole.setText(capitalize(role));
 
                 } else {

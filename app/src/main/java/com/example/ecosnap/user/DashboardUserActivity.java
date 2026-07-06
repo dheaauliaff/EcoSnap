@@ -12,6 +12,7 @@ import androidx.appcompat.widget.AppCompatButton;
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.auth.LoginActivity;
 import com.example.ecosnap.R;
+import com.example.ecosnap.WilayahUtils;
 import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.ScanHistory;
 import com.example.ecosnap.model.User;
@@ -126,9 +127,9 @@ public class DashboardUserActivity extends AppCompatActivity {
                         && !response.body().isEmpty()) {
                     User user = response.body().get(0);
 
-                    // Tampilkan nama dan wilayah RT - RW
+                    // Tampilkan nama dan badge wilayah tanpa RW di Home
                     tvNamaUser.setText(user.getNama());
-                    tvWilayahUser.setText(user.getRtId() + " - " + user.getRwId());
+                    tvWilayahUser.setText(WilayahUtils.formatWargaBadge(user.getRwId()));
 
                     // Load statistik scan
                     loadStatistikScan(uid);

@@ -251,21 +251,20 @@ public class ProfilFragment extends Fragment {
                     User user = response.body().get(0);
                     String nama = safe(user.getNama());
                     String hp = safe(user.getNomorHp());
-                    String wilayah = safe(user.getWilayah());
                     String role = safe(user.getRole());
-                    String rw = safe(user.getRwId());
-                    String rt = safe(user.getRtId());
+                    String wilayah = WilayahUtils.formatScanAreaLabel(user.getRwId(), user.getRtId());
+                    String headerRole = "user".equalsIgnoreCase(role) ? "Warga" : capitalize(role);
 
                     String inisial = nama.equals("-") ? "U" : nama.substring(0,1).toUpperCase();
 
                     if (tvAvatarInisial != null) tvAvatarInisial.setText(inisial);
                     if (tvNamaProfil != null) tvNamaProfil.setText(nama);
-                    if (tvRoleProfil != null) tvRoleProfil.setText(capitalize(role));
-                    if (tvInfoWilayahHeader != null) tvInfoWilayahHeader.setText(rw + " / " + rt);
+                    if (tvRoleProfil != null) tvRoleProfil.setText(headerRole);
+                    if (tvInfoWilayahHeader != null) tvInfoWilayahHeader.setText(wilayah.isEmpty() ? "-" : wilayah);
 
                     if (tvInfoNama != null) tvInfoNama.setText(nama);
                     if (tvInfoNomorHp != null) tvInfoNomorHp.setText(hp);
-                    if (tvInfoWilayah != null) tvInfoWilayah.setText(wilayah);
+                    if (tvInfoWilayah != null) tvInfoWilayah.setText(wilayah.isEmpty() ? "-" : wilayah);
                     if (tvInfoRole != null) tvInfoRole.setText(capitalize(role));
                 } else {
                     if (isAdded()) Toast.makeText(getContext(), "Data user tidak ditemukan", Toast.LENGTH_SHORT).show();

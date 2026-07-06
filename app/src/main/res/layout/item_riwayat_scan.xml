@@ -9,15 +9,17 @@
     android:outlineAmbientShadowColor="#0F000000"
     android:outlineSpotShadowColor="#0A000000"
     android:orientation="horizontal"
-    android:padding="12dp"
+    android:padding="16dp"
     android:gravity="center_vertical">
 
-    <!-- Thumbnail Image -->
-    <FrameLayout
+    <!-- Thumbnail Image with MaterialCardView Clipping -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="72dp"
         android:layout_height="72dp"
-        android:background="@drawable/bg_premium_card"
-        android:backgroundTint="#F5F5F5">
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
+        app:cardBackgroundColor="#F5F5F5">
 
         <ImageView
             android:id="@+id/ivThumbnail"
@@ -25,14 +27,14 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_scan" />
-    </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Info -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="16dp"
         android:orientation="vertical">
 
         <!-- Nama Sampah -->
@@ -41,8 +43,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Plastik"
-            android:textColor="#212121"
-            android:textSize="15sp"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:maxLines="1"
             android:ellipsize="end" />
@@ -52,13 +54,13 @@
             android:id="@+id/tvKategori"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
             android:background="@drawable/bg_badge_role"
-            android:backgroundTint="#E8F5E9"
+            android:backgroundTint="@color/eco_green_pastel"
             android:paddingHorizontal="10dp"
             android:paddingVertical="2dp"
             android:text="Anorganik"
-            android:textColor="#2E7D32"
+            android:textColor="@color/colorPrimary"
             android:textSize="11sp"
             android:textStyle="bold" />
 
@@ -66,7 +68,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -74,15 +76,15 @@
                 android:layout_width="12dp"
                 android:layout_height="12dp"
                 android:src="@drawable/ic_location_outline"
-                app:tint="#9E9E9E" />
+                app:tint="@color/text_secondary" />
 
             <TextView
                 android:id="@+id/tvWilayah"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:text="RW 01"
-                android:textColor="#9E9E9E"
+                android:text="RT 01"
+                android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
 
             <TextView
@@ -90,7 +92,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="6dp"
                 android:text="•"
-                android:textColor="#BDBDBD"
+                android:textColor="@color/text_hint"
                 android:textSize="11sp" />
 
             <TextView
@@ -98,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="12 Jan 2026"
-                android:textColor="#9E9E9E"
+                android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
         </LinearLayout>
 
@@ -107,11 +109,11 @@
             android:id="@+id/tvAlamat"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
             android:ellipsize="end"
             android:maxLines="2"
             android:text="Alamat pengambilan foto"
-            android:textColor="#757575"
+            android:textColor="@color/text_secondary"
             android:textSize="11sp" />
 
         <!-- User info (admin mode only) -->
@@ -119,9 +121,9 @@
             android:id="@+id/tvUserInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
+            android:layout_marginTop="4dp"
             android:text="👤 UID: ..."
-            android:textColor="#BDBDBD"
+            android:textColor="@color/text_hint"
             android:textSize="10sp"
             android:visibility="gone" />
 
@@ -132,14 +134,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_marginStart="8dp">
 
         <TextView
             android:id="@+id/tvConfidence"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="95%"
-            android:textColor="#4CAF50"
+            android:textColor="@color/colorPrimary"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -147,7 +150,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="akurasi"
-            android:textColor="#BDBDBD"
+            android:textColor="@color/text_hint"
             android:textSize="10sp" />
     </LinearLayout>
 

@@ -24,10 +24,10 @@ import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    // Kode RW = password untuk masuk ke RW tertentu
-    // Admin RW kasih kode ini ke ketua RT di wilayahnya
+    // Kode RT = password untuk masuk ke wilayah RT tertentu.
+    // Field database tetap rw_id untuk kompatibilitas schema lama.
     //ini jadiin dropdown aja di registrasi
-    private static final Map<String, String> KODE_RW = new HashMap<String, String>() {{
+    private static final Map<String, String> KODE_RT = new HashMap<String, String>() {{
         put("RW01-2024", "RW 01");
         put("RW02-2024", "RW 02");
         put("RW03-2024", "RW 03");
@@ -71,10 +71,10 @@ public class RegisterActivity extends AppCompatActivity {
         String password        = etPassword.getText().toString().trim();
         String passwordConfirm = etPasswordConfirm.getText().toString().trim();
         String rtId            = etRT.getText().toString().trim();
-        String kodeRwInput     = etRW.getText().toString().trim();
+        String kodeRtInput     = etRW.getText().toString().trim();
 
         // Validasi field wajib
-        if (nama.isEmpty() || email.isEmpty() || nomorHp.isEmpty() || password.isEmpty() || rtId.isEmpty() || kodeRwInput.isEmpty()) {
+        if (nama.isEmpty() || email.isEmpty() || nomorHp.isEmpty() || password.isEmpty() || rtId.isEmpty() || kodeRtInput.isEmpty()) {
             Toast.makeText(this, "Semua field harus diisi!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -85,14 +85,14 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // Cek apakah Kode RW valid
-        if (!KODE_RW.containsKey(kodeRwInput)) {
-            Toast.makeText(this, "Kode RW tidak valid!", Toast.LENGTH_SHORT).show();
+        // Cek apakah Kode RT valid
+        if (!KODE_RT.containsKey(kodeRtInput)) {
+            Toast.makeText(this, "Kode RT tidak valid!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Ambil nama RW yang sebenarnya berdasarkan kode
-        String rwId = WilayahUtils.formatRwId(KODE_RW.get(kodeRwInput));
+        // Ambil wilayah RT admin berdasarkan kode, tetap disimpan di rw_id lama.
+        String rwId = WilayahUtils.formatRwId(KODE_RT.get(kodeRtInput));
         String formattedRtId = WilayahUtils.formatRtId(rtId);
 
         if (nomorHp.length() < 10) {
@@ -149,7 +149,7 @@ public class RegisterActivity extends AppCompatActivity {
         data.put("role", "user");
         data.put("rt_id", rtId);
         data.put("rw_id", rwId);
-        data.put("wilayah", rtId + " " + rwId); // contoh: "RT 02 RW 05"
+        data.put("wilayah", WilayahUtils.formatAdminAreaFromLegacyRw(rwId));
 
         Call<Void> call = apiService.insertUser(data);
         call.enqueue(new Callback<Void>() {

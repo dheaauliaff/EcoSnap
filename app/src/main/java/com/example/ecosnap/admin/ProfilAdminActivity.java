@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +16,7 @@ import androidx.appcompat.widget.AppCompatButton;
 import com.example.ecosnap.network.ApiService;
 import com.example.ecosnap.auth.LoginActivity;
 import com.example.ecosnap.R;
+import com.example.ecosnap.WilayahUtils;
 import com.example.ecosnap.network.RetrofitClient;
 import com.example.ecosnap.model.User;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,6 +38,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
     LinearLayout layoutDaftarRT;
     AppCompatButton btnEditProfil, btnLogout, btnLihatRiwayat;
     FirebaseAuth mAuth;
+    String currentRwId = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +95,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, EditProfilAdminActivity.class);
                 intent.putExtra("nama", tvInfoNama.getText().toString());
                 intent.putExtra("nomor_hp", tvInfoNomorHp.getText().toString());
-                intent.putExtra("rw_id", tvInfoWilayahHeader.getText().toString());
+                intent.putExtra("rw_id", currentRwId);
                 startActivityForResult(intent, 1001);
             });
         }
@@ -147,7 +150,8 @@ public class ProfilAdminActivity extends AppCompatActivity {
                     String nomorHp = admin.getNomorHp() != null ? admin.getNomorHp() : "-";
                     String wilayah = admin.getWilayah() != null ? admin.getWilayah() : "-";
                     String role = admin.getRole() != null ? admin.getRole() : "admin";
-                    String rwId = admin.getRwId() != null ? admin.getRwId() : "-";
+                    String rwId = admin.getRwId() != null ? admin.getRwId() : "";
+                    currentRwId = rwId;
 
                     // Inisial dari huruf pertama nama
                     String inisial = nama.equals("-") || nama.isEmpty()
@@ -158,15 +162,17 @@ public class ProfilAdminActivity extends AppCompatActivity {
                     tvAvatarInisial.setText(inisial);
                     tvNamaProfil.setText(nama);
                     tvRoleProfil.setText(capitalize(role));
-                    tvInfoWilayahHeader.setText(rwId);
+                    String areaSource = rwId != null && !rwId.trim().isEmpty() ? rwId : wilayah;
+                    String rtLabel = WilayahUtils.formatAdminAreaFromLegacyRw(areaSource);
+                    tvInfoWilayahHeader.setText(rtLabel);
 
                     // Set info akun
                     tvInfoNama.setText(nama);
                     tvInfoNomorHp.setText(nomorHp); // tampilkan nomor HP
-                    tvInfoWilayah.setText(wilayah);
+                    tvInfoWilayah.setText(rtLabel);
                     tvInfoRole.setText(capitalize(role));
 
-                    // Load daftar RT di bawah RW ini
+                    // Load daftar warga di bawah RT ini
                     loadDaftarRT(admin.getRwId());
 
                 } else {
@@ -188,7 +194,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
         if (rwId == null || rwId.isEmpty()) {
             layoutDaftarRT.removeAllViews();
             TextView empty = new TextView(this);
-            empty.setText("RW belum terisi");
+            empty.setText("RT belum terisi");
             empty.setTextColor(Color.parseColor("#81C784"));
             layoutDaftarRT.addView(empty);
             return;
@@ -203,49 +209,48 @@ public class ProfilAdminActivity extends AppCompatActivity {
                 layoutDaftarRT.removeAllViews();
 
                 if (response.isSuccessful() && response.body() != null) {
-                    List<User> listRT = response.body();
+                    List<User> listWarga = response.body();
 
-                    // Kalau belum ada RT terdaftar
-                    if (listRT.isEmpty()) {
+                    // Kalau belum ada warga terdaftar
+                    if (listWarga.isEmpty()) {
                         TextView empty = new TextView(ProfilAdminActivity.this);
-                        empty.setText("Belum ada RT terdaftar");
+                        empty.setText("Belum ada warga terdaftar");
                         empty.setTextColor(Color.parseColor("#81C784"));
                         empty.setTextSize(13);
                         layoutDaftarRT.addView(empty);
                         return;
                     }
 
-                    // Loop semua RT dan tampilkan
-                    for (int i = 0; i < listRT.size(); i++) {
-                        User rt = listRT.get(i);
+                    // Loop semua warga dan tampilkan
+                    for (int i = 0; i < listWarga.size(); i++) {
+                        User warga = listWarga.get(i);
 
                         LinearLayout row = new LinearLayout(ProfilAdminActivity.this);
                         row.setOrientation(LinearLayout.HORIZONTAL);
                         row.setGravity(Gravity.CENTER_VERTICAL);
                         row.setPadding(0, 10, 0, 10);
 
-                        // Icon rumah
-                        TextView tvIcon = new TextView(ProfilAdminActivity.this);
-                        tvIcon.setText("🏠");
-                        tvIcon.setTextSize(16);
+                        // Icon pengguna
+                        ImageView tvIcon = new ImageView(ProfilAdminActivity.this);
+                        tvIcon.setImageResource(R.drawable.ic_user_outline);
+                        tvIcon.setColorFilter(Color.parseColor("#1B5E20"));
                         tvIcon.setPadding(0, 0, 12, 0);
+                        tvIcon.setLayoutParams(new LinearLayout.LayoutParams(dp(28), dp(16)));
 
-                        // Info RT (nama + wilayah)
+                        // Info warga
                         LinearLayout info = new LinearLayout(ProfilAdminActivity.this);
                         info.setOrientation(LinearLayout.VERTICAL);
                         info.setLayoutParams(new LinearLayout.LayoutParams(
                                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
-                        // Tampilkan RT ID atau nama
+                        // Tampilkan nama warga
                         TextView tvNamaRT = new TextView(ProfilAdminActivity.this);
-                        tvNamaRT.setText(rt.getRtId() != null ? rt.getRtId() : rt.getNama());
-                        tvNamaRT.setTextColor(Color.parseColor("#1B5E20"));
-                        tvNamaRT.setTextSize(14);
-                        tvNamaRT.setTypeface(null, android.graphics.Typeface.BOLD);
+                        tvNamaRT.setText(warga.getNama() != null ? warga.getNama() : "-");
+                        tvNamaRT.setTextColor(Color.parseColor("#81C784"));
+                        tvNamaRT.setTextSize(12);
 
-                        // Tampilkan nama lengkap ketua RT
                         TextView tvNomorHpRT = new TextView(ProfilAdminActivity.this);
-                        tvNomorHpRT.setText(rt.getNama() != null ? rt.getNama() : "-");
+                        tvNomorHpRT.setText("");
                         tvNomorHpRT.setTextColor(Color.parseColor("#81C784"));
                         tvNomorHpRT.setTextSize(12);
 
@@ -255,8 +260,8 @@ public class ProfilAdminActivity extends AppCompatActivity {
                         row.addView(info);
                         layoutDaftarRT.addView(row);
 
-                        // Divider antar RT kecuali yang terakhir
-                        if (i < listRT.size() - 1) {
+                        // Divider antar warga kecuali yang terakhir
+                        if (i < listWarga.size() - 1) {
                             View divider = new View(ProfilAdminActivity.this);
                             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                                     LinearLayout.LayoutParams.MATCH_PARENT, 1);
@@ -271,7 +276,7 @@ public class ProfilAdminActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
                 TextView empty = new TextView(ProfilAdminActivity.this);
-                empty.setText("Gagal memuat daftar RT");
+                empty.setText("Gagal memuat daftar warga");
                 empty.setTextColor(Color.parseColor("#81C784"));
                 layoutDaftarRT.addView(empty);
             }
@@ -282,5 +287,9 @@ public class ProfilAdminActivity extends AppCompatActivity {
     private String capitalize(String text) {
         if (text == null || text.isEmpty()) return "-";
         return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 }

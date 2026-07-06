@@ -3,13 +3,20 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- EcoSnap Design System Colors -->
+    <!-- EcoSnap Brand Colors -->
     <color name="eco_green_dark">#1B5E20</color>
-    <color name="eco_green_main">#4CAF50</color>
+    <color name="eco_green_main">#2E7D32</color>
     <color name="eco_green_light">#A5D6A7</color>
-    <color name="eco_bg_soft">#F5F5F5</color>
+    <color name="eco_green_pastel">#E8F5E9</color>
+    <color name="eco_bg_soft">#F8F9FA</color>
     
-    <color name="colorPrimary">#4CAF50</color>
+    <!-- Semantic Design Tokens -->
+    <color name="colorPrimary">#2E7D32</color>
     <color name="colorPrimaryDark">#1B5E20</color>
     <color name="colorAccent">#A5D6A7</color>
+    
+    <color name="text_primary">#1B1B1B</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#9E9E9E</color>
+    <color name="divider_color">#E0E0E0</color>
 </resources>

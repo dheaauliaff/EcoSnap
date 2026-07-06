@@ -26,6 +26,13 @@ public class TFLiteHelper {
 
     private final int INPUT_SIZE = 640;
 
+    // Reusable buffers to minimize memory churn & GC pauses
+    private ByteBuffer inputBuffer;
+    private int[] pixelBuffer;
+    private Bitmap scaledBitmap;
+    private android.graphics.Canvas scaledCanvas;
+    private float[][][] outputBuffer;
+
     private final float CONF_THRESHOLD = 0.50f;
     private final float NMS_IOU_THRESHOLD = 0.65f;
     private final float DUPLICATE_IOU_THRESHOLD = 0.75f;
@@ -71,6 +78,17 @@ public class TFLiteHelper {
                     + " inputType=" + interpreter.getInputTensor(0).dataType()
                     + " outputShape=" + java.util.Arrays.toString(interpreter.getOutputTensor(0).shape())
                     + " outputType=" + interpreter.getOutputTensor(0).dataType());
+
+            // Pre-allocate buffers for high-performance zero-allocation inference
+            int[] outShape = interpreter.getOutputTensor(0).shape();
+            outputBuffer = new float[outShape[0]][outShape[1]][outShape[2]];
+            DataType inputType = interpreter.getInputTensor(0).dataType();
+            int bytesPerChannel = inputType == DataType.FLOAT32 ? 4 : 1;
+            inputBuffer = ByteBuffer.allocateDirect(bytesPerChannel * INPUT_SIZE * INPUT_SIZE * 3);
+            inputBuffer.order(ByteOrder.nativeOrder());
+            pixelBuffer = new int[INPUT_SIZE * INPUT_SIZE];
+            scaledBitmap = Bitmap.createBitmap(INPUT_SIZE, INPUT_SIZE, Bitmap.Config.ARGB_8888);
+            scaledCanvas = new android.graphics.Canvas(scaledBitmap);
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize TFLite model", e);
         }
@@ -89,29 +107,45 @@ public class TFLiteHelper {
     }
 
     private ByteBuffer convertBitmap(Bitmap bitmap) {
+        if (inputBuffer == null) {
+            DataType inputType = interpreter.getInputTensor(0).dataType();
+            int bytesPerChannel = inputType == DataType.FLOAT32 ? 4 : 1;
+            inputBuffer = ByteBuffer.allocateDirect(bytesPerChannel * INPUT_SIZE * INPUT_SIZE * 3);
+            inputBuffer.order(ByteOrder.nativeOrder());
+        }
+        if (pixelBuffer == null) {
+            pixelBuffer = new int[INPUT_SIZE * INPUT_SIZE];
+        }
+        if (scaledBitmap == null) {
+            scaledBitmap = Bitmap.createBitmap(INPUT_SIZE, INPUT_SIZE, Bitmap.Config.ARGB_8888);
+            scaledCanvas = new android.graphics.Canvas(scaledBitmap);
+        }
+
+        inputBuffer.rewind();
+
+        // High performance scale: draw source bitmap on pre-allocated scaledBitmap via Canvas
+        android.graphics.Rect srcRect = new android.graphics.Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        android.graphics.Rect dstRect = new android.graphics.Rect(0, 0, INPUT_SIZE, INPUT_SIZE);
+        scaledCanvas.drawBitmap(bitmap, srcRect, dstRect, null);
+
+        scaledBitmap.getPixels(pixelBuffer, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE);
+
         DataType inputType = interpreter.getInputTensor(0).dataType();
-        int bytesPerChannel = inputType == DataType.FLOAT32 ? 4 : 1;
-        ByteBuffer buffer = ByteBuffer.allocateDirect(bytesPerChannel * INPUT_SIZE * INPUT_SIZE * 3);
-        buffer.order(ByteOrder.nativeOrder());
-        Bitmap resized = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true);
-        int[] pixels = new int[INPUT_SIZE * INPUT_SIZE];
-        resized.getPixels(pixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE);
-        for (int pixel : pixels) {
-            int r = (pixel >> 16) & 0xFF;
-            int g = (pixel >> 8) & 0xFF;
-            int b = pixel & 0xFF;
-            if (inputType == DataType.FLOAT32) {
-                buffer.putFloat(r / 255f);
-                buffer.putFloat(g / 255f);
-                buffer.putFloat(b / 255f);
-            } else {
-                buffer.put((byte) r);
-                buffer.put((byte) g);
-                buffer.put((byte) b);
+        if (inputType == DataType.FLOAT32) {
+            for (int pixel : pixelBuffer) {
+                inputBuffer.putFloat(((pixel >> 16) & 0xFF) * 0.003921569f);
+                inputBuffer.putFloat(((pixel >> 8) & 0xFF) * 0.003921569f);
+                inputBuffer.putFloat((pixel & 0xFF) * 0.003921569f);
+            }
+        } else {
+            for (int pixel : pixelBuffer) {
+                inputBuffer.put((byte) ((pixel >> 16) & 0xFF));
+                inputBuffer.put((byte) ((pixel >> 8) & 0xFF));
+                inputBuffer.put((byte) (pixel & 0xFF));
             }
         }
-        buffer.rewind();
-        return buffer;
+        inputBuffer.rewind();
+        return inputBuffer;
     }
 
     public static class DebugStats {
@@ -176,9 +210,11 @@ public class TFLiteHelper {
             ByteBuffer input = convertBitmap(bitmap);
 
             int[] shape = interpreter.getOutputTensor(0).shape();
-            float[][][] output = new float[shape[0]][shape[1]][shape[2]];
+            if (outputBuffer == null) {
+                outputBuffer = new float[shape[0]][shape[1]][shape[2]];
+            }
+            float[][][] output = outputBuffer;
             long start = System.currentTimeMillis();
-            Log.d(TAG, "Inference running");
             interpreter.run(input, output);
             stats.inferenceMs = System.currentTimeMillis() - start;
 
@@ -533,6 +569,11 @@ public class TFLiteHelper {
         if (gpuDelegate != null) {
             gpuDelegate.close();
             gpuDelegate = null;
+        }
+        if (scaledBitmap != null) {
+            scaledBitmap.recycle();
+            scaledBitmap = null;
+            scaledCanvas = null;
         }
     }
 }
